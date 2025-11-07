@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.AdminConsultationController" spacing="15"
+      style="-fx-background-color: #f5f5f5; -fx-padding: 25; -fx-font-family: 'Segoe UI', Arial, sans-serif;">
+
+    <!-- Header with red and sky blue accent -->
+    <Label text="Admin Consultation Management"
+           style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-padding: 0 0 20 0; -fx-effect: dropshadow(gaussian, #87CEEB, 0, 0, 0, 2);" />
+
+    <!-- Search and Filter Section -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-padding: 12; -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #87CEEB; -fx-border-width: 1;">
+        <TextField fx:id="searchField" promptText="Search..."
+                   style="-fx-pref-width: 350; -fx-padding: 8; -fx-font-size: 13; -fx-background-radius: 4; -fx-border-radius: 4; -fx-background-color: white; -fx-border-color: #e74c3c;" />
+        <Button text="Search" onAction="#handleSearch"
+                style="-fx-font-weight: bold; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 6; -fx-text-fill: white; -fx-min-width: 100; -fx-background-color: #e74c3c;" />
+
+        <Label text="Filter by Status:"
+               style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #3498db; -fx-padding: 0 10 0 20;" />
+        <ComboBox fx:id="statusFilterCombo"
+                  style="-fx-pref-width: 150; -fx-background-color: white; -fx-border-color: #87CEEB; -fx-border-radius: 4; -fx-padding: 4;" />
+
+        <Button text="Refresh" onAction="#handleRefresh"
+                style="-fx-font-weight: bold; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 6; -fx-text-fill: white; -fx-min-width: 100; -fx-background-color: #3498db;" />
+    </HBox>
+
+    <!-- Action Buttons with red and sky blue theme -->
+    <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 15 0;">
+        <Button fx:id="statsButton" text="Bar Chart Stats"
+                style="-fx-font-weight: bold; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 6; -fx-text-fill: white; -fx-min-width: 130; -fx-background-color: #e74c3c;" />
+        <Button fx:id="pieChartButton" text="Pie Chart Stats"
+                style="-fx-font-weight: bold; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 6; -fx-text-fill: white; -fx-min-width: 130; -fx-background-color: #3498db;" />
+        <Button fx:id="exportPdfButton" text="Export to PDF"
+                style="-fx-font-weight: bold; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 6; -fx-text-fill: white; -fx-min-width: 130; -fx-background-color: #e74c3c;" />
+        <Button fx:id="mostLikedButton" text="Most Liked"
+                style="-fx-font-weight: bold; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 6; -fx-text-fill: white; -fx-min-width: 130; -fx-background-color: #3498db;" />
+    </HBox>
+
+    <!-- Table with red and sky blue styling -->
+    <TableView fx:id="consultationTable"
+               style="-fx-background-color: #e6f7ff; -fx-border-color: #87CEEB; -fx-border-width: 1;">
+        <columns>
+            <TableColumn text="ID" prefWidth="50" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="id"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Service" prefWidth="150" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="serviceName"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Date" prefWidth="120" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="date"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Patient ID" prefWidth="100" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="patientIdentifier"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Phone" prefWidth="100" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="phoneNumber"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Status" prefWidth="100" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="status"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn text="Rating" prefWidth="80" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-font-size: 13;">
+                <cellValueFactory>
+                    <PropertyValueFactory property="rating"/>
+                </cellValueFactory>
+            </TableColumn>
+        </columns>
+    </TableView>
+</VBox>

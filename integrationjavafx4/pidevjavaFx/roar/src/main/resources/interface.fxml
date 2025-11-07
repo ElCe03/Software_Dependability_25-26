@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<AnchorPane prefHeight="600" prefWidth="1000" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Interface">
+
+    <!-- Left Sidebar -->
+    <VBox layoutX="0" layoutY="0" prefHeight="600" prefWidth="250" style="-fx-background-color: #2c3e50;">
+        <!-- Logo Section -->
+        <HBox alignment="CENTER" style="-fx-background-color: #34495e; -fx-padding: 20;">
+            <Label style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16;" text="CLINIC DASHBOARD" />
+        </HBox>
+
+        <!-- Navigation Menu -->
+        <VBox spacing="10" style="-fx-padding: 20;">
+            <Button fx:id="btnUsers" onAction="#handleUsers" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-pref-width: 200; -fx-pref-height: 40;" text="Users" />
+            <Button fx:id="btnMedicalServices" onAction="#handleMedicalServices" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 40;" text="Medical Services" />
+            <Button fx:id="btnConsultations" onAction="#handleAdminConsultation" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 40;" text="Consultations" />
+            <Button fx:id="btnEquipment" onAction="#handleEquipement" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 40;" text="Equipment" />
+            <Button fx:id="btnInfrastructure" onAction="#handleInfrastructure" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 40;" text="Infrastructure" />
+            <Button text="Medication Stock" fx:id="btnMedicationStock" onAction="#handleMedicationStock" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 200; -fx-pref-height: 40;"/>
+            <Button text="Dossiers Médicaux" fx:id="btnDossiersMedicaux" onAction="#handleDossiersMedicaux" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 180; -fx-pref-height: 35;">
+                <graphic>
+                    <FontAwesomeIconView glyphName="BED" size="16" glyphStyle="-fx-fill: #bdc3c7;"/>
+                </graphic>
+            </Button>
+            <Button text="Séjours" fx:id="btnSejours" onAction="#handleSejours" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 180; -fx-pref-height: 35;">
+                <graphic>
+                    <FontAwesomeIconView glyphName="BED" size="16" glyphStyle="-fx-fill: #bdc3c7;"/>
+                </graphic>
+            </Button>
+            <Button text="Calendrier Médical" fx:id="btnCalendar" onAction="#handleCalendar" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 180; -fx-pref-height: 35;">
+                <graphic>
+                    <FontAwesomeIconView glyphName="CALENDAR_CHECK_O" size="16" glyphStyle="-fx-fill: #bdc3c7;"/>
+                </graphic>
+            </Button>
+            <Button text="Statistiques" fx:id="btnStatistiques" onAction="#handleStatistiques" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 180; -fx-pref-height: 35;">
+                <graphic>
+                    <FontAwesomeIconView glyphName="BAR_CHART" size="16" glyphStyle="-fx-fill: #bdc3c7;"/>
+                </graphic>
+            </Button>
+            <Button text="Patient Dashboard" fx:id="btnPatientDashboard" onAction="#handlePatientDashboard" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-pref-width: 180; -fx-pref-height: 35;">
+                <graphic>
+                    <FontAwesomeIconView glyphName="USER" size="16" glyphStyle="-fx-fill: #bdc3c7;"/>
+                </graphic>
+            </Button>
+        </VBox>
+    </VBox>
+
+    <!-- Main Content Area -->
+    <AnchorPane layoutX="250" layoutY="0" prefHeight="600" prefWidth="750" style="-fx-background-color: #ecf0f1;">
+        <!-- Header -->
+        <AnchorPane layoutX="0" layoutY="0" prefHeight="60" prefWidth="750" style="-fx-background-color: white;">
+            <!-- Left HBox for Back Buttons -->
+            <HBox layoutX="10" layoutY="10" prefHeight="40" prefWidth="300" alignment="CENTER_LEFT" spacing="10">
+                <Button fx:id="backButton" onAction="#handleBackButton" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2c3e50; -fx-border-radius: 5; -fx-padding: 5 10; -fx-graphic-text-gap: 8; -fx-font-weight: bold;" text="Back">
+                    <graphic>
+                        <FontAwesomeIconView glyphName="ARROW_LEFT" size="16" glyphStyle="-fx-fill: white;"/>
+                    </graphic>
+                    <style>
+                        .button:hover {
+                        -fx-background-color: #2c3e50;
+                        -fx-text-fill: #bdc3c7;
+                        }
+                        .button:hover .glyph-icon {
+                        -fx-fill: #bdc3c7;
+                        }
+                    </style>
+                </Button>
+                <Button fx:id="backToLoginButton" onAction="#handleBackLogin" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5; -fx-border-color: #2c3e50; -fx-border-radius: 5; -fx-padding: 5 10; -fx-graphic-text-gap: 8; -fx-font-weight: bold;" text="Back to Login">
+                    <graphic>
+                        <FontAwesomeIconView glyphName="ARROW_LEFT" size="16" glyphStyle="-fx-fill: white;"/>
+                    </graphic>
+                    <style>
+                        .button:hover {
+                        -fx-background-color: #2c3e50;
+                        -fx-text-fill: #bdc3c7;
+                        }
+                        .button:hover .glyph-icon {
+                        -fx-fill: #bdc3c7;
+                        }
+                    </style>
+                </Button>
+            </HBox>
+            <!-- Right HBox for Search, Notifications, and Profile -->
+            <HBox layoutX="350" layoutY="10" prefHeight="40" prefWidth="390" alignment="CENTER_RIGHT" spacing="10">
+                <TextField promptText="Search..." style="-fx-background-radius: 20; -fx-pref-height: 40; -fx-pref-width: 200;" />
+                <Button style="-fx-background-color: transparent;" text="Notifications" />
+                <Button style="-fx-background-color: transparent;" text="Profile" />
+            </HBox>
+        </AnchorPane>
+
+        <!-- Content Area -->
+        <VBox fx:id="contentArea" layoutX="20" layoutY="80" spacing="20">
+            <Label style="-fx-font-size: 24; -fx-font-weight: bold;" text="Welcome to the Clinic Dashboard" />
+        </VBox>
+    </AnchorPane>
+</AnchorPane>

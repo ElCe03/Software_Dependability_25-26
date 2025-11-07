@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.*?>
+
+<AnchorPane prefHeight="650" prefWidth="950" xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.MedicalServicesController"
+            stylesheets="@/medical-service.css">
+
+    <!-- Sky Blue Border -->
+    <Rectangle width="950" height="650" arcWidth="20" arcHeight="20" styleClass="sky-blue-border"/>
+
+    <VBox alignment="TOP_CENTER" spacing="12" AnchorPane.topAnchor="15" AnchorPane.leftAnchor="15" AnchorPane.rightAnchor="15">
+        <!-- Header with Sky Blue Accent -->
+        <StackPane>
+            <Rectangle width="920" height="60" arcWidth="15" arcHeight="15" styleClass="header-accent"/>
+            <Label text="Medical Services Manager" styleClass="header-title"/>
+        </StackPane>
+
+        <!-- Search Section -->
+        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="search-container">
+            <Label text="Search:" styleClass="search-label"/>
+            <TextField fx:id="searchField" promptText="Search services..." styleClass="search-field"/>
+        </HBox>
+
+        <!-- Form Section with Input Validation -->
+        <VBox spacing="8" styleClass="form-container" prefWidth="500">
+            <Label text="Service Details" styleClass="form-title"/>
+
+            <GridPane hgap="6" vgap="6">
+                <columnConstraints>
+                    <ColumnConstraints halignment="RIGHT" minWidth="100" prefWidth="100"/>
+                    <ColumnConstraints halignment="LEFT" minWidth="250" prefWidth="250"/>
+                </columnConstraints>
+
+                <!-- Service Name with Validation -->
+                <Label text="Service Name:" GridPane.rowIndex="0" styleClass="form-label"/>
+                <TextField fx:id="serviceName" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="form-input"/>
+                <Label fx:id="serviceNameError" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="error-label"/>
+
+                <!-- Description with Validation -->
+                <Label text="Description:" GridPane.rowIndex="2" styleClass="form-label"/>
+                <TextArea fx:id="serviceDescription" GridPane.rowIndex="2" GridPane.columnIndex="1" prefRowCount="2" styleClass="form-textarea"/>
+                <Label fx:id="serviceDescriptionError" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="error-label"/>
+
+                <!-- Duration with Validation -->
+                <Label text="Duration:" GridPane.rowIndex="4" styleClass="form-label"/>
+                <HBox GridPane.rowIndex="4" GridPane.columnIndex="1" spacing="5" alignment="CENTER_LEFT">
+                    <Spinner fx:id="durationSpinner" minWidth="80" styleClass="form-spinner">
+                        <valueFactory>
+                            <SpinnerValueFactory.IntegerSpinnerValueFactory min="1" max="24" initialValue="1"/>
+                        </valueFactory>
+                    </Spinner>
+                    <Label text="hours" styleClass="hint-label"/>
+                </HBox>
+                <Label fx:id="durationError" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="error-label"/>
+
+                <HBox alignment="CENTER" spacing="10" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                    <Button fx:id="submitButton" text="Add Service" onAction="#handleSubmit" styleClass="form-button"/>
+                </HBox>
+            </GridPane>
+        </VBox>
+
+        <!-- Table Section -->
+        <VBox spacing="5" styleClass="table-container">
+            <Label text="Service Catalog" styleClass="table-title"/>
+            <TableView fx:id="servicesTable" styleClass="data-table">
+                <columns>
+                    <TableColumn fx:id="nameColumn" text="Service" minWidth="180" styleClass="table-column"/>
+                    <TableColumn fx:id="descriptionColumn" text="Description" minWidth="300" styleClass="table-column"/>
+                    <TableColumn fx:id="durationColumn" text="Duration" minWidth="80" styleClass="table-column numeric-column"/>
+                    <TableColumn fx:id="modifyColumn" text="" minWidth="70" styleClass="table-column action-column"/>
+                    <TableColumn fx:id="deleteColumn" text="" minWidth="70" styleClass="table-column action-column"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </VBox>
+</AnchorPane>

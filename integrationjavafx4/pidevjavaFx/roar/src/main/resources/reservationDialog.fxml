@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextField?>
+
+<DialogPane fx:id="dialogPane" fx:controller="controllers.ReservationDialogController"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <content>
+        <VBox spacing="10">
+            <TextField fx:id="emailField" promptText="Email du destinataire" />
+            <TextField fx:id="dateDebutField" promptText="Date de début" />
+            <TextField fx:id="dateFinField" promptText="Date de fin" />
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK" />
+        <ButtonType fx:constant="CANCEL" />
+    </buttonTypes>
+</DialogPane>
