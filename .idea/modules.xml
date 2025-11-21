@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/integrationsansjointure.iml" filepath="$PROJECT_DIR$/.idea/integrationsansjointure.iml" />
-      <module fileurl="file://$PROJECT_DIR$/integrationjavafx4/pidevjavaFx/roar/roar.iml" filepath="$PROJECT_DIR$/integrationjavafx4/pidevjavaFx/roar/roar.iml" />
     </modules>
   </component>
 </project>
