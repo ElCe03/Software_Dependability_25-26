@@ -13,6 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 public class EditDepartementController {
+    /*@
+      @ private invariant IMAGE_DIR != null;
+      @*/
     @FXML private TextField nomField;
     @FXML private TextField adresseField;
     @FXML private TextField imageField;
@@ -26,7 +29,19 @@ public class EditDepartementController {
     public void initialize() {
         // Initialisation si nécessaire
     }
-
+    /*@ public normal_behavior
+          @   requires departement != null;
+          @   requires nomField != null;
+          @   requires adresseField != null;
+          @   requires imageField != null;
+          @   assignable this.departement, this.imagePath,
+          @              nomField.text, adresseField.text, imageField.text,
+          @              imagePreview.image;
+          @   ensures this.departement == departement;
+          @   ensures nomField.getText().equals(departement.getNom());
+          @   ensures adresseField.getText().equals(departement.getAdresse());
+          @   ensures this.imagePath == departement.getImage();
+          @*/
     public void setDepartementData(departement departement) {
         this.departement = departement;
         nomField.setText(departement.getNom());
@@ -41,7 +56,10 @@ public class EditDepartementController {
             }
         }
     }
-
+    /*@ private normal_behavior
+          @   requires imageField != null && imagePreview != null;
+          @   assignable imagePath, imageField.text, imagePreview.image;
+          @*/
     @FXML
     private void handleBrowseImage() {
         FileChooser fileChooser = new FileChooser();
@@ -65,7 +83,16 @@ public class EditDepartementController {
             }
         }
     }
-
+    /*@ public normal_behavior
+          @   requires this.departement != null;
+          @   requires nomField != null && adresseField != null;
+          @   assignable departement.nom, departement.adresse, departement.image;
+          @   ensures \result != null;
+          @   ensures \result == this.departement;
+          @   ensures \result.getNom().equals(nomField.getText());
+          @   ensures \result.getAdresse().equals(adresseField.getText());
+          @   ensures \result.getImage() == this.imagePath;
+          @*/
     public departement getUpdatedDepartement() {
         departement.setNom(nomField.getText());
         departement.setAdresse(adresseField.getText());

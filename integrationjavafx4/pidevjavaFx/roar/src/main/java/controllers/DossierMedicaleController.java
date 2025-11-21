@@ -38,6 +38,15 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class DossierMedicaleController implements Initializable {
+    /*@
+      @ private invariant dossierService != null;
+      @ private invariant sejourService != null;
+      @ private invariant userServiceE != null;
+      @ private invariant dossierList != null;
+      @ private invariant sejourList != null;
+      @
+      @ private invariant currentDossier != null ==> sejourList != null;
+      @*/
     
     @FXML
     private TableView<DossierMedicale> dossierTable;
@@ -136,7 +145,19 @@ public class DossierMedicaleController implements Initializable {
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final String[] STATUT_OPTIONS = {"Actif", "Archivé", "En attente"};
-    
+    /*@ public normal_behavior
+      @   requires dossierTable != null;
+      @   requires comboPatient != null;
+      @   requires comboMedecin != null;
+      @
+      @   assignable dossierService, sejourService, userServiceE,
+      @              dossierList, sejourList, dossierTable.items,
+      @              comboStatutDossier.items, comboPatient.items, comboMedecin.items;
+      @   ensures dossierService != null;
+      @   ensures sejourService != null;
+      @   ensures userServiceE != null;
+      @   ensures dossierList != null;
+      @*/
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
@@ -284,7 +305,13 @@ public class DossierMedicaleController implements Initializable {
         });
         txtConsultationsPassees.setTextFormatter(consultationsFormatter);
     }
-    
+    /*@ private normal_behavior
+      @   requires userServiceE != null;
+      @   requires comboPatient != null && comboMedecin != null;
+      @   assignable comboPatient.items, comboMedecin.items;
+      @   ensures comboPatient.getItems() != null;
+      @   ensures comboMedecin.getItems() != null;
+      @*/
     private void loadUsers() {
         // Debug: Get ALL users to check their types
         List<User> allUsers = userServiceE.recupererTousUsers();
@@ -528,7 +555,22 @@ public class DossierMedicaleController implements Initializable {
             AlertUtil.showError(null, "Erreur", "Une erreur s'est produite lors de la création du dossier médical: " + e.getMessage());
         }
     }
-
+    /*@ private normal_behavior
+          @   requires comboPatient != null && comboMedecin != null &&
+          @            comboStatutDossier != null && txtHistoriqueMaladies != null;
+          @   assignable comboPatient.style, comboMedecin.style, comboStatutDossier.style,
+          @              txtHistoriqueMaladies.style, txtOperationsPassees.style,
+          @              txtConsultationsPassees.style, txtNotes.style,
+          @              lblValidationError.text, lblValidationError.visible;
+          @   ensures \result == (
+          @       comboPatient.getValue() != null &&
+          @       comboMedecin.getValue() != null &&
+          @       comboStatutDossier.getValue() != null && !comboStatutDossier.getValue().trim().isEmpty() &&
+          @       txtHistoriqueMaladies.getText() != null && !txtHistoriqueMaladies.getText().trim().isEmpty() &&
+          @       txtOperationsPassees.getText() != null && !txtOperationsPassees.getText().trim().isEmpty() &&
+          @       txtConsultationsPassees.getText() != null && !txtConsultationsPassees.getText().trim().isEmpty()
+          @   );
+          @*/
     private boolean validateRequiredFields() {
         boolean isValid = true;
         StringBuilder errorMessage = new StringBuilder();
@@ -639,7 +681,12 @@ public class DossierMedicaleController implements Initializable {
 
         return isValid;
     }
-
+    /*@ private normal_behavior
+          @   requires comboPatient != null && comboMedecin != null;
+          @   assignable \nothing;
+          @   ensures (comboPatient.getValue() == null || comboMedecin.getValue() == null) ==> \result == null;
+          @   ensures \result != null ==> \result.getPatient() == comboPatient.getValue();
+          @*/
     private DossierMedicale createDossier() {
         // Vérification finale avant la création
         if (comboPatient.getValue() == null || comboMedecin.getValue() == null || 
@@ -675,7 +722,15 @@ public class DossierMedicaleController implements Initializable {
             return null;
         }
     }
-    
+    /*@ public normal_behavior
+      @   requires dossierService != null;
+      @   requires currentDossier == null;
+      @   assignable \nothing;
+      @   also
+      @   requires currentDossier != null;
+      @   assignable currentDossier.historiqueDesMaladies, currentDossier.notes,
+      @              currentDossier.statutDossier, currentDossier.image;
+      @*/
     @FXML
     private void handleModifier(ActionEvent event) {
         if (currentDossier == null) {
@@ -723,7 +778,14 @@ public class DossierMedicaleController implements Initializable {
             AlertUtil.showError(null, "Erreur", "Une erreur s'est produite lors de la mise à jour du dossier médical.");
         }
     }
-    
+    /*@ public normal_behavior
+      @   requires currentDossier == null;
+      @   assignable \nothing;
+      @   also
+      @   requires currentDossier != null;
+      @   assignable dossierList, currentDossier, dossierTable.items;
+      @   ensures currentDossier == null;
+      @*/
     @FXML
     private void handleSupprimer(ActionEvent event) {
         Window owner = ((Node) event.getSource()).getScene().getWindow();

@@ -23,7 +23,13 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 public class ConsultationController {
-    // FXML injected fields
+    /*@
+      @ private invariant consultationService != null;
+      @ private invariant serviceService != null;
+      @ private invariant serviceNameToIdMap != null;
+      @ private invariant ratings != null;
+      @ private invariant prefs != null;
+      @*/
     @FXML private TextField loginPatientIdField;
     @FXML private GridPane consultationForm;
     @FXML private HBox actionButtonsContainer;
@@ -52,7 +58,22 @@ public class ConsultationController {
     private final Map<Integer, Integer> ratings = new HashMap<>(); // consultation ID -> rating
     private String currentPatientId;
     private Preferences prefs = Preferences.userNodeForPackage(ConsultationController.class);
-
+    /*@ public normal_behavior
+          @   requires consultationForm != null;
+          @   requires actionButtonsContainer != null;
+          @   requires consultationTable != null;
+          @   requires statusField != null;
+          @   requires serviceCombo != null;
+          @   requires idColumn != null && ratingColumn != null;
+          @   assignable consultationForm.visible, actionButtonsContainer.visible,
+          @              consultationTable.visible, statusField.text, statusField.disable,
+          @              serviceCombo.items, serviceNameToIdMap, consultationTable.columns,
+          @              ratings;
+          @
+          @   ensures !consultationForm.isVisible();
+          @   ensures !consultationTable.isVisible();
+          @   ensures statusField.getText().equals("En cours de traitement");
+          @*/
     @FXML
     public void initialize() {
         // Initial UI state
@@ -146,7 +167,11 @@ public class ConsultationController {
             System.err.println("Error saving ratings: " + e.getMessage());
         }
     }
-
+    /*@ public normal_behavior
+          @   requires consultationTable.getSelectionModel().getSelectedItem() != null;
+          @   assignable ratings, prefs;
+          @   ensures ratings.containsKey(consultationTable.getSelectionModel().getSelectedItem().getId());
+          @*/
     @FXML
     private void handleRateService() {
         Consultation selected = consultationTable.getSelectionModel().getSelectedItem();
@@ -322,7 +347,21 @@ public class ConsultationController {
             showAlert("Error", "Could not load the dashboard");
         }
     }
-
+    /*@ public normal_behavior
+          @   requires loginPatientIdField != null;
+          @
+          @   requires loginPatientIdField.getText().trim().isEmpty();
+          @   assignable \nothing; // Non cambia lo stato (mostra solo alert)
+          @
+          @   requires !loginPatientIdField.getText().trim().isEmpty();
+          @   assignable currentPatientId, consultationForm.visible,
+          @              actionButtonsContainer.visible, consultationTable.visible,
+          @              patientIdField.text, patientIdField.disable,
+          @              consultationTable.items;
+          @   ensures currentPatientId != null;
+          @   ensures consultationForm.isVisible();
+          @   ensures currentPatientId.equals(loginPatientIdField.getText().trim());
+          @*/
     @FXML
     private void handlePatientLogin() {
         String patientId = loginPatientIdField.getText().trim();
@@ -339,7 +378,21 @@ public class ConsultationController {
             showAlert("Error", "Please enter a valid patient ID");
         }
     }
-
+    /*@ public normal_behavior
+          @   requires currentPatientId != null;
+          @   requires datePicker != null && serviceCombo != null && phoneField != null;
+          @
+          @   requires datePicker.getValue() == null ||
+          @            serviceCombo.getValue() == null ||
+          @            !phoneField.getText().matches("^\\+216[\\s-]?\\d{2}[\\s-]?\\d{3}[\\s-]?\\d{3}$");
+          @   assignable \nothing;
+          @
+          @   requires datePicker.getValue() != null &&
+          @            serviceCombo.getValue() != null &&
+          @            phoneField.getText().matches("^\\+216[\\s-]?\\d{2}[\\s-]?\\d{3}[\\s-]?\\d{3}$");
+          @   assignable consultationTable.items, datePicker.value,
+          @              phoneField.text, serviceCombo.selectionModel;
+          @*/
     @FXML
     private void handleAddConsultation() {
         if (validateForm()) {
@@ -356,7 +409,16 @@ public class ConsultationController {
             showAlert("Success", "Consultation added successfully");
         }
     }
-
+    /*@ public normal_behavior
+          @   requires consultationTable != null;
+          @   requires consultationTable.getSelectionModel().getSelectedItem() != null;
+          @   requires validateForm() == true;
+          @   requires datePicker.getValue() != null;
+          @   assignable consultationTable.getSelectionModel().selectedItem.serviceId,
+          @              consultationTable.getSelectionModel().selectedItem.date,
+          @              consultationTable.getSelectionModel().selectedItem.phoneNumber,
+          @              consultationTable.items;
+          @*/
     @FXML
     private void handleUpdateConsultation() {
         Consultation selected = consultationTable.getSelectionModel().getSelectedItem();
@@ -371,7 +433,11 @@ public class ConsultationController {
             showAlert("Success", "Consultation updated successfully");
         }
     }
-
+    /*@ public normal_behavior
+          @   requires consultationTable.getSelectionModel().getSelectedItem() != null;
+          @   assignable consultationTable.items, ratings, prefs;
+          @   ensures !ratings.containsKey(\old(consultationTable.getSelectionModel().getSelectedItem().getId()));
+          @*/
     @FXML
     private void handleDeleteConsultation() {
         Consultation selected = consultationTable.getSelectionModel().getSelectedItem();
@@ -393,7 +459,13 @@ public class ConsultationController {
             });
         }
     }
-
+    /*@ private normal_behavior
+          @   requires currentPatientId == null;
+          @   assignable \nothing;
+          @   requires consultationTable != null;
+          @   assignable consultationTable.items;
+          @   ensures consultationTable.getItems() != null;
+          @*/
     private void refreshTable() {
         if (currentPatientId != null) {
             consultationTable.getItems().setAll(
@@ -410,6 +482,16 @@ public class ConsultationController {
         serviceCombo.setValue(consultation.getServiceName());
     }
 
+    /*@ private normal_behavior
+      @   requires datePicker != null && statusField != null &&
+      @            phoneField != null && serviceCombo != null && consultationTable != null;
+      @   assignable datePicker.value, statusField.text, phoneField.text,
+      @              serviceCombo.selectionModel, consultationTable.selectionModel;
+      @   ensures datePicker.getValue() == null;
+      @   ensures statusField.getText().equals("En cours de traitement");
+      @   ensures phoneField.getText().isEmpty();
+      @   ensures consultationTable.getSelectionModel().getSelectedItem() == null;
+      @*/
     private void clearForm() {
         datePicker.setValue(null);
         statusField.setText("En cours de traitement");
@@ -418,7 +500,17 @@ public class ConsultationController {
         consultationTable.getSelectionModel().clearSelection();
         toggleActionButtons(false);
     }
-
+    /*@
+          @   requires datePicker != null && serviceCombo != null && phoneField != null;
+          @   assignable \nothing;
+          @   ensures \result == (
+          @       datePicker.getValue() != null &&
+          @       serviceCombo.getValue() != null &&
+          @       phoneField.getText() != null &&
+          @       !phoneField.getText().isEmpty() &&
+          @       phoneField.getText().matches("^\\+216[\\s-]?\\d{2}[\\s-]?\\d{3}[\\s-]?\\d{3}$")
+          @   );
+          @*/
     private boolean validateForm() {
         if (datePicker.getValue() == null) {
             showAlert("Error", "Please select a date");

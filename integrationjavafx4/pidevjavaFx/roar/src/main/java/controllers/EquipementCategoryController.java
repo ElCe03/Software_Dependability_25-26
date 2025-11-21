@@ -31,18 +31,39 @@ public class EquipementCategoryController {
     private Label noEquipementsLabel;
     @FXML
     private Label labelNomCategorie;
-
+    /*@
+          @ private invariant equipements != null;
+          @ private invariant equipementService != null;
+          @ private invariant equipementList != null;
+          @*/
     private ObservableList<Equipement> equipements;
     private EquipementService equipementService;
     private String currentCategory;
-
+    /*@ public normal_behavior
+          @   requires equipementList != null;
+          @   requires noEquipementsLabel != null;
+          @   assignable equipementService, equipements,
+          @              equipementList.items, equipementList.cellFactory;
+          @   ensures equipementService != null;
+          @   ensures equipements != null;
+          @   ensures equipementList.getItems() == equipements;
+          @*/
     public void initialize() {
         equipementService = new EquipementService();
         equipements = FXCollections.observableArrayList();
         equipementList.setItems(equipements);
         setCustomCellFactory();
     }
-
+    /*@ public normal_behavior
+          @   requires categoryName != null;
+          @   requires labelNomCategorie != null && categoryLabel != null;
+          @   requires equipementService != null; // da initialize
+          @   assignable currentCategory, labelNomCategorie.text, categoryLabel.text,
+          @              equipements, noEquipementsLabel.visible;
+          @   ensures this.currentCategory == categoryName;
+          @   ensures labelNomCategorie.getText().equals(categoryName);
+          @   ensures !equipements.isEmpty() ==> !noEquipementsLabel.isVisible();
+          @*/
     public void setCategorie(String categoryName) {
         labelNomCategorie.setText(categoryName);
         currentCategory = categoryName;
@@ -55,7 +76,11 @@ public class EquipementCategoryController {
         categoryLabel.setText("Catégorie : " + categoryName);
         chargerEquipementsParCategorie();
     }
-
+    /*@ private normal_behavior
+         @   requires currentCategory != null;
+         @   requires equipementService != null && equipements != null;
+         @   assignable equipements, noEquipementsLabel.visible;
+         @*/
     private void chargerEquipementsParCategorie() {
         try {
             if (currentCategory == null || currentCategory.isEmpty()) {
@@ -70,7 +95,13 @@ public class EquipementCategoryController {
             System.err.println("❌ Erreur lors du chargement des équipements : " + e.getMessage());
         }
     }
-
+    /*@ private normal_behavior
+          @   requires equipementsFromDB != null;
+          @   requires this.equipements != null;
+          @   assignable this.equipements, noEquipementsLabel.visible;
+          @   ensures this.equipements.size() == equipementsFromDB.size();
+          @   ensures equipementsFromDB.isEmpty() <==> noEquipementsLabel.isVisible();
+          @*/
     private void listEquipementsInVBox(List<Equipement> equipementsFromDB) {
         this.equipements.clear();
 
@@ -107,7 +138,14 @@ public class EquipementCategoryController {
         }
     }
 
-
+    /*@ private normal_behavior
+          @   requires searchBar != null;
+          @   requires equipements != null; // Lista master
+          @   requires equipementList != null; // Vista UI
+          @   assignable equipementList.items, noEquipementsLabel.visible;
+          @   ensures (\forall Equipement eq; equipementList.getItems().contains(eq);
+          @            equipements.contains(eq));
+          @*/
     @FXML
     private void filterEquipements() {
         String searchTerm = searchBar.getText().toLowerCase();

@@ -45,6 +45,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DepartementController {
+    /*@
+      @ private invariant departementData != null;
+      @ private invariant filteredDepartementData != null;
+      @ private invariant departementService != null;
+      @ private invariant etageService != null;
+      @ private invariant salleService != null;
+      @ private invariant IMAGE_DIR != null;
+      @ private invariant imagePath != null;
+      @*/
 
     @FXML private TextField nomField;
     @FXML private TextField adresseField;
@@ -77,7 +86,12 @@ public class DepartementController {
     private final ObservableList<departement> filteredDepartementData = FXCollections.observableArrayList();
     private String imagePath = "";
     public static final String IMAGE_DIR = "src/main/resources/images/";
-
+    /*@ public normal_behavior
+          @   requires departementTable != null;
+          @   assignable departementTable.columns, departementData, filteredDepartementData, searchField.textProperty();
+          @   ensures (new File(IMAGE_DIR)).exists();
+          @   ensures !departementData.isEmpty() ==> !departementTable.getItems().isEmpty();
+          @*/
     @FXML
     public void initialize() {
         createImageDirectory();
@@ -181,7 +195,13 @@ public class DepartementController {
             filterDepartements(newValue);
         });
     }
-
+    /*@ private normal_behavior
+          @   assignable filteredDepartementData;
+          @   ensures (searchText == null || searchText.length() == 0) ==>
+          @           filteredDepartementData.size() == departementData.size();
+          @   ensures (searchText != null && searchText.length() > 0) ==>
+          @           filteredDepartementData.size() <= departementData.size();
+          @*/
     private void filterDepartements(String searchText) {
         if (searchText == null || searchText.isEmpty()) {
             filteredDepartementData.setAll(departementData);
@@ -232,7 +252,10 @@ public class DepartementController {
             showAlert("Erreur Critique", errorMsg, Alert.AlertType.ERROR);
         }
     }
-
+    /*@ private normal_behavior
+          @   requires imageField != null && imagePreview != null && imageError != null;
+          @   assignable imagePath, imageField.text, imagePreview.image, imageError.text;
+          @*/
     @FXML
     private void handleBrowseImage(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -257,7 +280,15 @@ public class DepartementController {
             }
         }
     }
-
+    /*@ private normal_behavior
+          @   requires nomField != null && adresseField != null;
+          @   requires nomField.getText().isEmpty() || adresseField.getText().isEmpty();
+          @   assignable nomError.text, adresseError.text;
+          @   also
+          @   requires !nomField.getText().isEmpty() && !adresseField.getText().isEmpty();
+          @   assignable departementData, filteredDepartementData,
+          @              nomField.text, adresseField.text, imagePath;
+          @*/
     @FXML
     private void handleSave(ActionEvent event) {
         if (!validateForm()) return;
@@ -440,7 +471,12 @@ public class DepartementController {
             showAlert("Succès", "Département supprimé avec succès", Alert.AlertType.INFORMATION);
         }
     }
-
+    /*@ private normal_behavior
+          @   requires nomField != null && adresseField != null;
+          @   requires nomError != null && adresseError != null;
+          @   assignable nomError.text, adresseError.text, imageError.text;
+          @   ensures \result == (!nomField.getText().isEmpty() && !adresseField.getText().isEmpty());
+          @*/
     private boolean validateForm() {
         boolean isValid = true;
         clearErrors();
@@ -468,7 +504,18 @@ public class DepartementController {
     private void handleClear(ActionEvent event) {
         resetForm();
     }
-
+    /*@ private normal_behavior
+          @   requires nomField != null && adresseField != null && imageField != null;
+          @   assignable nomField.text, adresseField.text, imageField.text,
+          @              imagePreview.image, imagePath,
+          @              nomError.text, adresseError.text, imageError.text;
+          @   ensures nomField.getText().isEmpty();
+          @   ensures adresseField.getText().isEmpty();
+          @   ensures imageField.getText().isEmpty();
+          @   ensures imagePreview.getImage() == null;
+          @   ensures imagePath != null && imagePath.length() == 0;
+          @   ensures nomError.getText().isEmpty();
+          @*/
     private void resetForm() {
         nomField.clear();
         adresseField.clear();

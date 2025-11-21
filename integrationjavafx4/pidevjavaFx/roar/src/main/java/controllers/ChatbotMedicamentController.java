@@ -30,6 +30,17 @@ import java.util.regex.Pattern;
 
 public class ChatbotMedicamentController {
 
+    /*@
+      @ private invariant apiService != null;
+      @ private invariant medicamentService != null;
+      @ private invariant searchHistory != null;
+      @ private invariant LOCAL_MEDICAMENT_INFO != null;
+      @*/
+
+    /*@
+      @ private invariant waitingForSelection ==>
+      @    (lastSearchResults != null && lastSearchResults.length() > 0);
+      @*/
     private final MedicamentAPIService apiService = new MedicamentAPIService();
     private final MedicamentService medicamentService = new MedicamentService();
     private JSONArray lastSearchResults;
@@ -47,6 +58,24 @@ public class ChatbotMedicamentController {
         put("acetaminophen", createLocalInfo("Acetaminophen", "Douleurs, fièvre", "500-1000 mg/4-6h"));
     }};
 
+    /*@ public normal_behavior
+      @   requires chatScrollPane != null;
+      @   requires chatMessagesContainer != null;
+      @   requires userInputField != null;
+      @   requires sendButton != null;
+      @   requires suggestionsListView != null;
+      @
+      @   assignable chatScrollPane.vvalueProperty(),
+      @              sendButton.onActionProperty(),
+      @              userInputField.onActionProperty(),
+      @              suggestionsListView.itemsProperty(),
+      @              suggestionsListView.selectionModel.selectedItemProperty(),
+      @              userInputField.textProperty(),
+      @              chatMessagesContainer.children;
+      @
+      @   ensures suggestionsListView.getItems().size() == LOCAL_MEDICAMENT_INFO.size();
+      @   ensures !chatMessagesContainer.getChildren().isEmpty();
+      @*/
     @FXML
     private void initialize() {
         configureUIComponents();
@@ -87,7 +116,19 @@ public class ChatbotMedicamentController {
                 .toList();
         suggestionsListView.setItems(FXCollections.observableArrayList(filtered));
     }
-
+    /*@ public normal_behavior
+          @   requires userInputField != null;
+          @   requires chatMessagesContainer != null;
+          @
+          @   assignable userInputField.textProperty(),
+          @              chatMessagesContainer.children,
+          @              searchHistory,
+          @              waitingForSelection,
+          @              lastSearchResults;
+          @
+          @   ensures !\old(userInputField.getText().trim().isEmpty()) ==>
+          @           userInputField.getText().isEmpty();
+          @*/
     private void handleUserMessage() {
         String message = userInputField.getText().trim();
         if (message.isEmpty()) return;
@@ -96,7 +137,18 @@ public class ChatbotMedicamentController {
         userInputField.clear();
         processMessage(message);
     }
-
+    /*@ private behavior
+          @   requires message != null;
+          @
+          @   when \old(waitingForSelection) == true;
+          @   assignable waitingForSelection, chatMessagesContainer.children;
+          @   ensures waitingForSelection == false;
+          @
+          @   also
+          @   when \old(waitingForSelection) == false;
+          @   assignable searchHistory, chatMessagesContainer.children;
+          @   ensures searchHistory.contains(message) || \old(searchHistory.size()) == 10;
+          @*/
     private void processMessage(String message) {
         if (waitingForSelection) {
             handleMultipleChoiceSelection(message);
@@ -123,7 +175,10 @@ public class ChatbotMedicamentController {
         Matcher matcher = pattern.matcher(message);
         return matcher.find() ? normalizeTerm(matcher.group(3)) : null;
     }
-
+    /*@ private normal_behavior
+          @   requires medicamentName != null;
+          @   assignable chatMessagesContainer.children;
+          @*/
     private void searchMedicament(String medicamentName) {
         addBotMessage("🔍 Recherche de '" + medicamentName + "'...");
 
@@ -143,7 +198,10 @@ public class ChatbotMedicamentController {
             }
         }).start();
     }
-
+    /*@ private normal_behavior
+          @   requires response != null && medicamentName != null;
+          @   assignable lastSearchResults, waitingForSelection, chatMessagesContainer.children;
+          @*/
     private void processAPIResponse(String response, String medicamentName) {
         try {
             JSONObject json = new JSONObject(response);
@@ -196,7 +254,12 @@ public class ChatbotMedicamentController {
     private void handleNoResults(String medicamentName) {
         addBotMessage("Aucune information trouvée pour : " + medicamentName);
     }
-
+    /*@ private normal_behavior
+          @   requires medicamentName != null;
+          @   requires lastSearchResults != null && lastSearchResults.length() > 1;
+          @   assignable waitingForSelection, chatMessagesContainer.children;
+          @   ensures waitingForSelection == true;
+          @*/
     private void showMultipleResults(String medicamentName) {
         StringBuilder sb = new StringBuilder("Plusieurs résultats trouvés :\n");
         for (int i = 0; i < lastSearchResults.length(); i++) {
@@ -219,7 +282,12 @@ public class ChatbotMedicamentController {
             return "Nom commercial inconnu";
         }
     }
-
+    /*@ private normal_behavior
+          @   requires input != null;
+          @   requires lastSearchResults != null;
+          @   assignable waitingForSelection, chatMessagesContainer.children;
+          @   ensures waitingForSelection == false;
+          @*/
     private void handleMultipleChoiceSelection(String input) {
         try {
             int choice = Integer.parseInt(input.trim()) - 1;

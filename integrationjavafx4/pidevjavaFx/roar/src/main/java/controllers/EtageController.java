@@ -40,7 +40,15 @@ public class EtageController {
     @FXML private Button saveButton;
     @FXML private Button cancelButton;
     @FXML private TextField searchField; // Added for dynamic search
-
+    /*@
+          @ private invariant etageService != null;
+          @ private invariant departementService != null;
+          @ private invariant salleService != null;
+          @ private invariant etageList != null;
+          @ private invariant filteredEtageList != null;
+          @ private invariant departementList != null;
+          @ private invariant (\forall etage e; filteredEtageList.contains(e); etageList.contains(e));
+          @*/
     private final EtageService etageService = new EtageService();
     private final DepartemntService departementService = new DepartemntService();
     private final SalleService salleService = new SalleService();
@@ -48,7 +56,14 @@ public class EtageController {
     private final ObservableList<etage> filteredEtageList = FXCollections.observableArrayList(); // For filtered data
     private final ObservableList<departement> departementList = FXCollections.observableArrayList();
     private etage etageEnCoursDeModification = null;
-
+    /*@ public normal_behavior
+          @   requires etageTable != null && departementCombo != null && searchField != null;
+          @   assignable etageService, departementService, salleService,
+          @              etageList, filteredEtageList, departementList,
+          @              etageTable.items, departementCombo.items, searchField.textProperty;
+          @   ensures etageService != null && etageList != null && filteredEtageList != null;
+          @   ensures etageTable.getItems() == filteredEtageList;
+          @*/
     @FXML
     public void initialize() {
         setupTable();
@@ -143,7 +158,13 @@ public class EtageController {
         departementList.setAll(departements);
         departementCombo.setItems(departementList);
     }
-
+    /*@ private normal_behavior
+          @   requires etageService != null && salleService != null && etageList != null;
+          @   requires filteredEtageList != null && etageTable != null;
+          @   assignable etageList, filteredEtageList, etageTable.items;
+          @   ensures etageList.size() >= 0;
+          @   ensures filteredEtageList.size() == etageList.size();
+          @*/
     private void loadEtages() {
         List<etage> etages = etageService.getAllEtages();
 
@@ -164,7 +185,14 @@ public class EtageController {
             filterEtages(newValue);
         });
     }
-
+    /*@ private normal_behavior
+          @   requires etageList != null && filteredEtageList != null;
+          @   assignable filteredEtageList;
+          @   ensures (searchText == null || searchText.isEmpty()) ==>
+          @           (filteredEtageList.size() == etageList.size());
+          @   ensures (searchText != null && !searchText.isEmpty()) ==>
+          @           (filteredEtageList.size() <= etageList.size());
+          @*/
     private void filterEtages(String searchText) {
         if (searchText == null || searchText.isEmpty()) {
             filteredEtageList.setAll(etageList);
@@ -187,7 +215,20 @@ public class EtageController {
         etage.setNbrSalle(count);
         etageTable.refresh();
     }
-
+    /*@ public normal_behavior
+          @   requires validateForm() == true;
+          @   requires etageService != null;
+          @   requires etageEnCoursDeModification == null;
+          @   assignable etageList, filteredEtageList, etageTable.items,
+          @              numeroField.text, departementCombo.value;
+          @   also
+          @   requires etageEnCoursDeModification != null;
+          @   assignable etageEnCoursDeModification.numero, etageEnCoursDeModification.departement,
+          @              etageEnCoursDeModification, saveButton.text,
+          @              etageList, filteredEtageList, etageTable.items,
+          @              numeroField.text, departementCombo.value;
+          @   ensures etageEnCoursDeModification == null;
+          @*/
     @FXML
     private void handleSave() {
         if (validateForm()) {
@@ -230,7 +271,12 @@ public class EtageController {
             showAlert("Erreur", "Impossible d'ouvrir l'éditeur", Alert.AlertType.ERROR);
         }
     }
-
+    /*@ private normal_behavior
+          @   requires etage != null;
+          @   requires etageService != null;
+          @   assignable etageService, etageList, filteredEtageList, etageTable.items;
+          @   ensures (etageList.size() == \old(etageList.size()) - 1);
+          @*/
     private void handleDelete(etage etage) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -242,7 +288,15 @@ public class EtageController {
             loadEtages();
         }
     }
-
+    /*@ private normal_behavior
+          @   requires numeroField != null && departementCombo != null;
+          @   requires numeroError != null && departementError != null;
+          @   assignable numeroError.text, departementError.text;
+          @   ensures \result <==> (
+          @       (numeroField.getText() != null && numeroField.getText().matches("-?\\d+")) &&
+          @       (departementCombo.getValue() != null)
+          @   );
+          @*/
     private boolean validateForm() {
         boolean isValid = true;
 
@@ -263,7 +317,15 @@ public class EtageController {
 
         return isValid;
     }
-
+    /*@ private normal_behavior
+          @   requires numeroField != null && departementCombo != null;
+          @   requires numeroError != null && departementError != null;
+          @   assignable numeroField.text, departementCombo.value,
+          @              numeroError.text, departementError.text;
+          @   ensures numeroField.getText().isEmpty();
+          @   ensures departementCombo.getValue() == null;
+          @   ensures numeroError.getText().isEmpty();
+          @*/
     @FXML
     private void clearForm() {
         numeroField.clear();

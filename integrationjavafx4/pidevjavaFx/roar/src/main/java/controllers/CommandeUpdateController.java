@@ -15,6 +15,12 @@ import java.time.LocalDate;
 
 public class CommandeUpdateController {
 
+    /*@
+      @ private invariant medicamentService != null;
+      @ private invariant commandeService != null;
+      @ private invariant medicamentCommandes != null;
+      @*/
+
     @FXML private DatePicker dateCommandePicker;
     @FXML private Spinner<Integer> quantiteSpinner;
     @FXML private ComboBox<Medicament> medicamentComboBox;
@@ -30,7 +36,12 @@ public class CommandeUpdateController {
     private final ObservableList<MedicamentCommande> medicamentCommandes = FXCollections.observableArrayList();
     private final MedicamentService medicamentService = new MedicamentService();
     private final CommandeService commandeService = new CommandeService();
-
+    /*@ public normal_behavior
+          @   requires medicamentComboBox != null;
+          @   requires quantiteSpinner != null;
+          @   assignable medicamentComboBox.items, medicamentComboBox.cellFactory, quantiteSpinner.valueFactory;
+          @   ensures medicamentComboBox.getItems() != null;
+          @*/
     @FXML
     private void initialize() {
         medicamentComboBox.setItems(FXCollections.observableArrayList(medicamentService.readAll()));
@@ -53,7 +64,24 @@ public class CommandeUpdateController {
 
         quantiteSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 1));
     }
-
+    /*@ public normal_behavior
+          @   requires commande != null;
+          @   requires dateCommandePicker != null;
+          @   requires quantiteSpinner != null;
+          @   requires medicamentListView != null;
+          @   requires totalPrixLabel != null;
+          @
+          @   assignable this.commande,
+          @              dateCommandePicker.value,
+          @              quantiteSpinner.valueFactory.value,
+          @              medicamentCommandes,
+          @              medicamentListView.items,
+          @              totalPrixLabel.text;
+          @
+          @   ensures this.commande == commande;
+          @   ensures this.medicamentCommandes.size() == commande.getMedicaments().size();
+          @   ensures this.commande.getStatus() != null;
+          @*/
     public void setCommande(Commande commande) {
         this.commande = commande;
 
@@ -105,7 +133,20 @@ public class CommandeUpdateController {
 
         updateTotalPrix();
     }
-
+    /*@ public normal_behavior
+          @   requires this.commande != null;
+          @   requires dateCommandePicker != null;
+          @
+          @   requires dateCommandePicker.getValue() == null ||
+          @            dateCommandePicker.getValue().isBefore(java.time.LocalDate.now()) ||
+          @            medicamentCommandes.isEmpty();
+          @   assignable dateError.text;
+          @   requires dateCommandePicker.getValue() != null &&
+          @            !dateCommandePicker.getValue().isBefore(java.time.LocalDate.now()) &&
+          @            !medicamentCommandes.isEmpty();
+          @   assignable commande.date_commande, commande.quantite, commande.total_prix, commande.medicaments;
+          @   ensures commande.getTotal_prix() >= 0;
+          @*/
     @FXML
     private void handleUpdateCommande() {
         clearErrors();
@@ -146,7 +187,10 @@ public class CommandeUpdateController {
         showAlert("Succès", "Commande mise à jour avec succès !");
         MainFx.loadPage("commande_list.fxml");
     }
-
+    /*@
+          @   assignable \nothing;
+          @   ensures \result >= 0.0;
+          @*/
     private double calculateTotal() {
         return medicamentCommandes.stream()
                 .mapToDouble(mc -> mc.getMedicament().getPrix_medicament() * mc.getQuantite())

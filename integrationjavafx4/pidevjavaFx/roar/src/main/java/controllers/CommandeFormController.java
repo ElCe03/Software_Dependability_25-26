@@ -44,12 +44,40 @@ public class CommandeFormController implements Initializable {
     @FXML
     private Button backButton;
 
+    /*@
+      @ private invariant commandeService != null;
+      @ private invariant medicamentService != null;
+      @ private invariant currentCommande != null;
+      @
+      @ private invariant currentCommande.getTotal_prix() >= 0;
+      @
+      @ private invariant STRIPE_API_KEY != null;
+      @ private invariant SUCCESS_URL != null;
+      @ private invariant CANCEL_URL != null;
+      @*/
+
     private final CommandeService commandeService = new CommandeService();
     private final MedicamentService medicamentService = new MedicamentService();
     private final Commande currentCommande = new Commande();
     private static final String STRIPE_API_KEY = "sk_test_51QwUe6LcrsrlufB1YCOREfRHnWPm4X2BW1LzSpfgGN8VYEqcpuVls5Ja3Fx9nxvh5lpvaDfrKZ9JxjI9u5za8e0a00SyM2b8RK";
     private static final String SUCCESS_URL = "http://localhost:4242/success";
     private static final String CANCEL_URL = "http://localhost:4242/cancel";
+
+    /*@ public normal_behavior
+      @   requires dateCommandePicker != null;
+      @   requires medicamentComboBox != null;
+      @   requires quantiteSpinner != null;
+      @   requires medicamentListView != null;
+      @   requires totalPrixLabel != null;
+      @
+      @   assignable medicamentComboBox.items,
+      @              medicamentComboBox.converter,
+      @              quantiteSpinner.valueFactory,
+      @              com.stripe.Stripe.apiKey;
+      @
+      @   ensures medicamentComboBox.getItems() != null;
+      @   ensures quantiteSpinner.getValueFactory() != null;
+      @*/
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -72,6 +100,27 @@ public class CommandeFormController implements Initializable {
         quantiteSpinner.valueProperty().addListener((obs, oldVal, newVal) -> updateTotalPrix());
         medicamentComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateTotalPrix());
     }
+/*@ public normal_behavior
+      @   requires dateCommandePicker != null;
+      @   requires medicamentComboBox != null;
+      @   requires quantiteSpinner != null;
+      @   requires medicamentListView != null;
+      @
+      @   assignable currentCommande,
+      @              currentCommande.medicaments,
+      @              currentCommande.date_commande,
+      @              currentCommande.total_prix,
+      @              medicamentListView.items,
+      @              totalPrixLabel.text,
+      @              dateError.text, medicamentError.text, quantiteError.text;
+      @
+      @   ensures (dateCommandePicker.getValue() != null &&
+      @            !dateCommandePicker.getValue().isBefore(java.time.LocalDate.now()) &&
+      @            medicamentComboBox.getValue() != null &&
+      @            quantiteSpinner.getValue() > 0 &&
+      @            quantiteSpinner.getValue() <= medicamentComboBox.getValue().getQuantite_stock())
+      @           ==> (\old(currentCommande.getMedicaments().size()) + 1 == currentCommande.getMedicaments().size());
+      @*/
 
     @FXML
     private void handleAddCommande() {
@@ -113,7 +162,10 @@ public class CommandeFormController implements Initializable {
         );
         updateTotalPrix();
     }
-
+    /*@ private normal_behavior
+      @   assignable currentCommande.total_prix, totalPrixLabel.text;
+      @   ensures currentCommande.getTotal_prix() >= 0;
+      @*/
     private void updateTotalPrix() {
         double total = currentCommande.getMedicaments().stream()
                 .mapToDouble(mc -> mc.getMedicament().getPrix_medicament() * mc.getQuantite())
@@ -122,7 +174,15 @@ public class CommandeFormController implements Initializable {
         currentCommande.setTotal_prix(total);
         totalPrixLabel.setText(String.format("%.2f DT", total));
     }
-
+    /*@ public normal_behavior
+          @   requires currentCommande != null;
+          @
+          @   requires currentCommande.getMedicaments().isEmpty();
+          @   assignable \nothing;
+          @
+          @   requires !currentCommande.getMedicaments().isEmpty();
+          @   assignable currentCommande.stripeSessionId, currentCommande.status;
+          @*/
     @FXML
     private void handleSaveCommande() {
         handleAddCommande();
@@ -145,7 +205,12 @@ public class CommandeFormController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Erreur de paiement: " + e.getMessage());
         }
     }
-
+    /*@ private normal_behavior
+          @   requires !currentCommande.getMedicaments().isEmpty();
+          @   assignable \nothing;
+          @   ensures \result != null;
+          @   signals (StripeException e) true;
+          @*/
     private Session createStripeSession() throws StripeException {
         SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -208,6 +273,10 @@ public class CommandeFormController implements Initializable {
         }
     }
 
+    /*@ private normal_behavior
+      @   requires "paid".equals(currentCommande.getStatus());
+      @   assignable medicamentService, commandeService, totalPrixLabel.scene.root;
+      @*/
     private void saveCommandeAndRedirect() {
         try {
             commandeService.create(currentCommande);

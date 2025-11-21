@@ -15,19 +15,42 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class Core {
+    /*@
+      @ private invariant diseaseCounts != null;
+      @ private invariant symptomValueCounts != null;
+      @ private invariant symptomNames != null;
+      @ private invariant totalCases >= 0;
+      @ private invariant LAPLACE_K > 0;
+      @ private invariant DATA_PATH != null;
+    @*/
+    //@ spec_public
     private final String DATA_PATH = "C:\\Users\\seddi\\Downloads\\archive (3)\\Disease_symptom_and_patient_profile_dataset.csv";
+    //@ spec_public
     private final Map<String, Integer> diseaseCounts = new HashMap<>();
+    //@ spec_public
     private final Map<String, Map<String, Map<String, Integer>>> symptomValueCounts = new HashMap<>();
+    //@ spec_public
     private final List<String> symptomNames = new ArrayList<>();
+    //@ spec_public
     private int totalCases = 0;
+    //@ spec_public
     private final double LAPLACE_K = 1.0;
 
+    /*@ public normal_behavior
+      @   ensures diseaseCounts != null;
+      @   ensures symptomNames != null;
+      @   ensures totalCases >= 0;
+      @*/
     public Core() {
         loadData();
         System.out.println("Initialized with " + diseaseCounts.size() + " diseases and "
                 + symptomNames.size() + " symptoms");
     }
-
+    /*@ private normal_behavior
+          @   assignable symptomNames, diseaseCounts, symptomValueCounts, totalCases;
+          @   ensures totalCases == diseaseCounts.values().stream().mapToInt(i -> i).sum();
+          @   ensures !symptomNames.contains(null);
+          @*/
     private void loadData() {
         try (BufferedReader br = new BufferedReader(new FileReader(DATA_PATH))) {
             String[] headers = br.readLine().split(",");
@@ -59,7 +82,10 @@ public class Core {
             e.printStackTrace();
         }
     }
-
+    /*@
+          @   requires symptom != null && value != null;
+          @   ensures \result != null;
+          @*/
     private String normalizeValue(String symptom, String value) {
         value = value.trim();
         if (symptom.equalsIgnoreCase("Gender")) {
@@ -105,7 +131,13 @@ public class Core {
         }
         return value;
     }
-
+    /*@ public normal_behavior
+          @   requires symptomsInput != null;
+          @   assignable \nothing;
+          @   ensures \result != null;
+          @   ensures (\forall String key; \result.containsKey(key);
+          @            \result.get(key) >= 0.0 && \result.get(key) <= 100.0);
+          @*/
     public Map<String, Double> predict(Map<String, String> symptomsInput) {
         Map<String, Double> scores = new HashMap<>();
         int totalDiseases = diseaseCounts.size();
@@ -138,7 +170,12 @@ public class Core {
 
         return normalizeScores(scores);
     }
-
+    /*@ private normal_behavior
+          @   requires logScores != null;
+          @   assignable \nothing;
+          @   ensures \result != null;
+          @   ensures \result.size() == logScores.size();
+          @*/
     private Map<String, Double> normalizeScores(Map<String, Double> logScores) {
         if (logScores.isEmpty()) return new LinkedHashMap<>();
 

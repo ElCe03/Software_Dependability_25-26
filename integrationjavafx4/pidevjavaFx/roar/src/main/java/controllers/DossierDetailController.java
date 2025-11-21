@@ -40,6 +40,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DossierDetailController implements Initializable {
+    /*@
+      @ private invariant sejourService != null;
+      @ private invariant dossierService != null;
+      @ private invariant sejourList != null;
+      @*/
     
     @FXML
     private Label lblId;
@@ -102,7 +107,13 @@ public class DossierDetailController implements Initializable {
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final Logger logger = Logger.getLogger(DossierDetailController.class.getName());
-    
+    /*@ public normal_behavior
+      @   requires sejourTable != null;
+      @   assignable sejourService, dossierService, sejourList, sejourTable.items, sejourTable.columns;
+      @   ensures sejourService != null;
+      @   ensures dossierService != null;
+      @   ensures sejourList != null;
+      @*/
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
@@ -134,13 +145,40 @@ public class DossierDetailController implements Initializable {
             }
         });
     }
-    
+    /*@ public normal_behavior
+      @   requires sejourList != null;
+      @
+      @   requires dossier != null;
+      @   assignable this.dossier, lblId.text, lblDateCreation.text, lblPatient.text,
+      @              lblMedecin.text, lblStatut.text, lblHistoriqueMaladies.text,
+      @              lblOperationsPassees.text, lblConsultationsPassees.text, lblNotes.text,
+      @              imageView.image, sejourList, sejourTable.items;
+      @   ensures this.dossier == dossier;
+      @   ensures sejourList.size() == dossier.getSejours().size();
+      @
+      @   also
+      @   requires dossier == null;
+      @   assignable this.dossier;
+      @   ensures this.dossier == null;
+      @*/
     public void setDossier(DossierMedicale dossier) {
         this.dossier = dossier;
         displayDossierDetails();
         loadSejours();
     }
-    
+    /*@ private normal_behavior
+      @   requires lblId != null && lblPatient != null && lblMedecin != null;
+      @
+      @   requires dossier == null;
+      @   assignable \nothing;
+      @
+      @   also
+      @   requires dossier != null;
+      @   assignable lblId.text, lblDateCreation.text, lblPatient.text, lblMedecin.text,
+      @              imageView.image, placeholderIcon.visible, btnFullscreenImage.visible;
+      @
+      @   ensures lblId.getText().equals(String.valueOf(dossier.getId()));
+      @*/
     private void displayDossierDetails() {
         if (dossier == null) {
             System.err.println("Error: dossier is null in displayDossierDetails");
@@ -197,7 +235,15 @@ public class DossierDetailController implements Initializable {
         // Display image if available
         displayImage(dossier.getImage());
     }
-    
+    /*@ private normal_behavior
+      @   requires imageView != null;
+      @   assignable imageView.image, imageView.fitWidth, imageView.preserveRatio,
+      @              placeholderIcon.visible, btnFullscreenImage.visible;
+      @   ensures (filename == null || filename.isEmpty()) ==>
+      @           (imageView.getImage() == null && placeholderIcon.isVisible());
+      @   ensures (filename != null && !filename.isEmpty()) ==>
+      @           (imageView.getImage() != null || placeholderIcon.isVisible());
+      @*/
     private void displayImage(String filename) {
         boolean hasImage = false;
         
@@ -257,7 +303,15 @@ public class DossierDetailController implements Initializable {
             System.out.println("No image available to display");
         }
     }
-    
+    /*@ private normal_behavior
+      @   requires sejourList != null && sejourTable != null;
+      @   requires dossier == null;
+      @   assignable \nothing;
+      @   also
+      @   requires dossier != null;
+      @   assignable sejourList, sejourTable.items;
+      @   ensures sejourList.containsAll(dossier.getSejours());
+      @*/
     private void loadSejours() {
         if (dossier != null) {
             sejourList.setAll(dossier.getSejours());

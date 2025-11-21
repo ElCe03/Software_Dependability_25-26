@@ -30,6 +30,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class CommandeListController {
+    /*@
+      @ private invariant commandeService != null;
+      @ private invariant commandeData != null;
+      @ private invariant ITEMS_PER_PAGE > 0;
+      @*/
 
     private final CommandeService commandeService = new CommandeService();
     private final ObservableList<Commande> commandeData = FXCollections.observableArrayList();
@@ -50,6 +55,16 @@ public class CommandeListController {
 
     private static final int ITEMS_PER_PAGE = 10;
     private FilteredList<Commande> filteredData;
+
+    /*@ public normal_behavior
+      @   requires commandeTable != null;
+      @   requires pagination != null;
+      @   requires searchField != null;
+      @   requires sortComboBox != null;
+      @   assignable commandeTable.items, filteredData, pagination.pageCount, sortComboBox.items;
+      @   ensures filteredData != null;
+      @   ensures filteredData.getSource() == commandeData;
+      @*/
     @FXML
     private void initialize() {
         commandeTable.setStyle("-fx-background-insets: 0; -fx-padding: 0;");
@@ -162,7 +177,10 @@ public class CommandeListController {
             e.printStackTrace();
         }
     }
-
+    /*@ private normal_behavior
+         @   requires c != null;
+         @   assignable commandeData, filteredData, pagination.pageCount;
+         @*/
     private void handleDeleteConfirmation(Commande c) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation de suppression");
@@ -175,7 +193,12 @@ public class CommandeListController {
             refreshTableData();
         }
     }
-
+    /*@ private normal_behavior
+          @   requires pagination != null;
+          @   assignable commandeData, filteredData, pagination.pageCount;
+          @   ensures filteredData != null;
+          @   ensures pagination.getPageCount() == calculatePageCount();
+          @*/
     private void refreshTableData() {
         commandeData.setAll(commandeService.readAll());
         filteredData = new FilteredList<>(commandeData);
@@ -220,7 +243,11 @@ public class CommandeListController {
             showAlert("Erreur lors du téléchargement: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
-
+    /*@ private normal_behavior
+          @   requires sortComboBox != null;
+          @   requires commandeData != null;
+          @   assignable sortComboBox.items, sortComboBox.selectionModel, commandeData;
+          @*/
     private void setupSorting() {
         try {
             // 1. Ajouter les options de tri au ComboBox
@@ -285,6 +312,12 @@ public class CommandeListController {
             e.printStackTrace();
         }
     }
+    /*@ private normal_behavior
+      @   requires searchField != null;
+      @   requires commandeData != null;
+      @   assignable filteredData, searchField.textProperty();
+      @   ensures filteredData != null;
+      @*/
     private void setupSearch() {
         filteredData = new FilteredList<>(commandeData, p -> true);
 
@@ -309,7 +342,15 @@ public class CommandeListController {
         });
         updateTableForPage(0); // Initialiser avec la première page
     }
-
+    /*@ private normal_behavior
+      @   requires filteredData != null;
+      @   requires commandeTable != null;
+      @   requires pageIndex >= 0;
+      @   assignable commandeTable.items;
+      @   ensures commandeTable.getItems().size() <= ITEMS_PER_PAGE;
+      @   ensures (pageIndex * ITEMS_PER_PAGE > filteredData.size()) ==>
+      @           (\old(commandeTable.getItems()) == commandeTable.getItems());
+      @*/
     private void updateTableForPage(int pageIndex) {
         int fromIndex = pageIndex * ITEMS_PER_PAGE;
         int toIndex = Math.min(fromIndex + ITEMS_PER_PAGE, filteredData.size());
@@ -319,7 +360,12 @@ public class CommandeListController {
         List<Commande> subList = new ArrayList<>(filteredData.subList(fromIndex, toIndex));
         commandeTable.setItems(FXCollections.observableArrayList(subList));
     }
-
+    /*@
+          @   requires filteredData != null;
+          @   ensures \result >= 0;
+          @   ensures filteredData.isEmpty() ==> \result == 0;
+          @   ensures !filteredData.isEmpty() ==> \result >= 1;
+          @*/
     private int calculatePageCount() {
         return (int) Math.ceil((double) filteredData.size() / ITEMS_PER_PAGE);
     }

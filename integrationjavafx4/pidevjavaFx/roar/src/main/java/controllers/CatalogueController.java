@@ -31,7 +31,11 @@ public class CatalogueController implements Initializable {
     private TilePane tilePane;
     @FXML
     private Button backButton;
-
+    /*@ public normal_behavior
+          @   requires tilePane != null;
+          @   assignable tilePane.children;
+          @   ensures tilePane.getChildren().size() == 11;
+          @*/
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Exemple de données en dur (à remplacer par une récupération depuis la base de données)
@@ -53,7 +57,11 @@ public class CatalogueController implements Initializable {
             tilePane.getChildren().add(createMedicamentCard(m));
         }
     }
-
+    /*@ private normal_behavior
+          @   requires medicament != null;
+          @   assignable \nothing;
+          @   ensures \result != null;
+          @*/
     private VBox createMedicamentCard(Medicament medicament) {
         ImageView imageView;
         try {
@@ -105,6 +113,12 @@ public class CatalogueController implements Initializable {
 
 
     // Méthode pour construire dynamiquement le chemin d'image à partir du nom
+    /*@
+      @   requires medicament != null && medicament.getNom_medicament() != null;
+      @   ensures \result != null;
+      @   ensures \result.startsWith("/img/");
+      @   ensures \result.endsWith(".png");
+      @*/
     private String getImagePathForMedicament(Medicament medicament) {
         String nom = medicament.getNom_medicament()
                 .toLowerCase()
@@ -116,6 +130,10 @@ public class CatalogueController implements Initializable {
 
         return "/img/" + nom + ".png";
     }
+    /*@ public normal_behavior
+      @   requires tilePane != null && tilePane.getScene() != null;
+      @   assignable tilePane.getScene().rootProperty();
+      @*/
     @FXML
     private void goToCommande() {
         try {
@@ -126,7 +144,12 @@ public class CatalogueController implements Initializable {
             e.printStackTrace();
         }
     }
-
+    /*@ public normal_behavior
+          @   requires backButton != null &&
+          @            backButton.getScene() != null &&
+          @            backButton.getScene().getWindow() != null;
+          @   assignable ((javafx.stage.Stage) backButton.getScene().getWindow()).sceneProperty();
+          @*/
     @FXML
     private void handleBackButtoncatalogue() {
         try {
@@ -142,7 +165,11 @@ public class CatalogueController implements Initializable {
     }
 
 
-
+    /*@ private normal_behavior
+          @   requires title != null;
+          @   requires message != null;
+          @   assignable \nothing;
+          @*/
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

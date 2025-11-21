@@ -19,6 +19,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class EditSalleController {
+    /*@
+      @ private invariant etageService != null;
+      @ private invariant IMAGE_DIR != null;
+      @*/
     @FXML private TextField nomField;
     @FXML private TextField capaciteField;
     @FXML private ComboBox<String> typeCombo;
@@ -32,7 +36,16 @@ public class EditSalleController {
     private String imagePath;
     private static final String IMAGE_DIR = "src/main/resources/images/";
     private final EtageService etageService = new EtageService();
-
+    /*@ public normal_behavior
+          @   requires typeCombo != null;
+          @   requires statusCombo != null;
+          @   requires prioriteSpinner != null;
+          @   requires etageCombo != null;
+          @   assignable typeCombo.items, statusCombo.items,
+          @              prioriteSpinner.valueFactory, etageCombo.items;
+          @   ensures !typeCombo.getItems().isEmpty();
+          @   ensures !statusCombo.getItems().isEmpty();
+          @*/
     @FXML
     public void initialize() {
         // Initialisation des ComboBox

@@ -36,6 +36,11 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 public class AdminConsultationController {
+    /*@
+      @ private invariant consultationService != null;
+      @ private invariant twilioService != null;
+      @ private invariant prefs != null;
+      @*/
     @FXML private TableView<Consultation> consultationTable;
     @FXML private TextField searchField;
     @FXML private ComboBox<String> statusFilterCombo;
@@ -47,7 +52,16 @@ public class AdminConsultationController {
     private final ConsultationService consultationService = new ConsultationService();
     private final TwilioSMSService twilioService = new TwilioSMSService();
     private final Preferences prefs = Preferences.userNodeForPackage(AdminConsultationController.class);
-
+    /*@ private normal_behavior
+          @   requires consultationTable != null;
+          @   requires statusFilterCombo != null;
+          @   assignable consultationService, twilioService, prefs,
+          @              consultationTable.getColumns(), statusFilterCombo.getItems();
+          @   ensures consultationService != null;
+          @   ensures twilioService != null;
+          @   ensures prefs != null;
+          @   ensures !statusFilterCombo.getItems().isEmpty();
+          @*/
     @FXML
     public void initialize() {
         verifyTwilioSetup();
@@ -73,15 +87,15 @@ public class AdminConsultationController {
         consultationTable.getColumns().clear();
 
         TableColumn<Consultation, Integer> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        idCol.setCellValueFactory(new PropertyValueFactory<Consultation, Integer>("id"));
         idCol.setPrefWidth(50);
 
         TableColumn<Consultation, String> serviceCol = new TableColumn<>("Service");
-        serviceCol.setCellValueFactory(new PropertyValueFactory<>("serviceName"));
+        serviceCol.setCellValueFactory(new PropertyValueFactory<Consultation, String>("serviceName"));
         serviceCol.setPrefWidth(150);
 
         TableColumn<Consultation, Date> dateCol = new TableColumn<>("Date");
-        dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        dateCol.setCellValueFactory(new PropertyValueFactory<Consultation, Date>("date"));
         dateCol.setPrefWidth(120);
         dateCol.setCellFactory(column -> new TableCell<Consultation, Date>() {
             private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -98,15 +112,15 @@ public class AdminConsultationController {
         });
 
         TableColumn<Consultation, String> patientCol = new TableColumn<>("Patient ID");
-        patientCol.setCellValueFactory(new PropertyValueFactory<>("patientIdentifier"));
+        patientCol.setCellValueFactory(new PropertyValueFactory<Consultation, String>("patientIdentifier"));
         patientCol.setPrefWidth(100);
 
         TableColumn<Consultation, String> phoneCol = new TableColumn<>("Phone");
-        phoneCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
+        phoneCol.setCellValueFactory(new PropertyValueFactory<Consultation, String>("phoneNumber"));
         phoneCol.setPrefWidth(100);
 
         TableColumn<Consultation, String> statusCol = new TableColumn<>("Status");
-        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+        statusCol.setCellValueFactory(new PropertyValueFactory<Consultation, String>("status"));
         statusCol.setCellFactory(new StatusCellFactory());
         statusCol.setPrefWidth(100);
         statusCol.setEditable(true);
@@ -296,7 +310,11 @@ public class AdminConsultationController {
         }
         return stars.toString();
     }
-
+    /*@
+          @   requires prefs != null;
+          @   assignable \nothing;
+          @   ensures \result >= 0;
+          @*/
     private int getRatingForConsultation(int consultationId) {
         String savedRatings = prefs.get("consultation_ratings", "");
         if (!savedRatings.isEmpty()) {
@@ -351,7 +369,14 @@ public class AdminConsultationController {
         statusFilterCombo.getSelectionModel().selectFirst();
         refreshTable();
     }
-
+    /*@ private normal_behavior
+          @   requires consultationService != null;
+          @   requires consultationTable != null;
+          @   requires searchField != null;
+          @   requires statusFilterCombo != null;
+          @   assignable consultationTable.getItems();
+          @   ensures consultationTable.getItems() != null;
+          @*/
     private void refreshTable() {
         String searchTerm = searchField.getText().trim();
         String statusFilter = statusFilterCombo.getValue();
@@ -401,7 +426,7 @@ public class AdminConsultationController {
         serviceCounts.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .forEach(entry ->
-                        series.getData().add(new XYChart.Data<>(entry.getValue(), entry.getKey()))
+                        series.getData().add(new XYChart.Data<Number, String>(entry.getValue(), entry.getKey()))
                 );
 
         barChart.getData().add(series);
@@ -536,7 +561,16 @@ public class AdminConsultationController {
             };
         }
     }
-
+    /*@ private normal_behavior
+          @   requires consultation != null;
+          @   requires newStatus != null;
+          @
+          @   requires !twilioService.isConfigured();
+          @   assignable \nothing;
+          @   also
+          @   requires twilioService.isConfigured();
+          @   assignable \nothing;
+          @*/
     private void handleSmsNotification(Consultation consultation, String newStatus) {
         if (!twilioService.isConfigured()) {
             showNotification("Status updated (SMS not configured)");
