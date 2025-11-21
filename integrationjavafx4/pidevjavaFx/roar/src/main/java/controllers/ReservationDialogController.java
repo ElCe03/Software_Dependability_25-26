@@ -22,7 +22,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ReservationDialogController {
+
+    //@ public static invariant LOGGER != null;
     public static final Logger LOGGER = Logger.getLogger(ReservationDialogController.class.getName());
+
+    //@ public static invariant DATE_TIME_FORMATTER != null;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @FXML private TextField emailField;
@@ -31,10 +35,24 @@ public class ReservationDialogController {
     @FXML private DatePicker dateFinPicker;
     @FXML private ComboBox<String> heureFinCombo;
 
+    //@ spec_public
     private salle selectedSalle;
+
+    //@ spec_public
     private Dialog<ButtonType> dialog;
+
+    //@ public invariant salleService != null;
     private final SalleService salleService = new SalleService();
+
+    //@ public invariant reservationService != null;
     private final ReservationService reservationService = new ReservationService();
+
+    /*@ public normal_behavior
+    @   requires heureDebutCombo != null && heureFinCombo != null;
+    @   assignable heureDebutCombo.items, heureFinCombo.items;
+    @   ensures heureDebutCombo.getItems().size() > 0;
+    @   ensures heureFinCombo.getItems().size() > 0;
+    @*/
 
     @FXML
     public void initialize() {
@@ -48,6 +66,12 @@ public class ReservationDialogController {
         ));
     }
 
+    /*@ public normal_behavior
+    @   requires dialog != null && dialog.getDialogPane().lookupButton(ButtonType.OK) != null;
+    @   assignable this.dialog;
+    @   ensures this.dialog == dialog;
+    @*/
+
     public void setDialog(Dialog<ButtonType> dialog) {
         this.dialog = dialog;
         dialog.getDialogPane().lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION, event -> {
@@ -59,10 +83,25 @@ public class ReservationDialogController {
         });
     }
 
+    /*@ public normal_behavior
+    @   assignable this.selectedSalle;
+    @   ensures this.selectedSalle == salle;
+    @*/
+
     public void setSalle(salle salle) {
         this.selectedSalle = salle;
         LOGGER.info("Salle sélectionnée: " + (salle != null ? salle.getId() + " - " + salle.getNom() : "null"));
     }
+
+    /*@ private normal_behavior
+    @   requires emailField != null &&
+    @            dateDebutPicker != null && heureDebutCombo != null &&
+    @            dateFinPicker != null && heureFinCombo != null &&
+    @            selectedSalle != null && salleService != null;
+    @   assignable \nothing;
+    @   ensures \result ==> true;
+    @   ensures !\result ==> true;
+    @*/
 
     private boolean validateInputs() {
         if (emailField.getText().isEmpty() ||
@@ -110,10 +149,24 @@ public class ReservationDialogController {
         return email != null && email.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
     }
 
+    /*@ private normal_behavior
+    @   requires date != null && heure != null;
+    @   assignable \nothing;
+    @   ensures \result != null;
+    @*/
+
     private LocalDateTime getDateTime(LocalDate date, String heure) {
         LocalTime time = LocalTime.parse(heure);
         return LocalDateTime.of(date, time);
     }
+
+    /*@ private normal_behavior
+    @   requires selectedSalle != null &&
+    @            dialog != null &&
+    @            reservationService != null &&
+    @            salleService != null;
+    @   assignable \everything;
+    @*/
 
     private void handleReservation() {
         try (Connection conn = DataSource.getInstance().getConnection()) {
@@ -172,6 +225,11 @@ public class ReservationDialogController {
         }
     }
 
+    /*@ private normal_behavior
+    @   requires toEmail != null && dateDebut != null && dateFin != null;
+    @   assignable \nothing;
+    @*/
+
     private void sendEmail(String toEmail, String dateDebut, String dateFin) {
         LOGGER.info("Envoi d'email à: " + toEmail);
         EmailService.sendReservationEmail(
@@ -185,6 +243,11 @@ public class ReservationDialogController {
                 () -> LOGGER.warning("Échec d'envoi à " + toEmail)
         );
     }
+
+    /*@ private normal_behavior
+    @   requires title != null && message != null && type != null;
+    @   assignable \nothing;
+    @*/
 
     private void showAlert(String title, String message, Alert.AlertType type) {
         Platform.runLater(() -> {

@@ -97,6 +97,15 @@ public class SalleController {
     @FXML
     private TextField searchField;
 
+    //@ public invariant salleService != null;
+    //@ public invariant etageService != null;
+    //@ public invariant salleData != null;
+    //@ public invariant filteredSalleData != null;
+    //@ spec_public
+    //@ public invariant imagePath != null;
+    //@ public static invariant IMAGE_DIR != null;
+
+
     // Services et données
     private final SalleService salleService = new SalleService();
     private final EtageService etageService = new EtageService();
@@ -104,6 +113,27 @@ public class SalleController {
     private final ObservableList<salle> filteredSalleData = FXCollections.observableArrayList();
     private String imagePath = "";
     public static final String IMAGE_DIR = "src/main/resources/images/";
+
+    /*@ public normal_behavior
+    @   requires nomField != null && capaciteField != null && typeCombo != null &&
+    @            statusCombo != null && prioriteSpinner != null && etageCombo != null &&
+    @            imageField != null && imagePreview != null &&
+    @            nomError != null && capaciteError != null && typeError != null &&
+    @            statusError != null && prioriteError != null && etageError != null && imageError != null &&
+    @            salleTable != null && nomColumn != null && capaciteColumn != null &&
+    @            typeColumn != null && statusColumn != null && prioriteColumn != null &&
+    @            etageColumn != null && imageColumn != null && actionsColumn != null &&
+    @            saveBtn != null && clearBtn != null && browseBtn != null &&
+    @            exportBtn != null && searchField != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures typeCombo.getItems().size() > 0;
+    @   ensures nomColumn.getCellValueFactory() != null;
+    @   ensures actionsColumn.getCellFactory() != null;
+    @   ensures salleTable.getItems() == filteredSalleData;
+    @   ensures searchField.textProperty().getListeners().size() > 0;
+    @*/
 
     @FXML
     public void initialize() {
@@ -114,12 +144,34 @@ public class SalleController {
         setupSearch();
     }
 
+    /*@ private normal_behavior
+    @   assignable \nothing;
+    @*/
+
     private void createImageDirectory() {
         File imageDir = new File(IMAGE_DIR);
         if (!imageDir.exists()) {
             imageDir.mkdirs();
         }
     }
+
+    /*@ private normal_behavior
+    @   requires typeCombo != null && statusCombo != null &&
+    @            prioriteSpinner != null && etageCombo != null &&
+    @            etageService != null;
+    @
+    @   assignable typeCombo.items, statusCombo.items,
+    @              prioriteSpinner.valueFactory,
+    @              etageCombo.items, etageCombo.cellFactory,
+    @              etageCombo.buttonCell;
+    @
+    @   ensures typeCombo.getItems().size() >= 0;
+    @   ensures statusCombo.getItems().size() >= 0;
+    @   ensures prioriteSpinner.getValueFactory() != null;
+    @   ensures etageCombo.getItems() != null;
+    @   ensures etageCombo.getCellFactory() != null;
+    @   ensures etageCombo.getButtonCell() != null;
+    @*/
 
     private void setupForm() {
         // Configuration des ComboBox
@@ -152,6 +204,30 @@ public class SalleController {
             }
         });
     }
+
+    /*@ private normal_behavior
+    @   requires salleTable != null &&
+    @            nomColumn != null && capaciteColumn != null &&
+    @            typeColumn != null && statusColumn != null &&
+    @            prioriteColumn != null && etageColumn != null &&
+    @            imageColumn != null && actionsColumn != null;
+    @
+    @   assignable nomColumn.cellValueFactory, capaciteColumn.cellValueFactory,
+    @              typeColumn.cellValueFactory, statusColumn.cellValueFactory,
+    @              prioriteColumn.cellValueFactory, etageColumn.cellValueFactory,
+    @              imageColumn.cellValueFactory, actionsColumn.cellFactory,
+    @              nomColumn.prefWidthProperty, capaciteColumn.prefWidthProperty,
+    @              typeColumn.prefWidthProperty, statusColumn.prefWidthProperty,
+    @              prioriteColumn.prefWidthProperty, etageColumn.prefWidthProperty,
+    @              imageColumn.prefWidthProperty, actionsColumn.prefWidthProperty;
+    @
+    @   ensures nomColumn.getCellValueFactory() != null;
+    @   ensures capaciteColumn.getCellValueFactory() != null;
+    @   ensures statusColumn.getCellFactory() != null;
+    @   ensures imageColumn.getCellFactory() != null;
+    @   ensures etageColumn.getCellFactory() != null;
+    @   ensures actionsColumn.getCellFactory() != null;
+    @*/
 
     private void setupTable() {
         // Configuration des colonnes de données
@@ -286,6 +362,15 @@ public class SalleController {
         });
     }
 
+    /*@ private normal_behavior
+    @   requires salleService != null;
+    @   requires salleData != null;
+    @
+    @   assignable salleData, filteredSalleData, salleTable.items;
+    @
+    @   ensures salleTable.getItems() == filteredSalleData;
+    @*/
+
     private void loadSalles() {
         salleData.clear();
         salleData.addAll(salleService.getAll());
@@ -293,11 +378,25 @@ public class SalleController {
         salleTable.setItems(filteredSalleData);
     }
 
+    /*@ private normal_behavior
+    @   requires searchField != null && filteredSalleData != null && salleData != null;
+    @   assignable searchField.textProperty().listeners;
+    @*/
+
     private void setupSearch() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filterSalles(newValue);
         });
     }
+
+    /*@ private normal_behavior
+    @   requires query != null;
+    @   requires filteredSalleData != null && salleData != null;
+    @
+    @   assignable filteredSalleData;
+    @
+    @   ensures filteredSalleData != null;
+    @*/
 
     private void filterSalles(String searchText) {
         if (searchText == null || searchText.isEmpty()) {
@@ -320,6 +419,12 @@ public class SalleController {
             filteredSalleData.setAll(filteredList);
         }
     }
+
+    /*@ public normal_behavior
+    @   requires salleData != null;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
 
     @FXML
     private void handleExportCSV(ActionEvent event) {
@@ -357,6 +462,11 @@ public class SalleController {
         }
     }
 
+    /*@ private normal_behavior
+    @   requires field != null;
+    @   ensures \result != null;
+    @*/
+
     private String escapeCsvField(String field) {
         if (field == null) {
             return "";
@@ -368,6 +478,12 @@ public class SalleController {
         }
         return field;
     }
+
+    /*@ public normal_behavior
+    @   requires imageField != null && imagePreview != null;
+    @   assignable imageField.text, imagePreview.image, imagePath;
+    @   ensures imageField.getText() != null;
+    @*/
 
     @FXML
     private void handleBrowseImage(ActionEvent event) {
@@ -393,6 +509,17 @@ public class SalleController {
             }
         }
     }
+
+    /*@ public normal_behavior
+    @   requires nomField != null && capaciteField != null &&
+    @            typeCombo != null && statusCombo != null &&
+    @            prioriteSpinner != null && etageCombo != null &&
+    @            salleService != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures true; 
+    @*/
 
     @FXML
     private void handleSave(ActionEvent event) {
@@ -501,6 +628,26 @@ public class SalleController {
         }
     }
 
+    /*@ private normal_behavior
+    @   requires nomField != null && capaciteField != null &&
+    @            typeCombo != null && statusCombo != null &&
+    @            prioriteSpinner != null && etageCombo != null &&
+    @            nomError != null && capaciteError != null &&
+    @            typeError != null && statusError != null &&
+    @            prioriteError != null && etageError != null &&
+    @            imageError != null;
+    @
+    @   assignable nomError.text, nomError.visible,
+    @              capaciteError.text, capaciteError.visible,
+    @              typeError.text, typeError.visible,
+    @              statusError.text, statusError.visible,
+    @              prioriteError.text, prioriteError.visible,
+    @              etageError.text, etageError.visible,
+    @              imageError.text, imageError.visible;
+    @
+    @   ensures \result == true || \result == false;
+    @*/
+
     private boolean validateForm() {
         boolean isValid = true;
         clearErrors();
@@ -540,6 +687,29 @@ public class SalleController {
         return isValid;
     }
 
+    /*@ private normal_behavior
+    @   requires nomError != null && capaciteError != null &&
+    @            typeError != null && statusError != null &&
+    @            prioriteError != null && etageError != null &&
+    @            imageError != null;
+    @
+    @   assignable nomError.text, nomError.visible,
+    @              capaciteError.text, capaciteError.visible,
+    @              typeError.text, typeError.visible,
+    @              statusError.text, statusError.visible,
+    @              prioriteError.text, prioriteError.visible,
+    @              etageError.text, etageError.visible,
+    @              imageError.text, imageError.visible;
+    @
+    @   ensures !nomError.isVisible();
+    @   ensures !capaciteError.isVisible();
+    @   ensures !typeError.isVisible();
+    @   ensures !statusError.isVisible();
+    @   ensures !prioriteError.isVisible();
+    @   ensures !etageError.isVisible();
+    @   ensures !imageError.isVisible();
+    @*/
+
     private void clearErrors() {
         nomError.setText("");
         capaciteError.setText("");
@@ -555,6 +725,23 @@ public class SalleController {
         resetForm();
     }
 
+    /*@ private normal_behavior
+    @   requires nomField != null && capaciteField != null &&
+    @            typeCombo != null && statusCombo != null &&
+    @            prioriteSpinner != null && etageCombo != null &&
+    @            imageField != null && imagePreview != null;
+    @
+    @   assignable nomField.text, capaciteField.text,
+    @              typeCombo.value, statusCombo.value,
+    @              prioriteSpinner.valueFactory,
+    @              etageCombo.value, imageField.text,
+    @              imagePreview.image, imagePath;
+    @
+    @   ensures nomField.getText().equals("");
+    @   ensures capaciteField.getText().equals("");
+    @   ensures imageField.getText().equals("");
+    @*/
+
     private void resetForm() {
         nomField.clear();
         capaciteField.clear();
@@ -567,6 +754,11 @@ public class SalleController {
         imagePath = "";
         clearErrors();
     }
+
+    /*@ private normal_behavior
+    @   requires type != null && title != null && message != null;
+    @   assignable \nothing;
+    @*/
 
     private void showAlert(String title, String message, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);

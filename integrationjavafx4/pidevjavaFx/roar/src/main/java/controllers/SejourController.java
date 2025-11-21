@@ -101,6 +101,15 @@ public class SejourController implements Initializable {
     
     @FXML
     private Label lblValidationError;
+
+    //@ public invariant sejourService != null;
+    //@ public invariant dossierMedicaleService != null;
+    //@ public invariant sejourList != null;
+    //@ public invariant DATE_FORMATTER != null;
+    //@ public invariant TYPE_SEJOUR_OPTIONS != null && TYPE_SEJOUR_OPTIONS.length > 0;
+    //@ public invariant MOYEN_PAIEMENT_OPTIONS != null && MOYEN_PAIEMENT_OPTIONS.length > 0;
+    //@ public invariant STATUT_PAIEMENT_OPTIONS != null && STATUT_PAIEMENT_OPTIONS.length > 0;
+
     
     private final SejourService sejourService = new SejourService();
     private final DossierMedicaleService dossierMedicaleService = new DossierMedicaleService();
@@ -112,6 +121,25 @@ public class SejourController implements Initializable {
     private static final String[] MOYEN_PAIEMENT_OPTIONS = {"Carte Bancaire", "Espèces", "Chèque", "Assurance", "Virement"};
     private static final String[] STATUT_PAIEMENT_OPTIONS = {"Payé", "En attente", "Partiel", "Annulé", "Remboursé"};
     
+    /*@ also
+    @ public normal_behavior
+    @   requires sejourTable != null
+    @        && colId != null && colDateEntree != null && colDateSortie != null
+    @        && colTypeSejour != null && colFraisSejour != null
+    @        && colMoyenPaiement != null && colStatutPaiement != null
+    @        && colPrixExtras != null && colDossierMedicale != null
+    @        && dateEntreePicker != null && dateSortiePicker != null
+    @        && comboTypeSejour != null && txtFraisSejour != null
+    @        && comboMoyenPaiement != null && comboStatutPaiement != null
+    @        && txtPrixExtras != null && comboDossierMedicale != null
+    @        && btnModifier != null && btnSupprimer != null && btnVoir != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures currentSejour == null;
+    @   ensures btnModifier.isDisabled();
+    @*/
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set up circular dependencies between services but break the circular reference during load operations
@@ -124,6 +152,18 @@ public class SejourController implements Initializable {
         setupEventHandlers();
         resetFormFields();
     }
+
+    /*@ private normal_behavior
+    @   requires sejourTable != null;
+    @   requires colId != null && colDateEntree != null && colDateSortie != null;
+    @   requires colTypeSejour != null && colFraisSejour != null;
+    @   requires colMoyenPaiement != null && colStatutPaiement != null;
+    @   requires colPrixExtras != null && colDossierMedicale != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures true;
+    @*/
     
     private void setupTableColumns() {
         colId.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
@@ -149,6 +189,15 @@ public class SejourController implements Initializable {
             }
         });
     }
+
+    /*@ private normal_behavior
+    @   requires sejourTable != null;
+    @   requires sejourList != null;
+    @
+    @   assignable sejourList.*, sejourTable.items;
+    @
+    @   ensures sejourTable.getItems() != null;
+    @*/
     
     private void loadSejours() {
         try {
@@ -171,6 +220,21 @@ public class SejourController implements Initializable {
             AlertUtil.showError(owner, "Erreur", "Erreur lors du chargement des séjours\n" + e.getMessage());
         }
     }
+
+    /*@ private normal_behavior
+    @   requires comboTypeSejour != null
+    @        && comboMoyenPaiement != null
+    @        && comboStatutPaiement != null
+    @        && comboDossierMedicale != null;
+    @
+    @   assignable comboTypeSejour.items, comboMoyenPaiement.items,
+    @              comboStatutPaiement.items, comboDossierMedicale.items;
+    @
+    @   ensures comboTypeSejour.getItems() != null;
+    @   ensures comboMoyenPaiement.getItems() != null;
+    @   ensures comboStatutPaiement.getItems() != null;
+    @   ensures comboDossierMedicale.getItems() != null;
+    @*/
     
     private void setupComboBoxes() {
         // Types de séjour
@@ -209,6 +273,15 @@ public class SejourController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /*@ private normal_behavior
+    @   requires sejourTable != null;
+    @   requires btnModifier != null && btnSupprimer != null && btnVoir != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures true;
+    @*/
     
     private void setupEventHandlers() {
         sejourTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -230,6 +303,17 @@ public class SejourController implements Initializable {
             }
         });
     }
+
+    /*@ private normal_behavior
+    @   requires sejour != null;
+    @   requires dateEntreePicker != null && dateSortiePicker != null && comboTypeSejour != null &&
+    @            txtFraisSejour != null && comboMoyenPaiement != null && comboStatutPaiement != null &&
+    @            txtPrixExtras != null && comboDossierMedicale != null;
+    @   assignable dateEntreePicker.value, dateSortiePicker.value, comboTypeSejour.value,
+    @              txtFraisSejour.text, comboMoyenPaiement.value, comboStatutPaiement.value,
+    @              txtPrixExtras.text, comboDossierMedicale.value;
+    @   ensures comboTypeSejour.getValue() == sejour.getTypeSejour();
+    @*/
     
     private void populateForm(Sejour sejour) {
         dateEntreePicker.setValue(sejour.getDateEntree() != null ? sejour.getDateEntree().toLocalDate() : null);
@@ -242,6 +326,19 @@ public class SejourController implements Initializable {
         comboDossierMedicale.setValue(sejour.getDossierMedicale());
     }
     
+    /*@ private normal_behavior
+    @   requires dateEntreePicker != null && dateSortiePicker != null && comboTypeSejour != null &&
+    @            txtFraisSejour != null && comboMoyenPaiement != null && comboStatutPaiement != null &&
+    @            txtPrixExtras != null && comboDossierMedicale != null && btnModifier != null &&
+    @            btnSupprimer != null && btnVoir != null;
+    @   assignable currentSejour, dateEntreePicker.value, dateSortiePicker.value, comboTypeSejour.value,
+    @              txtFraisSejour.text, comboMoyenPaiement.value, comboStatutPaiement.value,
+    @              txtPrixExtras.text, comboDossierMedicale.value,
+    @              btnModifier.disable, btnSupprimer.disable, btnVoir.disable;
+    @   ensures currentSejour == null;
+    @   ensures btnModifier.isDisabled() && btnSupprimer.isDisabled();
+    @*/
+
     private void resetFormFields() {
         currentSejour = null;
         dateEntreePicker.setValue(LocalDate.now());
@@ -260,6 +357,13 @@ public class SejourController implements Initializable {
         }
     }
     
+    /*@ public normal_behavior
+    @   requires btnAjouter != null && btnAjouter.getScene() != null && sejourService != null &&
+    @            dossierMedicaleService != null;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
+
     @FXML
     private void handleAjouter(ActionEvent event) {
         // Validate form before saving
@@ -323,6 +427,12 @@ public class SejourController implements Initializable {
             AlertUtil.showError(owner, "Erreur", "Erreur lors de l'ajout du séjour\n" + e.getMessage());
         }
     }
+
+    /*@ public normal_behavior
+    @   requires btnModifier != null && btnModifier.getScene() != null && sejourService != null;
+     @   assignable \everything;
+    @   ensures true;
+    @*/
     
     @FXML
     private void handleModifier(ActionEvent event) {
@@ -358,6 +468,12 @@ public class SejourController implements Initializable {
             AlertUtil.showError(owner, "Erreur", "Erreur lors de la mise à jour du séjour\n" + e.getMessage());
         }
     }
+
+    /*@ public normal_behavior
+    @   requires btnSupprimer != null && btnSupprimer.getScene() != null && sejourService != null;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
     
     @FXML
     private void handleSupprimer(ActionEvent event) {
@@ -383,6 +499,13 @@ public class SejourController implements Initializable {
         }
     }
     
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Node;
+    @   requires currentSejour != null;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
+
     @FXML
     private void handleVoir(ActionEvent event) {
         if (currentSejour == null) {
@@ -410,18 +533,36 @@ public class SejourController implements Initializable {
             AlertUtil.showError(owner, "Erreur", "Erreur lors de l'ouverture des détails du séjour\n" + e.getMessage());
         }
     }
+
+    /*@ public normal_behavior
+    @   requires sejourTable != null && sejourList != null && sejourService != null;
+    @   assignable sejourTable.items, sejourList.*;
+    @   ensures sejourTable.getItems() != null;
+    @*/
     
     @FXML
     private void handleRefresh(ActionEvent event) {
         loadSejours();
         resetFormFields();
     }
+
+    /*@ public normal_behavior
+    @   requires sejourTable != null && sejourTable.getScene() != null;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
     
     @FXML
     private void handleClose(ActionEvent event) {
         Stage stage = (Stage) sejourTable.getScene().getWindow();
         stage.close();
     }
+
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Node;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
     
     @FXML
     private void handleBackToHome(ActionEvent event) {
@@ -444,6 +585,18 @@ public class SejourController implements Initializable {
             AlertUtil.showError(owner, "Erreur", "Erreur lors du retour à l'interface principale\n" + e.getMessage());
         }
     }
+
+    /*@ private normal_behavior
+    @   requires dateEntreePicker != null && comboTypeSejour != null &&
+    @            txtFraisSejour != null && comboMoyenPaiement != null &&
+    @            comboStatutPaiement != null && comboDossierMedicale != null &&
+    @            txtPrixExtras != null && dateSortiePicker != null &&
+    @            lblValidationError != null;
+    @   assignable lblValidationError.text, lblValidationError.visible, lblValidationError.managed;
+    @   ensures \result == true ==> lblValidationError.isVisible() == false;
+    @   ensures \result == false ==> lblValidationError.isVisible() == true &&
+    @                             lblValidationError.getText() != null && lblValidationError.getText().length() > 0;
+    @*/
     
     /**
      * Validate form fields before saving
@@ -520,6 +673,18 @@ public class SejourController implements Initializable {
         return true;
     }
     
+    /*@ private normal_behavior
+    @   requires sejour != null;
+    @   requires dateEntreePicker != null && dateSortiePicker != null && comboTypeSejour != null &&
+    @            txtFraisSejour != null && comboMoyenPaiement != null && comboStatutPaiement != null &&
+    @            txtPrixExtras != null && comboDossierMedicale != null;
+    @   assignable sejour.*, sejour.dateEntree, sejour.dateSortie, sejour.typeSejour,
+    @              sejour.fraisSejour, sejour.moyenPaiement, sejour.statutPaiement,
+    @              sejour.prixExtras, sejour.dossierMedicale;
+    @   ensures sejour != null;
+    @   ensures comboDossierMedicale.getValue() != null ==> sejour.getDossierMedicale() != null;
+    @*/
+
     private void updateSejourFromForm(Sejour sejour) {
         // Convert LocalDate to LocalDateTime by setting time to start/end of day
         LocalDate dateEntree = dateEntreePicker.getValue();
@@ -576,6 +741,21 @@ public class SejourController implements Initializable {
         }
     }
     
+    /*@ public normal_behavior
+    @   requires dossier != null;
+    @   requires dateEntreePicker != null && dateSortiePicker != null && comboTypeSejour != null &&
+    @            txtFraisSejour != null && comboMoyenPaiement != null && comboStatutPaiement != null &&
+    @            txtPrixExtras != null && comboDossierMedicale != null && btnModifier != null &&
+    @            btnSupprimer != null && btnVoir != null;
+    @   assignable currentSejour, dateEntreePicker.value, dateSortiePicker.value, comboTypeSejour.value,
+    @              txtFraisSejour.text, comboMoyenPaiement.value, comboStatutPaiement.value,
+    @              txtPrixExtras.text, comboDossierMedicale.value, btnModifier.disable,
+    @              btnSupprimer.disable, btnVoir.disable;
+    @   ensures currentSejour == null;
+    @   ensures comboDossierMedicale.getValue() == dossier;
+    @   ensures btnModifier.isDisabled() && btnSupprimer.isDisabled();
+    @*/
+
     /**
      * Initialise le formulaire pour créer un nouveau séjour associé à un dossier médical spécifique
      * @param dossier Le dossier médical auquel associer le nouveau séjour

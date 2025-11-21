@@ -37,9 +37,28 @@ public class ServiceListController {
     @FXML private ProgressIndicator loadingIndicator;
     @FXML private Label translationWarningLabel;
 
+    //@ public invariant serviceService != null;
     private serviceservice serviceService = new serviceservice();
+     //@ public invariant currentLanguage != null;
     private String currentLanguage = "en";
     private boolean translationFailed = false;
+
+    /*@ public normal_behavior
+    @   requires galleryContainer != null;
+    @   requires servicesFlowPane != null;
+    @   requires searchField != null;
+    @   requires refreshBtn != null;
+    @   requires backBtn != null;
+    @   requires languageComboBox != null;
+    @   requires loadingIndicator != null;
+    @   requires translationWarningLabel != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures loadingIndicator.isVisible() == false;
+    @   ensures translationWarningLabel.isVisible() == false;
+    @   ensures languageComboBox.getValue().equals("English");
+    @*/
 
     @FXML
     public void initialize() {
@@ -55,6 +74,15 @@ public class ServiceListController {
             translationWarningLabel.setVisible(false);
         }
     }
+
+    /*@ private normal_behavior
+    @   requires languageComboBox != null;
+    @   assignable languageComboBox.items, languageComboBox.value,
+    @              languageComboBox.onAction, languageComboBox.style;
+    @   ensures languageComboBox.getItems().size() == 5;
+    @   ensures languageComboBox.getValue().equals("English");
+    @   ensures languageComboBox.getOnAction() != null;
+    @*/
 
     private void setupLanguageSelector() {
         languageComboBox.getItems().addAll("English", "French", "Spanish", "German", "Arabic");
@@ -82,6 +110,22 @@ public class ServiceListController {
                         "-fx-padding: 5 15;"
         );
     }
+
+    /*@ private normal_behavior
+    @   requires galleryContainer != null;
+    @   requires searchField != null;
+    @   requires refreshBtn != null;
+    @   requires backBtn != null;
+    @
+    @   assignable galleryContainer.style, searchField.style,
+    @              refreshBtn.style, backBtn.style,
+    @              backBtn.onMouseEntered, backBtn.onMouseExited;
+    @
+    @   ensures galleryContainer.getStyle() != null;
+    @   ensures searchField.getStyle() != null;
+    @   ensures refreshBtn.getStyle() != null;
+    @   ensures backBtn.getStyle() != null;
+    @*/
 
     private void applyStyles() {
         galleryContainer.setStyle("-fx-background-color: #f8fafc;");
@@ -132,6 +176,17 @@ public class ServiceListController {
         ));
     }
 
+    /*@ private normal_behavior
+    @   requires text == null || text.isEmpty() || "en".equals(currentLanguage);
+    @   assignable \nothing;
+    @   ensures \result != null && \result.isDone();
+    @ also
+    @ private normal_behavior
+    @   requires text != null && !text.isEmpty() && !"en".equals(currentLanguage);
+    @   assignable translationFailed;
+    @   ensures \result != null;
+    @*/
+
     private CompletableFuture<String> translateText(String text) {
         if (text == null || text.isEmpty() || "en".equals(currentLanguage)) {
             return CompletableFuture.completedFuture(text);
@@ -152,6 +207,12 @@ public class ServiceListController {
                 });
     }
 
+    /*@ private normal_behavior
+    @   requires backBtn != null;
+    @   assignable backBtn.onAction;
+    @   ensures backBtn.getOnAction() != null;
+    @*/
+
     private void setupBackButton() {
         backBtn.setOnAction(e -> {
             try {
@@ -166,6 +227,11 @@ public class ServiceListController {
         });
     }
 
+    /*@ private normal_behavior
+    @   requires title != null && message != null && type != null;
+    @   assignable \nothing;
+    @*/
+
     private void showAlert(String title, String message, Alert.AlertType type) {
         Platform.runLater(() -> {
             Alert alert = new Alert(type);
@@ -175,6 +241,11 @@ public class ServiceListController {
             alert.showAndWait();
         });
     }
+
+    /*@ private normal_behavior
+    @   assignable \nothing;
+    @   ensures \result == null || \result instanceof ImageView;
+    @*/
 
     private ImageView createLogoView(double size) {
         try {
@@ -191,6 +262,11 @@ public class ServiceListController {
         }
     }
 
+    /*@ private normal_behavior
+    @   requires service != null && service.getName() != null;
+    @   ensures \result != null;
+    @*/
+
     private StackPane createLogoPlaceholder(Service service, double size) {
         StackPane placeholder = new StackPane();
         placeholder.setMinSize(size, size);
@@ -203,6 +279,11 @@ public class ServiceListController {
         return placeholder;
     }
 
+    /*@ private normal_behavior
+    @   requires service != null && service.getName() != null;
+    @   ensures \result != null;
+    @*/
+
     private StackPane createImagePlaceholder(Service service, double width, double height) {
         StackPane placeholder = new StackPane();
         placeholder.setMinSize(width, height);
@@ -214,6 +295,23 @@ public class ServiceListController {
         placeholder.getChildren().add(initial);
         return placeholder;
     }
+
+    /*@ private normal_behavior
+    @   requires loadingIndicator != null;
+    @   requires servicesFlowPane != null;
+    @   requires translationWarningLabel != null;
+    @   requires serviceService != null;
+    @
+    @   assignable loadingIndicator.visible, translationFailed,
+    @              servicesFlowPane.children, servicesFlowPane.hgap,
+    @              servicesFlowPane.vgap, servicesFlowPane.padding,
+    @              servicesFlowPane.prefWrapLength,
+    @              translationWarningLabel.visible, translationWarningLabel.text;
+    @
+    @   ensures loadingIndicator.isVisible() == true;
+    @   ensures translationFailed == false;
+    @   ensures servicesFlowPane.getChildren().isEmpty();
+    @*/
 
     private void loadServices() {
         if (loadingIndicator != null) {
@@ -264,6 +362,12 @@ public class ServiceListController {
                     }
                 }));
     }
+
+    /*@ private normal_behavior
+    @   requires service != null;
+    @   assignable translationFailed;
+    @   ensures \result != null;
+    @*/
 
     private CompletableFuture<VBox> createServiceCardAsync(Service service) {
         VBox card = new VBox();
@@ -392,6 +496,11 @@ public class ServiceListController {
                 }, Platform::runLater);
     }
 
+    /*@ private normal_behavior
+    @   requires service != null && servicesFlowPane.getScene() != null;
+    @   assignable translationFailed;
+    @*/
+
     private void showServiceDetails(Service service) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.initOwner(servicesFlowPane.getScene().getWindow());
@@ -501,6 +610,12 @@ public class ServiceListController {
         }, Platform::runLater);
     }
 
+    /*@ private normal_behavior
+    @   requires searchField != null && servicesFlowPane != null && serviceService != null;
+    @   assignable searchField.textProperty();
+    @   ensures true;
+    @*/
+
     private void setupSearch() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             servicesFlowPane.getChildren().clear();
@@ -521,12 +636,38 @@ public class ServiceListController {
         });
     }
 
+    /*@ public normal_behavior
+    @   requires loadingIndicator != null;
+    @   requires servicesFlowPane != null;
+    @   requires translationWarningLabel != null;
+    @   requires serviceService != null;
+    @
+    @   assignable loadingIndicator.visible, translationFailed,
+    @              servicesFlowPane.children, translationWarningLabel.visible,
+    @              translationWarningLabel.text;
+    @
+    @   ensures loadingIndicator.isVisible() == true;
+    @   ensures translationFailed == false;
+    @   ensures servicesFlowPane.getChildren().isEmpty();
+    @*/
+
     @FXML
     private void handleRefresh() {
         loadServices();
     }
 
-
+    
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Node;
+    @   assignable \everything;
+    @
+    @ also
+    @ public exceptional_behavior
+    @   requires event == null || !(event.getSource() instanceof Node);
+    @   assignable \nothing;
+    @   signals (NullPointerException) event == null;
+    @   signals (ClassCastException) event != null && !(event.getSource() instanceof Node);
+    @*/
 
     @FXML
     private void goToPreScreen(ActionEvent event) {

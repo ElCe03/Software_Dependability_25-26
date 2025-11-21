@@ -31,6 +31,14 @@ import java.util.stream.Collectors;
 
 public class UserListController {
 
+    //@ public invariant VBoxId != null;
+    //@ public invariant searchInput != null;
+    //@ public invariant roleFilter != null;
+    //@ public invariant statsChart != null;
+    //@ public invariant userService != null;
+    //@ public invariant allUsers != null;
+    //@ public invariant (\forall int i; 0 <= i && i < allUsers.size(); allUsers.get(i) != null);
+
     @FXML
     private VBox VBoxId;
 
@@ -47,7 +55,17 @@ public class UserListController {
     private BarChart<String, Number> statsChart;
 
     private final UserService userService = new UserService();
+
     private ObservableList<Users> allUsers = FXCollections.observableArrayList();
+
+    /*@ public normal_behavior
+    @   requires VBoxId != null && searchInput != null && roleFilter != null && statsChart != null;
+    @   assignable allUsers, VBoxId.getChildren(), statsChart.data, statsChart.titleProperty();
+    @   ensures statsChart.getBarGap() == 5;
+    @   ensures statsChart.getCategoryGap() == 20;
+    @   ensures statsChart.isLegendVisible();
+    @   ensures statsChart.isAnimated();
+    @*/
 
     @FXML
     public void initialize() {
@@ -64,6 +82,15 @@ public class UserListController {
         statsChart.setLegendVisible(true);
         statsChart.setAnimated(true);
     }
+
+    /*@ public normal_behavior
+    @   requires VBoxId.getScene() != null;
+    @   requires VBoxId.getScene().getWindow() instanceof Stage;
+    @   assignable \everything;
+    @ also
+    @ public exceptional_behavior
+    @   signals (IOException e) true;
+    @*/
 
     @FXML
     private void ajouterUtilisateur() {
@@ -84,6 +111,15 @@ public class UserListController {
         }
     }
 
+    /*@ public normal_behavior
+    @   requires VBoxId.getScene() != null;
+    @   requires VBoxId.getScene().getWindow() instanceof Stage;
+    @   assignable \everything;
+    @ also
+    @ public exceptional_behavior
+    @   signals (IOException e) true;
+    @*/
+
     @FXML
     private void deconnexion() {
         try {
@@ -101,6 +137,13 @@ public class UserListController {
         }
     }
 
+    /*@ private normal_behavior
+    @   requires userService != null;
+    @   requires allUsers != null;
+    @   assignable allUsers, VBoxId.getChildren(), statsChart.data, statsChart.titleProperty();
+    @   signals (SQLException e) false;
+    @*/
+
     private void chargerUtilisateurs() {
         try {
             List<Users> utilisateurs = userService.listerUtilisateurs();
@@ -112,6 +155,12 @@ public class UserListController {
             showErrorAlert("Erreur lors du chargement des utilisateurs : " + e.getMessage());
         }
     }
+
+    /*@ private normal_behavior
+    @   requires searchInput != null && roleFilter != null;
+    @   requires allUsers != null && VBoxId != null && statsChart != null;
+    @   assignable VBoxId.getChildren(), statsChart.data, statsChart.titleProperty();
+    @*/
 
     private void filterUsers() {
         String searchText = searchInput.getText().toLowerCase();
@@ -133,6 +182,15 @@ public class UserListController {
         listUsersInVBox(filteredUsers);
         updateStats();
     }
+
+    /*@ private normal_behavior
+    @   requires statsChart != null && allUsers != null;
+    @   assignable statsChart.data, statsChart.titleProperty();
+    @   ensures statsChart.getData().size() == 1;
+    @   ensures statsChart.getData().get(0).getName().equals("Utilisateurs");
+    @   ensures allUsers.size() == 0 ==> statsChart.getTitle().equals("Aucun utilisateur trouvé");
+    @   ensures allUsers.size() > 0 ==> statsChart.getTitle().contains("Répartition des utilisateurs par rôle");
+    @*/
 
     private void updateStats() {
         long total = allUsers.size();
@@ -168,6 +226,15 @@ public class UserListController {
             statsChart.setTitle("Répartition des utilisateurs par rôle (Total: " + total + ")");
         }
     }
+
+    /*@ private normal_behavior
+    @   requires VBoxId != null && users != null;
+    @   requires (\forall int i; 0 <= i && i < users.size(); users.get(i) != null);
+    @   assignable VBoxId.getChildren();
+    @   ensures VBoxId.getChildren().size() == users.size();
+    @   ensures (\forall int i; 0 <= i && i < VBoxId.getChildren().size();
+    @               VBoxId.getChildren().get(i) instanceof HBox);
+    @*/
 
     private void listUsersInVBox(List<Users> users) {
         VBoxId.getChildren().clear();
@@ -222,6 +289,11 @@ public class UserListController {
             VBoxId.getChildren().add(userBox);
         }
     }
+
+    /*@ private normal_behavior
+    @   requires message != null;
+    @   assignable \nothing;
+    @*/
 
     private void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

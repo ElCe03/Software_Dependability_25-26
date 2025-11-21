@@ -33,15 +33,61 @@ public class SejourDetailController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final NumberFormat CURRENCY_FORMATTER = NumberFormat.getCurrencyInstance();
 
+    /*@ public normal_behavior
+    @   requires btnFermer != null;
+    @   assignable btnFermer.onAction;
+    @   ensures btnFermer.getOnAction() != null;
+    @*/
+
     @FXML
     public void initialize() {
         btnFermer.setOnAction(event -> handleCloseButtonAction());
     }
 
+    /*@ public normal_behavior
+    @   requires lblId != null && lblDateEntree != null && lblDateSortie != null &&
+    @            lblTypeSejour != null && lblFraisSejour != null && lblMoyenPaiement != null &&
+    @            lblStatutPaiement != null && lblPrixExtras != null && lblPrixTotal != null &&
+    @            lblDossierMedicale != null && lblPatient != null &&
+    @            txtInfosComplementaires != null;
+    @
+    @   assignable this.sejour,
+    @              lblId.text, lblDateEntree.text, lblDateSortie.text,
+    @              lblTypeSejour.text, lblFraisSejour.text,
+    @              lblMoyenPaiement.text, lblStatutPaiement.text,
+    @              lblPrixExtras.text, lblPrixTotal.text,
+    @              lblDossierMedicale.text, lblPatient.text,
+    @              txtInfosComplementaires.text;
+    @
+    @   ensures this.sejour == sejour;
+    @*/
+
     public void setSejour(Sejour sejour) {
         this.sejour = sejour;
         displaySejourDetails();
     }
+
+    /*@ private normal_behavior
+    @   requires sejour != null;
+    @   requires lblId != null && lblDateEntree != null && lblDateSortie != null &&
+    @            lblTypeSejour != null && lblFraisSejour != null && lblMoyenPaiement != null &&
+    @            lblStatutPaiement != null && lblPrixExtras != null && lblPrixTotal != null &&
+    @            lblDossierMedicale != null && lblPatient != null &&
+    @            txtInfosComplementaires != null;
+    @
+    @   assignable lblId.text, lblDateEntree.text, lblDateSortie.text,
+    @              lblTypeSejour.text, lblFraisSejour.text, lblMoyenPaiement.text,
+    @              lblStatutPaiement.text, lblPrixExtras.text, lblPrixTotal.text,
+    @              lblDossierMedicale.text, lblPatient.text,
+    @              txtInfosComplementaires.text;
+    @
+    @   ensures lblId.getText().equals(String.valueOf(sejour.getId()));
+    @
+    @ also private normal_behavior
+    @   requires sejour == null;
+    @   assignable \nothing;
+    @   ensures true;
+    @*/
 
     private void displaySejourDetails() {
         if (sejour == null) {
@@ -86,6 +132,11 @@ public class SejourDetailController {
         // Affichage des informations complémentaires - aucun champ trouvé dans Sejour
         txtInfosComplementaires.setText("Aucune information complémentaire disponible.");
     }
+
+    /*@ public normal_behavior
+    @   requires btnFermer != null && btnFermer.getScene() != null;
+    @   assignable \everything;
+    @*/
 
     @FXML
     private void handleCloseButtonAction() {

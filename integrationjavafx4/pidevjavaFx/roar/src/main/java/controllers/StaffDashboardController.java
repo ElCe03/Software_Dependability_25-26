@@ -12,6 +12,18 @@ import java.io.IOException;
 
 public class StaffDashboardController {
 
+    /*@ public normal_behavior
+    @   requires event != null;
+    @   assignable \nothing;
+    @   ensures true;
+    @
+    @ also
+    @ public exceptional_behavior
+    @   requires event != null;
+    @   assignable \nothing;
+    @   signals (ClassCastException e) true;
+    @*/
+
     @FXML
     private void handleLinkAction(ActionEvent event) {
         Hyperlink link = (Hyperlink) event.getSource();
@@ -19,6 +31,19 @@ public class StaffDashboardController {
         System.out.println("Navigating to: " + linkText);
         // Add navigation logic here, e.g., load new FXML or update UI
     }
+    
+    /*@ public normal_behavior
+    @   requires event != null;
+    @   requires event.getSource() instanceof Node;
+    @   assignable \everything;
+    @   ensures true;
+    @
+    @ also
+    @ public exceptional_behavior
+    @   requires event != null && !(event.getSource() instanceof Node);
+    @   assignable \nothing;
+    @   signals (ClassCastException e) true;
+    @*/
 
     @FXML
     private void handleLogoutAction(ActionEvent event) {
@@ -39,12 +64,29 @@ public class StaffDashboardController {
         }
     }
 
+    /*@ public normal_behavior
+    @   assignable \nothing;
+    @   ensures true;
+    @*/
+
     @FXML
     private void initialize() {
         // Initialization logic if needed, e.g., setting up dynamic data or bindings
     }
 
-
+    
+    /*@ public normal_behavior
+    @   requires event != null;
+    @   requires event.getSource() instanceof Node;
+    @   assignable \everything;
+    @   ensures true;
+    @
+    @ also
+    @ public exceptional_behavior
+    @   requires event != null && !(event.getSource() instanceof Node);
+    @   assignable \nothing;
+    @   signals (ClassCastException e) true;
+    @*/
 
     @FXML
     private void handleStaff(ActionEvent event) {

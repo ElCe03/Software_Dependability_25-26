@@ -32,8 +32,8 @@ public class EquipementController {
     }
 
     // Méthode appelée lorsqu'on clique sur "Voir les détails"
-   /* @FXML
-    private void handleEquipementCategory(ActionEvent event) {
+    //FXML
+    /*private void handleEquipementCategory(ActionEvent event) {
         try {
             // Charger la vue de la catégorie d'équipement
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/equipement_category.fxml"));

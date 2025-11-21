@@ -12,6 +12,17 @@ import java.io.IOException;
 
 public class PatientDashboardController {
 
+
+    /*@ public normal_behavior
+      @   requires event != null && event.getSource() instanceof Hyperlink;
+      @   assignable \nothing;
+      @ also
+      @ public exceptional_behavior
+      @   requires event != null && !(event.getSource() instanceof Hyperlink);
+      @   assignable \nothing;
+      @   signals (ClassCastException e) true;
+      @*/
+
     @FXML
     private void handleLinkAction(ActionEvent event) {
         Hyperlink link = (Hyperlink) event.getSource();
@@ -19,6 +30,16 @@ public class PatientDashboardController {
         System.out.println("Navigating to: " + linkText);
         // Add navigation logic here, e.g., load new FXML or update UI
     }
+
+    /*@ public normal_behavior
+      @   requires event != null && event.getSource() instanceof Node;
+      @   assignable \everything;
+      @ also
+      @ public exceptional_behavior
+      @   requires event != null && !(event.getSource() instanceof Node);
+      @   assignable \nothing;
+      @   signals (ClassCastException e) true;
+      @*/
 
     @FXML
     private void handleLogoutAction(ActionEvent event) {
@@ -39,10 +60,26 @@ public class PatientDashboardController {
         }
     }
 
+    /*@ public normal_behavior
+      @   assignable \nothing;
+      @   ensures true;
+      @*/
+
     @FXML
     private void initialize() {
         // Initialization logic if needed, e.g., setting up dynamic data or bindings
     }
+
+    /*@ public normal_behavior
+      @   requires event != null && event.getSource() instanceof Node;
+      @   assignable \everything;
+      @ also
+      @ public exceptional_behavior
+      @   requires event != null && !(event.getSource() instanceof Node);
+      @   assignable \nothing;
+      @   signals (ClassCastException e) true;
+      @*/
+
     @FXML
     private void handleSejour(ActionEvent event) {
         try {

@@ -29,6 +29,15 @@ import java.util.stream.Collectors;
 
 public class StatisticsDialogController {
 
+    //@ public invariant barChartPlaceholder != null;
+    //@ public invariant pieChartPlaceholder != null;
+    //@ public invariant exportPdfBtn != null;
+
+    //@ public invariant departementService != null;
+    //@ public invariant etageService != null;
+    //@ public invariant salleService != null;
+
+
     @FXML private VBox barChartPlaceholder;
     @FXML private VBox pieChartPlaceholder;
     @FXML private Button exportPdfBtn;
@@ -41,15 +50,46 @@ public class StatisticsDialogController {
     private final EtageService etageService = new EtageService();
     private final SalleService salleService = new SalleService();
 
+    /*@ public normal_behavior
+    @   assignable \nothing;
+    @   ensures departementService != null;
+    @   ensures etageService != null;
+    @   ensures salleService != null;
+    @*/
+
     public StatisticsDialogController() {
         // Dependencies are initialized directly
     }
+
+    /*@ public normal_behavior
+    @   requires barChartPlaceholder != null;
+    @   requires pieChartPlaceholder != null;
+    @
+    @   assignable barChart, pieChart,
+    @              barChartPlaceholder.children,
+    @              pieChartPlaceholder.children;
+    @
+    @   ensures barChart != null;
+    @   ensures pieChart != null;
+    @   ensures barChartPlaceholder.getChildren().contains(barChart);
+    @   ensures pieChartPlaceholder.getChildren().contains(pieChart);
+    @*/
 
     @FXML
     public void initialize() {
         createBarChart();
         createPieChart();
     }
+
+    /*@ private normal_behavior
+    @   requires barChartPlaceholder != null;
+    @   requires departementService != null;
+    @
+    @   assignable barChart, barChartPlaceholder.children;
+    @
+    @   ensures barChart != null;
+    @   ensures barChartPlaceholder.getChildren().contains(barChart);
+    @*/
 
     private void createBarChart() {
         CategoryAxis xAxis = new CategoryAxis();
@@ -78,6 +118,16 @@ public class StatisticsDialogController {
         barChartPlaceholder.getChildren().add(barChart);
     }
 
+    /*@ private normal_behavior
+    @   requires pieChartPlaceholder != null;
+    @   requires etageService != null && salleService != null;
+    @
+    @   assignable pieChart, pieChartPlaceholder.children;
+    @
+    @   ensures pieChart != null;
+    @   ensures pieChartPlaceholder.getChildren().contains(pieChart);
+    @*/
+
     private void createPieChart() {
         pieChart = new PieChart();
         pieChart.setTitle("Nombre de Salles par Étage");
@@ -103,6 +153,15 @@ public class StatisticsDialogController {
 
         pieChartPlaceholder.getChildren().add(pieChart);
     }
+
+    /*@ public normal_behavior
+    @   requires exportPdfBtn != null;
+    @   requires exportPdfBtn.getScene() != null;
+    @   requires barChart != null;
+    @   requires pieChart != null;
+    @
+    @   assignable \nothing;
+    @*/
 
     @FXML
     private void handleExportPDF() {
@@ -137,6 +196,16 @@ public class StatisticsDialogController {
         }
     }
 
+    /*@ private normal_behavior
+    @   requires document != null && document.isOpen();
+    @   requires chart != null;
+    @   requires title != null;
+    @
+    @   assignable \everything;   
+    @
+    @   signals (Exception e) true;
+    @*/
+
     private void addChartToDocument(Document document, Chart chart, String title) throws Exception {
         Font font = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
         Paragraph paragraph = new Paragraph(title, font);
@@ -154,6 +223,14 @@ public class StatisticsDialogController {
 
         document.add(pdfImage);
     }
+
+    /*@ private normal_behavior
+    @   requires title != null;
+    @   requires message != null;
+    @   requires alertType != null;
+    @
+    @   assignable \nothing;
+    @*/
 
     private void showAlert(String title, String message, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);

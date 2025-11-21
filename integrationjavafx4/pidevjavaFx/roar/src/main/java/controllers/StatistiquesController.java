@@ -28,6 +28,9 @@ import java.util.*;
  */
 public class StatistiquesController implements Initializable {
 
+    //@ public invariant dossierService != null ==> sejourService != null;
+    //@ public invariant currencyFormat != null;
+
     @FXML private Label lblTotalDossiers;
     @FXML private Label lblTotalSejours;
     @FXML private Label lblAverageDuration;
@@ -52,6 +55,28 @@ public class StatistiquesController implements Initializable {
     
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.FRANCE);
     
+    /*@ public normal_behavior
+    @   requires lblTotalDossiers != null && lblTotalSejours != null &&
+    @            lblAverageDuration != null && lblTotalRevenue != null &&
+    @            chartDossierStatus != null && chartSejourTypes != null &&
+    @            chartPaymentStatus != null && chartDossiersByMonth != null &&
+    @            chartSejoursByMonth != null && chartRevenueByMonth != null &&
+    @            gridMedecinStats != null && btnExportPDF != null;
+    @
+    @   assignable dossierService, sejourService, pdfService,
+    @              lblTotalDossiers.text, lblTotalSejours.text,
+    @              lblAverageDuration.text, lblTotalRevenue.text,
+    @              chartDossierStatus.data, chartSejourTypes.data,
+    @              chartPaymentStatus.data, chartDossiersByMonth.data,
+    @              chartSejoursByMonth.data, chartRevenueByMonth.data,
+    @              gridMedecinStats.children;
+    @
+    @   ensures dossierService != null && sejourService != null && pdfService != null;
+    @   ensures lblTotalDossiers.getText() != null;
+    @   ensures lblTotalSejours.getText() != null;
+    @*/
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         dossierService = new DossierMedicaleService();
@@ -64,6 +89,28 @@ public class StatistiquesController implements Initializable {
         
         loadStatistics();
     }
+
+    /*@ private normal_behavior
+    @   requires dossierService != null && sejourService != null;
+    @   requires lblTotalDossiers != null && lblTotalSejours != null &&
+    @            lblAverageDuration != null && lblTotalRevenue != null &&
+    @            chartDossierStatus != null && chartSejourTypes != null &&
+    @            chartPaymentStatus != null && chartDossiersByMonth != null &&
+    @            chartSejoursByMonth != null && chartRevenueByMonth != null &&
+    @            gridMedecinStats != null;
+    @
+    @   assignable lblTotalDossiers.text, lblTotalSejours.text,
+    @              lblAverageDuration.text, lblTotalRevenue.text,
+    @              chartDossierStatus.data, chartSejourTypes.data,
+    @              chartPaymentStatus.data, chartDossiersByMonth.data,
+    @              chartSejoursByMonth.data, chartRevenueByMonth.data,
+    @              gridMedecinStats.children;
+    @
+    @   ensures lblTotalDossiers.getText() != null;
+    @   ensures lblTotalSejours.getText() != null;
+    @   ensures lblAverageDuration.getText() != null;
+    @   ensures lblTotalRevenue.getText() != null;
+    @*/
     
     /**
      * Load all statistics data and populate the charts and labels
@@ -160,6 +207,12 @@ public class StatistiquesController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /*@ private normal_behavior
+    @   requires chartDossierStatus != null;
+    @   assignable chartDossierStatus.data;
+    @   ensures chartDossierStatus.getData() != null;
+    @*/
     
     /**
      * Populate the dossier status pie chart
@@ -180,7 +233,13 @@ public class StatistiquesController implements Initializable {
             e.printStackTrace();
         }
     }
-    
+
+    /*@ private normal_behavior
+    @   requires chartSejourTypes != null;
+    @   assignable chartSejourTypes.data;
+    @   ensures chartSejourTypes.getData() != null;
+    @*/
+
     /**
      * Populate the sejour type pie chart
      */
@@ -201,6 +260,12 @@ public class StatistiquesController implements Initializable {
         }
     }
     
+    /*@ private normal_behavior
+    @   requires chartPaymentStatus != null;
+    @   assignable chartPaymentStatus.data;
+    @   ensures chartPaymentStatus.getData() != null;
+    @*/
+
     /**
      * Populate the payment status pie chart
      */
@@ -220,6 +285,12 @@ public class StatistiquesController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /*@ private normal_behavior
+    @   requires chartDossiersByMonth != null;
+    @   assignable chartDossiersByMonth.data;
+    @   ensures chartDossiersByMonth.getData() != null;
+    @*/
     
     /**
      * Populate the dossiers by month bar chart
@@ -246,6 +317,12 @@ public class StatistiquesController implements Initializable {
         }
     }
     
+    /*@ private normal_behavior
+    @   requires chartSejoursByMonth != null;
+    @   assignable chartSejoursByMonth.data;
+    @   ensures chartSejoursByMonth.getData() != null;
+    @*/
+
     /**
      * Populate the sejours by month bar chart
      */
@@ -270,6 +347,12 @@ public class StatistiquesController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /*@ private normal_behavior
+    @   requires chartRevenueByMonth != null;
+    @   assignable chartRevenueByMonth.data;
+    @   ensures chartRevenueByMonth.getData() != null;
+    @*/
     
     /**
      * Populate the revenue by month line chart
@@ -295,6 +378,12 @@ public class StatistiquesController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /*@ private normal_behavior
+    @   requires gridMedecinStats != null;
+    @   assignable gridMedecinStats.children;
+    @   ensures gridMedecinStats.getChildren().size() >= 2;
+    @*/
     
     /**
      * Populate the medecin statistics grid

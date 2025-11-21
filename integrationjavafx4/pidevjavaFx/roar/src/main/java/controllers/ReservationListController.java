@@ -34,10 +34,29 @@ public class ReservationListController {
     @FXML private TableColumn<reservation, Void> actionColumn;
     @FXML private TextField searchField;
 
+    //@ public invariant reservationData != null;
     private final ObservableList<reservation> reservationData = FXCollections.observableArrayList();
+    //@ public invariant reservationService != null;
     private final ReservationService reservationService = new ReservationService();
+    //@ public invariant dateFormatter != null;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
+    /*@ public normal_behavior
+      @   requires reservationTable != null && idColumn != null && salleColumn != null &&
+      @            dateDebutColumn != null && dateFinColumn != null && statusColumn != null &&
+      @            actionColumn != null && searchField != null;
+      @
+      @   assignable idColumn.cellValueFactory, salleColumn.cellValueFactory,
+      @              dateDebutColumn.cellValueFactory, dateDebutColumn.cellFactory,
+      @              dateFinColumn.cellValueFactory, dateFinColumn.cellFactory,
+      @              statusColumn.cellValueFactory, actionColumn.cellFactory,
+      @              reservationData.content, reservationTable.items;
+      @
+      @   ensures idColumn.getCellValueFactory() != null;
+      @   ensures salleColumn.getCellValueFactory() != null;
+      @   ensures actionColumn.getCellFactory() != null;
+      @   ensures reservationTable.getItems() == reservationData;
+      @*/
     @FXML
     public void initialize() {
         System.out.println("Initialisation de ReservationListController...");
@@ -46,6 +65,22 @@ public class ReservationListController {
         debugTableViewContent();
     }
 
+    /*@ private normal_behavior
+      @   requires idColumn != null && salleColumn != null && dateDebutColumn != null &&
+      @            dateFinColumn != null && statusColumn != null && actionColumn != null;
+      @
+      @   assignable idColumn.cellValueFactory, salleColumn.cellValueFactory,
+      @              dateDebutColumn.cellValueFactory, dateDebutColumn.cellFactory,
+      @              dateFinColumn.cellValueFactory, dateFinColumn.cellFactory,
+      @              statusColumn.cellValueFactory, actionColumn.cellFactory;
+      @
+      @   ensures idColumn.getCellValueFactory() != null;
+      @   ensures salleColumn.getCellValueFactory() != null;
+      @   ensures dateDebutColumn.getCellFactory() != null;
+      @   ensures dateFinColumn.getCellFactory() != null;
+      @   ensures statusColumn.getCellValueFactory() != null;
+      @   ensures actionColumn.getCellFactory() != null;
+      @*/
     private void configureTableColumns() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
 
@@ -78,7 +113,7 @@ public class ReservationListController {
                     reservation res = getTableView().getItems().get(getIndex());
                     terminerBtn.setDisable(!isReservationTerminable(res));
                     setGraphic(terminerBtn);
-                }
+                }            
             }
         });
 
@@ -89,6 +124,12 @@ public class ReservationListController {
         return res.getDate_fin().toLocalDateTime().isBefore(LocalDateTime.now());
     }
 
+    /*@ private normal_behavior
+      @   requires column != null && propertyName != null;
+      @   assignable column.cellValueFactory, column.cellFactory;
+      @   ensures column.getCellValueFactory() != null;
+      @   ensures column.getCellFactory() != null;
+      @*/
     private void configureDateColumn(TableColumn<reservation, Timestamp> column, String propertyName) {
         column.setCellValueFactory(new PropertyValueFactory<>(propertyName));
         column.setCellFactory(col -> new TableCell<>() {
@@ -104,6 +145,11 @@ public class ReservationListController {
         });
     }
 
+    /*@ private normal_behavior
+      @   requires reservationTable != null && reservationData != null && reservationService != null;
+      @   assignable reservationData.content, reservationTable.items;
+      @   ensures reservationTable.getItems() == reservationData;
+      @*/
     private void loadReservations() {
         try {
             System.out.println("Chargement des réservations...");
@@ -139,6 +185,10 @@ public class ReservationListController {
         System.out.println("TableView visible : " + reservationTable.isVisible());
     }
 
+    /*@ private normal_behavior
+      @   requires res != null && reservationService != null;
+      @   assignable \everything;
+      @*/
     private void terminerReservation(reservation res) {
         try {
             reservationService.terminerReservation(res.getId());
@@ -149,21 +199,36 @@ public class ReservationListController {
         }
     }
 
+    /*@ public normal_behavior
+      @   requires event != null && event.getSource() instanceof Node;
+      @   assignable \everything;
+      @*/
     @FXML
     private void showDepartements(ActionEvent event) {
         loadView("/departement.fxml", event);
     }
 
+    /*@ public normal_behavior
+      @   requires event != null && event.getSource() instanceof Node;
+      @   assignable \everything;
+      @*/
     @FXML
     private void showEtages(ActionEvent event) {
         loadView("/etage.fxml", event);
     }
 
+    /*@ public normal_behavior
+      @   assignable \nothing; // Non fa nulla
+      @*/
     @FXML
     private void showReservation(ActionEvent event) {
         // Already on this view
     }
 
+    /*@ private normal_behavior
+      @   requires fxmlPath != null && event != null && event.getSource() instanceof Node;
+      @   assignable \everything;
+      @*/
     private void loadView(String fxmlPath, ActionEvent event) {
         try {
             URL url = getClass().getResource(fxmlPath);
@@ -183,6 +248,10 @@ public class ReservationListController {
         }
     }
 
+    /*@ private normal_behavior
+      @   requires title != null && message != null;
+      @   assignable \nothing;
+      @*/
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

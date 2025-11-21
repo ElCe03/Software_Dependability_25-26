@@ -4,6 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TranslatorFallback {
+
+    //@ public invariant translations != null;
+    //@ public invariant (\forall String lang; translations.containsKey(lang) ==> translations.get(lang) != null);
+    //@ public invariant (\forall String lang; translations.containsKey(lang) ==> 
+    //@                      (\forall String k; translations.get(lang).containsKey(k) ==> 
+    //@                           translations.get(lang).get(k) != null));
+
     private static final Map<String, Map<String, String>> translations = new HashMap<>();
 
     static {
@@ -71,6 +78,22 @@ public class TranslatorFallback {
         enToAr.put("Failed to load services in time.", "فشل تحميل الخدمات في الوقت المحدد.");
         translations.put("ar", enToAr);
     }
+
+     /*@ public normal_behavior
+      @   requires text != null ==> true;     // text may be null
+      @   requires targetLang != null ==> true;   // targetLang may be null
+      @   assignable \nothing;
+      @   ensures (text == null) ==> \result == null;
+      @   ensures (targetLang == null) ==> \result == text;
+      @   ensures (targetLang != null && targetLang.equals("en")) ==> \result == text;
+      @   ensures translations.containsKey(targetLang) ==> 
+      @            (translations.get(targetLang).containsKey(text) ==> 
+      @                 \result.equals(translations.get(targetLang).get(text)));
+      @   ensures !translations.containsKey(targetLang) ==> \result == text;
+      @ also
+      @ public exceptional_behavior
+      @   assignable \nothing;
+      @*/
 
     public static String translate(String text, String targetLang) {
         if (text == null || targetLang == null || targetLang.equals("en")) {

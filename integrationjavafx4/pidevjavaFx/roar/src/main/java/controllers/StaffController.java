@@ -20,13 +20,20 @@ public class StaffController {
     @FXML private Label telephoneError;
     @FXML private Button btnEnregistrer;
 
+    //@ spec_public
     private Staff staff;
-    private final UserService userService = new UserService();
 
+    //@ public invariant userService != null;
+    private /*@ spec_public @*/ final UserService userService = new UserService();
+    
     // Expression régulière pour valider le numéro de téléphone
     private static final String TELEPHONE_REGEX = "^(\\+[0-9]{1,3}\\s?)?[0-9]{8,10}$";
     private static final Pattern TELEPHONE_PATTERN = Pattern.compile(TELEPHONE_REGEX);
 
+    /*@ public normal_behavior
+      @   assignable this.staff;
+      @   ensures this.staff == staff;
+      @*/
     public void setUtilisateur(Staff staff) {
         this.staff = staff;
     }
@@ -76,12 +83,19 @@ public class StaffController {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la redirection : " + e.getMessage());
         }
     }
-
+    
+    /*@ private normal_behavior
+    @   assignable \everything; 
+    @*/
     private void resetErrorLabel() {
         telephoneError.setText("");
         telephoneError.setVisible(false);
     }
 
+    /*@ private normal_behavior
+    @   requires type != null && title != null && content != null;
+    @   assignable \nothing;
+    @*/
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

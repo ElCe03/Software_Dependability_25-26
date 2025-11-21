@@ -66,12 +66,35 @@ public class SejourDetailPatientController implements Initializable {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final Logger logger = Logger.getLogger(SejourDetailPatientController.class.getName());
     
+    /*@ public normal_behavior
+    @   assignable userServiceE, dossierService;
+    @   ensures userServiceE != null;
+    @   ensures dossierService != null;
+    @*/
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         userServiceE = new UserServiceE();
         dossierService = new DossierMedicaleService();
     }
     
+    /*@ public normal_behavior
+    @   requires lblId != null && lblDateEntree != null && lblDateSortie != null &&
+    @            lblTypeSejour != null && lblFraisSejour != null && lblPrixExtras != null &&
+    @            lblMoyenPaiement != null && lblStatutPaiement != null &&
+    @            lblStatutIndicator != null && lblTotal != null &&
+    @            lblDuree != null && lblPatientNom != null;
+    @
+    @   assignable this.sejour,
+    @              lblId.text, lblDateEntree.text, lblDateSortie.text,
+    @              lblTypeSejour.text, lblFraisSejour.text, lblPrixExtras.text,
+    @              lblMoyenPaiement.text, lblStatutPaiement.text,
+    @              lblStatutIndicator.text, lblStatutIndicator.style,
+    @              lblTotal.text, lblDuree.text, lblPatientNom.text;
+    @
+    @   ensures this.sejour == sejour;
+    @*/
+
     /**
      * Set the sejour and display its details
      * @param sejour The sejour to display
@@ -80,6 +103,28 @@ public class SejourDetailPatientController implements Initializable {
         this.sejour = sejour;
         displaySejourDetails();
     }
+
+    /*@ private normal_behavior
+    @   requires sejour != null;
+    @   requires lblId != null && lblDateEntree != null && lblDateSortie != null &&
+    @            lblTypeSejour != null && lblFraisSejour != null && lblPrixExtras != null &&
+    @            lblMoyenPaiement != null && lblStatutPaiement != null &&
+    @            lblStatutIndicator != null && lblTotal != null &&
+    @            lblDuree != null && lblPatientNom != null;
+    @
+    @   assignable lblId.text, lblDateEntree.text, lblDateSortie.text,
+    @              lblTypeSejour.text, lblFraisSejour.text, lblPrixExtras.text,
+    @              lblMoyenPaiement.text, lblStatutPaiement.text,
+    @              lblStatutIndicator.text, lblStatutIndicator.style,
+    @              lblTotal.text, lblDuree.text, lblPatientNom.text;
+    @
+    @   ensures lblId.getText().equals(String.valueOf(sejour.getId()));
+    @
+    @ also private normal_behavior
+    @   requires sejour == null;
+    @   assignable \nothing;
+    @   ensures true;
+    @*/
     
     /**
      * Display the details of the current sejour
@@ -134,6 +179,17 @@ public class SejourDetailPatientController implements Initializable {
         double total = (fraisSejour != null ? fraisSejour : 0) + (prixExtras != null ? prixExtras : 0);
         lblTotal.setText(String.format("%.2f €", total));
     }
+
+    /*@ private normal_behavior
+        @   requires sejour != null;
+    @   requires dossierService != null && userServiceE != null;
+    @   requires lblPatientNom != null;
+    @
+    @   assignable lblPatientNom.text;
+    @
+    @   ensures lblPatientNom.getText() != null;
+    @*/
+
     
     /**
      * Loads patient information based on the Sejour's DossierMedicale
@@ -182,6 +238,15 @@ public class SejourDetailPatientController implements Initializable {
         }
     }
     
+    /*@ private normal_behavior
+    @   requires lblStatutIndicator != null;
+    @
+    @   assignable lblStatutIndicator.text, lblStatutIndicator.style;
+    @
+    @   ensures lblStatutIndicator.getText() != null;
+    @   ensures lblStatutIndicator.getStyle() != null;
+    @*/
+
     /**
      * Sets the status indicator style based on payment status
      * @param statut the payment status
@@ -219,6 +284,18 @@ public class SejourDetailPatientController implements Initializable {
             lblStatutIndicator.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 3 10;");
         }
     }
+
+    /*@ public normal_behavior
+    @   requires event != null;
+    @   requires event.getSource() instanceof Node;
+    @   assignable \everything;
+    @ also
+    @ public exceptional_behavior
+    @   requires event == null || !(event.getSource() instanceof Node);
+    @   assignable \nothing;
+    @   signals (NullPointerException) event == null;
+    @   signals (ClassCastException) event != null && !(event.getSource() instanceof Node);
+    @*/
     
     /**
      * Close the window

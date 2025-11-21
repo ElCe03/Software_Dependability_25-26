@@ -45,18 +45,35 @@ public class QRCodeScannerController implements Initializable {
     @FXML private Label lblMedecinName;
     @FXML private Label lblStatus;
     @FXML private TextArea txtDossierDetails;
-    
+
+    //@ public invariant dossierService != null;
     private final DossierMedicaleService dossierService = new DossierMedicaleService();
+
+    //@ public invariant userService != null;
     private final UserService userService = new UserService();
     
+    //@ public static invariant logger != null;
     private static final Logger logger = Logger.getLogger(QRCodeScannerController.class.getName());
     
+    /*@ public normal_behavior
+    @   requires patientInfoContainer != null;
+    @   assignable patientInfoContainer.visible, patientInfoContainer.managed;
+    @   ensures !patientInfoContainer.isVisible();
+    @   ensures !patientInfoContainer.isManaged();
+    @*/
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
         patientInfoContainer.setVisible(false);
         patientInfoContainer.setManaged(false);
     }
+
+    /*@ public normal_behavior
+    @   requires btnBrowseQRCode != null && btnBrowseQRCode.getScene() != null;
+    @   requires txtQRCodePath != null;
+    @   assignable txtQRCodePath.text;
+    @*/
     
     /**
      * Handle browse button click to select QR code image
@@ -77,6 +94,16 @@ public class QRCodeScannerController implements Initializable {
         }
     }
     
+    /*@ public normal_behavior
+    @   requires txtQRCodePath != null &&
+    @            patientInfoContainer != null &&
+    @            lblPatientName != null && lblDossierId != null &&
+    @            lblDateCreation != null && lblMedecinName != null &&
+    @            lblStatus != null && txtDossierDetails != null &&
+    @            dossierService != null;
+    @   assignable \everything;
+    @*/
+
     /**
      * Handle scan button click to decode QR code and display patient information
      */
@@ -123,6 +150,18 @@ public class QRCodeScannerController implements Initializable {
         }
     }
     
+    /*@ private normal_behavior
+    @   requires jsonData != null;
+    @   requires patientInfoContainer != null &&
+    @            lblPatientName != null && lblDossierId != null &&
+    @            lblDateCreation != null && lblMedecinName != null &&
+    @            lblStatus != null && txtDossierDetails != null &&
+    @            dossierService != null;
+    @   assignable lblPatientName.text, lblDossierId.text, lblDateCreation.text,
+    @              lblStatus.text, lblMedecinName.text, txtDossierDetails.text,
+    @              patientInfoContainer.visible, patientInfoContainer.managed;
+    @*/
+
     /**
      * Process the decoded QR code data and display dossier information
      */
@@ -191,6 +230,14 @@ public class QRCodeScannerController implements Initializable {
             logger.log(Level.SEVERE, "Error processing QR code data", e);
         }
     }
+
+    /*@ private normal_behavior
+    @   requires message != null;
+    @   requires patientInfoContainer != null;
+    @   assignable patientInfoContainer.visible, patientInfoContainer.managed;
+    @   ensures !patientInfoContainer.isVisible();
+    @   ensures !patientInfoContainer.isManaged();
+    @*/
     
     /**
      * Show error message

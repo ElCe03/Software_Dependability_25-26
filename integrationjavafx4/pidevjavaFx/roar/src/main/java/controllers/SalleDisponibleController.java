@@ -31,11 +31,33 @@ public class SalleDisponibleController {
     private final ObservableList<salle> salleData = FXCollections.observableArrayList();
     private final SalleService salleService = new SalleService();
 
+    /*@ public normal_behavior
+    @   requires salleTable != null && idCol != null && nomCol != null && capaciteCol != null &&
+    @            typeCol != null && statusCol != null && actionCol != null;
+    @   assignable idCol.cellValueFactory, nomCol.cellValueFactory, capaciteCol.cellValueFactory,
+    @              typeCol.cellValueFactory, statusCol.cellValueFactory, actionCol.cellFactory,
+    @              salleData.content, salleTable.items;
+    @   ensures salleTable.getItems() == salleData;
+    @*/
+
     @FXML
     public void initialize() {
         configureTableColumns();
         loadSalles();
     }
+
+    /*@ private normal_behavior
+    @   requires idCol != null && nomCol != null && capaciteCol != null &&
+    @            typeCol != null && statusCol != null && actionCol != null;
+    @   assignable idCol.cellValueFactory, nomCol.cellValueFactory, capaciteCol.cellValueFactory,
+    @              typeCol.cellValueFactory, statusCol.cellValueFactory, actionCol.cellFactory;
+    @   ensures idCol.getCellValueFactory() != null;
+    @   ensures nomCol.getCellValueFactory() != null;
+    @   ensures capaciteCol.getCellValueFactory() != null;
+    @   ensures typeCol.getCellValueFactory() != null;
+    @   ensures statusCol.getCellValueFactory() != null;
+    @   ensures actionCol.getCellFactory() != null;
+    @*/
 
     private void configureTableColumns() {
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -78,6 +100,12 @@ public class SalleDisponibleController {
         });
     }
 
+    /*@ private normal_behavior
+    @   requires salleTable != null && salleData != null && salleService != null;
+    @   assignable salleData.content, salleTable.items;
+    @   ensures salleTable.getItems() == salleData;
+    @*/
+
     private void loadSalles() {
         try {
             salleData.clear();
@@ -90,6 +118,12 @@ public class SalleDisponibleController {
             showAlert("Erreur", "Impossible de charger les salles : " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
+
+    /*@ private normal_behavior
+    @   requires selectedSalle != null;
+    @   assignable \everything;
+    @   ensures true;
+    @*/
 
     private void showReservationDialog(salle selectedSalle) {
         try {
@@ -118,6 +152,12 @@ public class SalleDisponibleController {
             showAlert("Erreur", "Erreur lors de l'ouverture de la fenêtre de réservation: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
+
+    /*@ private normal_behavior
+    @   requires title != null && message != null && alertType != null;
+    @   assignable \nothing;
+    @   ensures true;
+    @*/
 
     private void showAlert(String title, String message, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);

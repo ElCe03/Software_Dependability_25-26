@@ -155,6 +155,26 @@ public class PatientDashboardControllerE implements Initializable {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final Logger logger = Logger.getLogger(PatientDashboardControllerE.class.getName());
     
+    /*@ also
+    @ public normal_behavior
+    @   requires lblPatientName != null && lblWelcome != null && lblDossierCount != null && 
+    @            lblSejourCount != null && recentSejoursTable != null && colRecentDateEntree != null &&
+    @            allSejoursTable != null && colAllDateEntree != null && dashboardContent != null &&
+    @            dossierContent != null && sejoursContent != null && tabPane != null &&
+    @            btnVoirDetailSejour != null && qrCodeImageView != null && qrCodeContainer != null;
+    @
+    @   assignable \everything;
+    @
+    @   ensures dossierService != null && sejourService != null && userServiceE != null;
+    @   ensures recentSejours != null && allSejours != null;
+    @   ensures recentSejoursTable.getItems() == recentSejours;
+    @   ensures allSejoursTable.getItems() == allSejours;
+    @   ensures btnVoirDetailSejour.isDisabled() == true;
+    @   ensures dashboardContent.isVisible() == true;
+    @   ensures dossierContent.isVisible() == false;
+    @   ensures sejoursContent.isVisible() == false;
+    @*/
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
@@ -235,6 +255,14 @@ public class PatientDashboardControllerE implements Initializable {
             }
         });
     }
+
+    /*@ private normal_behavior
+    @   requires currentUser != null && dossierService != null && sejourService != null &&
+    @            lblPatientName != null && lblWelcome != null;
+    @   assignable \everything;
+    @   ensures lblPatientName.getText().equals(currentUser.getPrenom() + " " + currentUser.getNom());
+    @   ensures lblWelcome.getText().equals("Heureux de vous revoir, " + currentUser.getPrenom() + "!");
+    @*/
     
     private void loadUserData() {
         // Update UI with user info
@@ -247,6 +275,11 @@ public class PatientDashboardControllerE implements Initializable {
         // Load patient's séjours
         loadPatientSejours();
     }
+
+    /*@ private normal_behavior
+    @   requires currentUser != null && dossierService != null && userServiceE != null;
+    @   assignable \everything;
+    @*/
     
     /**
      * Load patient's medical record
@@ -331,6 +364,11 @@ public class PatientDashboardControllerE implements Initializable {
                     "Une erreur est survenue lors du chargement de votre dossier médical: " + e.getMessage());
         }
     }
+
+    /*@ private normal_behavior
+    @   requires currentUser != null && dossierService != null && userServiceE != null;
+    @   assignable \everything;
+    @*/
     
     /**
      * Creates a new medical record for the current patient and saves it to the database
@@ -411,6 +449,29 @@ public class PatientDashboardControllerE implements Initializable {
         }
     }
     
+    /*@ private normal_behavior
+    @   requires dossierContent != null && lblDossierId != null && lblDossierDateCreation != null &&
+    @            lblDossierMedecin != null && lblDossierStatut != null && lblHistoriqueMaladies != null &&
+    @            lblOperationsPassees != null && lblConsultationsPassees != null && lblNotes != null &&
+    @            qrCodeContainer != null && qrCodeImageView != null;
+    @
+    @   assignable dossierContent.content, lblDossierId.text, lblDossierDateCreation.text,
+    @              lblDossierMedecin.text, lblDossierStatut.text, lblHistoriqueMaladies.text,
+    @              lblOperationsPassees.text, lblConsultationsPassees.text, lblNotes.text,
+    @              qrCodeContainer.visible, qrCodeContainer.managed, qrCodeImageView.image,
+    @              qrCodeContainer.children;
+    @
+    @   requires patientDossier == null;
+    @   ensures qrCodeContainer.isVisible() == false;
+    @
+    @ also
+    @ private normal_behavior
+    @   requires patientDossier != null;
+    @   ensures lblDossierId.getText().equals(String.valueOf(patientDossier.getId()));
+    @   ensures qrCodeContainer.isVisible() == true;
+    @   ensures qrCodeContainer.isManaged() == true;
+    @*/
+
     /**
      * Update the UI with medical record details
      */
@@ -476,8 +537,16 @@ public class PatientDashboardControllerE implements Initializable {
                 
         // Generate and display QR Code
         generateQRCode();
-        }
-        
+    }
+    
+    
+    /*@ private normal_behavior
+    @   requires patientDossier != null && qrCodeImageView != null && qrCodeContainer != null && currentUser != null;
+    @   assignable qrCodeContainer.visible, qrCodeContainer.managed, qrCodeImageView.image, qrCodeContainer.children;
+    @   ensures qrCodeContainer.isVisible() == true;
+    @   ensures qrCodeContainer.isManaged() == true;
+    @*/
+
     /**
      * Generate a QR code for the patient's dossier medical
      */
@@ -524,6 +593,26 @@ public class PatientDashboardControllerE implements Initializable {
             }
         }
     }
+
+    /*@ private normal_behavior
+    @   requires sejourService != null && lblSejourCount != null &&
+    @            recentSejours != null && allSejours != null &&
+    @            recentSejoursTable != null && allSejoursTable != null;
+    @
+    @   assignable lblSejourCount.text, recentSejours.content, allSejours.content,
+    @              recentSejoursTable.items, allSejoursTable.items;
+    @
+    @   requires patientDossier == null;
+    @   ensures lblSejourCount.getText().equals("0");
+    @   ensures recentSejours.isEmpty();
+    @   ensures allSejours.isEmpty();
+    @
+    @ also
+    @ private normal_behavior
+    @   requires patientDossier != null;
+    @   assignable lblSejourCount.text, recentSejours.content, allSejours.content,
+    @              recentSejoursTable.items, allSejoursTable.items;
+    @*/
     
     /**
      * Load patient's séjours (stays) from the database
@@ -605,6 +694,20 @@ public class PatientDashboardControllerE implements Initializable {
             lblSejourCount.setText("0");
         }
     }
+
+    /*@ private normal_behavior
+    @   requires recentSejoursTable != null && colRecentDateEntree != null &&
+    @            colRecentDateSortie != null && colRecentTypeSejour != null &&
+    @            colRecentFraisSejour != null && colRecentStatutPaiement != null &&
+    @            recentSejours != null;
+    @   assignable colRecentDateEntree.cellValueFactory, colRecentDateSortie.cellValueFactory,
+    @              colRecentTypeSejour.cellValueFactory, colRecentFraisSejour.cellValueFactory,
+    @              colRecentStatutPaiement.cellValueFactory, colRecentStatutPaiement.cellFactory,
+    @              recentSejoursTable.items;
+    @   ensures colRecentDateEntree.getCellValueFactory() != null;
+    @   ensures colRecentStatutPaiement.getCellFactory() != null;
+    @   ensures recentSejoursTable.getItems() == recentSejours;
+    @*/
     
     private void setupRecentSejoursTable() {
         // Setup column cell value factories with appropriate formatting
@@ -673,6 +776,21 @@ public class PatientDashboardControllerE implements Initializable {
         // Set the items
         recentSejoursTable.setItems(recentSejours);
     }
+
+
+    /*@ private normal_behavior
+    @   requires allSejoursTable != null && colAllDateEntree != null &&
+    @            colAllDateSortie != null && colAllTypeSejour != null &&
+    @            colAllFraisSejour != null && colAllMoyenPaiement != null &&
+    @            colAllStatutPaiement != null && allSejours != null;
+    @   assignable colAllDateEntree.cellValueFactory, colAllDateSortie.cellValueFactory,
+    @              colAllTypeSejour.cellValueFactory, colAllFraisSejour.cellValueFactory,
+    @              colAllMoyenPaiement.cellValueFactory, colAllStatutPaiement.cellValueFactory,
+    @              colAllStatutPaiement.cellFactory, allSejoursTable.items;
+    @   ensures colAllDateEntree.getCellValueFactory() != null;
+    @   ensures colAllStatutPaiement.getCellFactory() != null;
+    @   ensures allSejoursTable.getItems() == allSejours;
+    @*/
     
     private void setupAllSejoursTable() {
         // Setup column cell value factories with appropriate formatting
@@ -746,6 +864,16 @@ public class PatientDashboardControllerE implements Initializable {
         // Set the items
         allSejoursTable.setItems(allSejours);
     }
+
+    /*@ private normal_behavior
+    @   requires dashboardContent != null && dossierContent != null && sejoursContent != null;
+    @   assignable dashboardContent.visible, dashboardContent.managed,
+    @              dossierContent.visible, dossierContent.managed,
+    @              sejoursContent.visible, sejoursContent.managed;
+    @   ensures (tabIndex == 0) ==> (dashboardContent.isVisible() == true && dossierContent.isVisible() == false);
+    @   ensures (tabIndex == 1) ==> (dossierContent.isVisible() == true && dashboardContent.isVisible() == false);
+    @   ensures (tabIndex == 2) ==> (sejoursContent.isVisible() == true && dashboardContent.isVisible() == false);
+    @*/
     
     private void updateVisibleContent(int tabIndex) {
         // Hide all content first
@@ -773,6 +901,11 @@ public class PatientDashboardControllerE implements Initializable {
         }
     }
     
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Tab;
+    @   assignable \everything;
+    @*/
+
     @FXML
     private void handleDossierTabSelected(javafx.event.Event event) {
         if (patientDossier == null) {
@@ -786,6 +919,12 @@ public class PatientDashboardControllerE implements Initializable {
         }
     }
     
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Tab;
+    @   assignable lblSejourCount.text, recentSejours.content, allSejours.content,
+    @              recentSejoursTable.items, allSejoursTable.items;
+    @*/
+    
     @FXML
     private void handleSejoursTabSelected(javafx.event.Event event) {
         if (allSejours.isEmpty()) {
@@ -798,6 +937,11 @@ public class PatientDashboardControllerE implements Initializable {
             updateVisibleContent(2);
         }
     }
+
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Node;
+    @   assignable \everything;
+    @*/
     
     @FXML
     private void handleVoirDetailSejour(ActionEvent event) {
@@ -856,6 +1000,11 @@ public class PatientDashboardControllerE implements Initializable {
                     "Erreur", "Impossible d'ouvrir la vue détaillée du séjour: " + e.getMessage());
         }
     }
+
+    /*@ public normal_behavior
+    @   requires event != null && event.getSource() instanceof Node;
+    @   assignable \everything;
+    @*/
     
     @FXML
     private void handleLogout(ActionEvent event) {

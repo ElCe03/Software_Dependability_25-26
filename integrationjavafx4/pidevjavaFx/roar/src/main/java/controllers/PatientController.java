@@ -25,15 +25,23 @@ public class PatientController {
     @FXML private Label dateNaissanceError;
     @FXML private Button btnEnregistrer;
 
+    //@ spec_public
     private Patient patient;
-    private final UserService userService = new UserService();
+
+    //@ public invariant userService != null;
+    private /*@ spec_public @*/final UserService userService = new UserService();
 
     // Expressions régulières pour la validation
     private static final String ADRESSE_REGEX = "^[A-Za-z0-9À-ÿ\\s\\-,'.#]+$";
     private static final Pattern ADRESSE_PATTERN = Pattern.compile(ADRESSE_REGEX);
+
     private static final String TELEPHONE_REGEX = "^(\\+[0-9]{1,3}\\s?)?[0-9]{8,10}$";
     private static final Pattern TELEPHONE_PATTERN = Pattern.compile(TELEPHONE_REGEX);
 
+    /*@ public normal_behavior
+      @   assignable this.patient;
+      @   ensures this.patient == patient;
+      @*/
     public void setUtilisateur(Patient patient) {
         this.patient = patient;
     }
@@ -126,6 +134,9 @@ public class PatientController {
         }
     }
 
+    /*@ private normal_behavior
+    @   assignable \everything; 
+    @*/
     private void resetErrorLabels() {
         adresseError.setText("");
         adresseError.setVisible(false);
@@ -135,6 +146,10 @@ public class PatientController {
         dateNaissanceError.setVisible(false);
     }
 
+    /*@ private normal_behavior
+      @   requires type != null && title != null && content != null;
+      @   assignable \nothing;
+      @*/
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

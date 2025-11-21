@@ -12,15 +12,45 @@ public class Translator {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final int MAX_RETRIES = 2;
     private static final long RETRY_DELAY_MS = 500;
+
+    //@ public static invariant consecutiveFailures >= 0;
+    //@ public static invariant (apiDisabled ==> consecutiveFailures >= FAILURE_THRESHOLD);
+
     private static boolean apiDisabled = false;
+
+    //@ spec_public
     private static int consecutiveFailures = 0;
     private static final int FAILURE_THRESHOLD = 3;
 
+
+    /*@ public static normal_behavior
+      @   assignable consecutiveFailures, apiDisabled;
+      @   ensures consecutiveFailures == 0;
+      @   ensures apiDisabled == false;
+      @*/
     public static void resetFailures() {
         consecutiveFailures = 0;
         apiDisabled = false;
     }
 
+
+    /*@ public static normal_behavior
+      @   requires text == null
+      @        || text.trim().isEmpty()
+      @        || sourceLang.equals(targetLang)
+      @        || apiDisabled;
+      @   assignable \nothing;
+      @   ensures \result != null;
+      @   ensures \result.join() == text;
+      @ also
+      @ public static normal_behavior
+      @   requires text != null
+      @        && !text.trim().isEmpty()
+      @        && !sourceLang.equals(targetLang)
+      @        && !apiDisabled;
+      @   assignable consecutiveFailures, apiDisabled;
+      @   ensures \result != null;
+      @*/
     public static CompletableFuture<String> translateAsync(String text, String sourceLang, String targetLang) {
         if (text == null || text.trim().isEmpty() || sourceLang.equals(targetLang)) {
             return CompletableFuture.completedFuture(text);
@@ -33,6 +63,19 @@ public class Translator {
         return tryTranslate(text, sourceLang, targetLang, 0);
     }
 
+
+    /*@ private static normal_behavior
+      @   requires attempt >= MAX_RETRIES;
+      @   assignable consecutiveFailures, apiDisabled;
+      @   ensures consecutiveFailures == \old(consecutiveFailures) + 1;
+      @   ensures (consecutiveFailures >= FAILURE_THRESHOLD) ==> apiDisabled;
+      @   ensures \result != null;
+      @ also
+      @ private static normal_behavior
+      @   requires attempt < MAX_RETRIES;
+      @   assignable consecutiveFailures, apiDisabled;
+      @   ensures \result != null;
+      @*/
     private static CompletableFuture<String> tryTranslate(String text, String sourceLang, String targetLang, int attempt) {
         if (attempt >= MAX_RETRIES) {
             System.err.println("Translation failed after " + MAX_RETRIES + " attempts");
@@ -98,10 +141,21 @@ public class Translator {
         }
     }
 
+
+    /*@ private static normal_behavior
+      @   requires consecutiveFailures < FAILURE_THRESHOLD;
+      @   assignable apiDisabled;
+      @   ensures apiDisabled == \old(apiDisabled);
+      @ also
+      @ private static normal_behavior
+      @   requires consecutiveFailures >= FAILURE_THRESHOLD;
+      @   assignable apiDisabled;
+      @   ensures apiDisabled == true;
+      @*/
     private static void checkFailureThreshold() {
         if (consecutiveFailures >= FAILURE_THRESHOLD) {
             apiDisabled = true;
-            System.err.println("Disabling API calls due to " + consecutiveFailures + " consecutive failures");
+           System.err.println("Disabling API calls due to " + consecutiveFailures + " consecutive failures");
         }
     }
 }
