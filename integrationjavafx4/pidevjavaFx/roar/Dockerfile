@@ -3,7 +3,7 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-COPY roar-app.jar app.jar
+COPY CliniCare.jar app.jar
 
 EXPOSE 8080
 
