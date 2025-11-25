@@ -20,6 +20,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build package
+      working-directory: ./integrationjavafx4/pidevjavaFx/roar
       run: mvn -B clean package 
 
     - name: Update dependency graph
