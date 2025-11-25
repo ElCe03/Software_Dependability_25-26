@@ -26,4 +26,33 @@ jobs:
       if: success() 
       with:
         name: roar-app-build
-        path: integrationjavafx4/pidevjavaFx/roar/target/*.jar
+        path: integrationjavafx4/pidevjavaFx/roar/target/CliniCare.jar
+
+
+  docker-push:
+    needs: build  
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+    
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: roar-app-artifact
+          path: integrationjavafx4/pidevjavaFx/roar
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: integrationjavafx4/pidevjavaFx/roar
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/clinicare:latest
