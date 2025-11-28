@@ -24,6 +24,7 @@ import service.EtageService;
 import service.SalleService;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -31,13 +32,15 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Properties;
 
 public class Listdepartement {
 
     private final DepartemntService departementService = new DepartemntService();
     private final EtageService etageService = new EtageService();
     private final SalleService salleService = new SalleService();
-    private static final String OPENCAGE_API_KEY = "47d253d97db14316aa01c6ff2d659492";
+
+    private String googleMapsApiKey;
 
     @FXML private FlowPane departementContainer;
     @FXML private TextField searchBar;
@@ -46,6 +49,13 @@ public class Listdepartement {
 
     @FXML
     public void initialize() {
+        Properties props = loadConfig();
+        this.googleMapsApiKey = props.getProperty("google.maps.api.key");
+
+        if (this.googleMapsApiKey == null || this.googleMapsApiKey.isEmpty()) {
+            System.err.println("Can't find google api key");
+        }
+
         loadAllDepartments();
         searchBar.textProperty().addListener((obs, oldVal, newVal) -> searchDepartments(newVal));
 
@@ -55,6 +65,18 @@ public class Listdepartement {
 
         // Handle More Info Button (Chatbot)
         moreInfoButton.setOnAction(e -> showChatbotDialog());
+    }
+
+    private Properties loadConfig() {
+        Properties props = new Properties();
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                props.load(input);
+            }
+        } catch (IOException e) {
+            System.err.println("Error loading config: " + e.getMessage());
+        }
+        return props;
     }
 
     private void loadAllDepartments() {
@@ -118,11 +140,13 @@ public class Listdepartement {
         container.getChildren().addAll(card, floorsContainerForThisDepartment);
         return container;
     }
+
     private double[] geocodeAddress(String address) {
         try {
             String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+
             String urlString = "https://maps.googleapis.com/maps/api/geocode/json?address="
-                    + encodedAddress + "&key=AIzaSyAJEuwo_pOrUzusQG6CS04gUCzu2_a-OQg";
+                    + encodedAddress + "&key=" + this.googleMapsApiKey;
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -199,6 +223,7 @@ public class Listdepartement {
                     .replace("'", "\\'")
                     .replace("\"", "\\\"");
 
+            // UTILIZZO DELLA VARIABILE SICURA (passata come 4° argomento a .formatted)
             htmlContent = """
             <!DOCTYPE html>
             <html>
@@ -230,7 +255,7 @@ public class Listdepartement {
                 </script>
             </body>
             </html>
-            """.formatted(lat, lng, sanitizedDeptName, "AIzaSyAJEuwo_pOrUzusQG6CS04gUCzu2_a-OQg");
+            """.formatted(lat, lng, sanitizedDeptName, this.googleMapsApiKey);
         } else {
             htmlContent = """
             <html><body>
@@ -266,7 +291,7 @@ public class Listdepartement {
     }
 
     private void showChatbotDialog() {
-        // Create a new stage for the chatbo
+        // Create a new stage for the chatbot
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Informations");
@@ -428,8 +453,7 @@ public class Listdepartement {
         for (departement dept : results) {
             departementContainer.getChildren().add(createDepartmentCard(dept));
         }
- }
-
+    }
 
     @FXML
     private void handleBackButton() {
@@ -444,6 +468,7 @@ public class Listdepartement {
             showAlert("Error", "Could not load the dashboard");
         }
     }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
