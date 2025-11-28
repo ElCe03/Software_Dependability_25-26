@@ -65,6 +65,8 @@ public class EmailService {
             @Override
             protected Void call() throws Exception {
                 try {
+                    // Ensure SSL server identity is checked for MITM protection
+                    SMTP_PROPS.put("mail.smtp.ssl.checkserveridentity", "true");
                     Session session = Session.getInstance(SMTP_PROPS, new Authenticator() {
                         @Override
                         protected PasswordAuthentication getPasswordAuthentication() {
