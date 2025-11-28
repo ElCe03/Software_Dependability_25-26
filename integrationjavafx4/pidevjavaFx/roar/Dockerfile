@@ -24,13 +24,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN ln -s /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
 COPY CliniCare.jar app.jar
-COPY start.sh start.sh
+COPY remoteview.sh remoteview.sh
 
-RUN chmod +x start.sh
+RUN chmod +x remoteview.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["./start.sh"]
+ENTRYPOINT ["./remoteview.sh"]
+
 
 
 
