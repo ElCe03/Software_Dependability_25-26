@@ -23,8 +23,10 @@ import service.CommandeService;
 import service.MedicamentService;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 public class CommandeFormController implements Initializable {
@@ -39,21 +41,30 @@ public class CommandeFormController implements Initializable {
     @FXML private Label medicamentError;
     @FXML private Label quantiteError;
 
-
-
     @FXML
     private Button backButton;
 
     private final CommandeService commandeService = new CommandeService();
     private final MedicamentService medicamentService = new MedicamentService();
     private final Commande currentCommande = new Commande();
-    private static final String STRIPE_API_KEY = "sk_test_51QwUe6LcrsrlufB1YCOREfRHnWPm4X2BW1LzSpfgGN8VYEqcpuVls5Ja3Fx9nxvh5lpvaDfrKZ9JxjI9u5za8e0a00SyM2b8RK";
+
+
     private static final String SUCCESS_URL = "http://localhost:4242/success";
     private static final String CANCEL_URL = "http://localhost:4242/cancel";
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Stripe.apiKey = STRIPE_API_KEY;
+
+        Properties props = loadConfig();
+        String stripeApiKey = props.getProperty("stripe.api.key");
+
+        if (stripeApiKey != null && !stripeApiKey.isEmpty()) {
+            Stripe.apiKey = stripeApiKey;
+        } else {
+            System.err.println("Can't find stripe api key");
+            showAlert(Alert.AlertType.ERROR, "Error in payments.");
+        }
+
         medicamentComboBox.getItems().addAll(medicamentService.readAll());
 
         medicamentComboBox.setConverter(new StringConverter<Medicament>() {
@@ -71,6 +82,21 @@ public class CommandeFormController implements Initializable {
         quantiteSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
         quantiteSpinner.valueProperty().addListener((obs, oldVal, newVal) -> updateTotalPrix());
         medicamentComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateTotalPrix());
+    }
+
+
+    private Properties loadConfig() {
+        Properties props = new Properties();
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                props.load(input);
+            } else {
+                System.err.println("Impossibile trovare il file config.properties");
+            }
+        } catch (IOException e) {
+            System.err.println("Errore caricamento config: " + e.getMessage());
+        }
+        return props;
     }
 
     @FXML
@@ -278,7 +304,7 @@ public class CommandeFormController implements Initializable {
             // Print dialog and print
             PrinterJob job = PrinterJob.createPrinterJob();
             if (job != null) {
-                job.showPrintDialog(null);  // You no longer need the WebView scene to invoke the print dialog
+                job.showPrintDialog(null);
                 webEngine.print(job);
                 job.endJob();
                 showAlert(Alert.AlertType.INFORMATION, "Facture exportée avec succès !");
@@ -311,17 +337,11 @@ public class CommandeFormController implements Initializable {
         quantiteError.setText("");
     }
 
-
-
-
-
-
-
     @FXML
     private void handleBackButtoncataloguecommande() {
         try {
             Stage stage = (Stage) backButton.getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/catalogue.fxml")); // or your target FXML
+            Parent root = FXMLLoader.load(getClass().getResource("/catalogue.fxml"));
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.show();
@@ -330,8 +350,6 @@ public class CommandeFormController implements Initializable {
             showAlert("Error", "Could not return to catalogue");
         }
     }
-
-
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
