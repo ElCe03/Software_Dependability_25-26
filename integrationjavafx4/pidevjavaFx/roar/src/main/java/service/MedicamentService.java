@@ -13,9 +13,6 @@ import java.util.Map;
 public class MedicamentService implements IService<Medicament> {
 
     private Connection cnx;
-    private Statement ste;
-    private PreparedStatement pst;
-    private ResultSet rs;
 
     public MedicamentService() {
         cnx = DataSource.getInstance().getConnection();
@@ -23,26 +20,10 @@ public class MedicamentService implements IService<Medicament> {
 
     @Override
     public void create(Medicament medicament) {
-        String requete = "INSERT INTO medicament (nom_medicament, description_medicament, type_medicament, prix_medicament, quantite_stock, date_entree, date_expiration) " +
-                "VALUES ('" + medicament.getNom_medicament() + "', '" +
-                medicament.getDescription_medicament() + "', '" +
-                medicament.getType_medicament() + "', " +
-                medicament.getPrix_medicament() + ", " +
-                medicament.getQuantite_stock() + ", '" +
-                medicament.getDate_entree() + "', '" +
-                medicament.getDate_expiration() + "')";
-        try {
-            ste = cnx.createStatement();
-            ste.executeUpdate(requete);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-
-    public void createPst(Medicament medicament) {
         String requete = "INSERT INTO medicament (nom_medicament, description_medicament, type_medicament, prix_medicament, quantite_stock, date_entree, date_expiration) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
 
         try (PreparedStatement pst = cnx.prepareStatement(requete, Statement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, medicament.getNom_medicament());
@@ -55,22 +36,21 @@ public class MedicamentService implements IService<Medicament> {
 
             pst.executeUpdate();
 
-            // Obtenir l'ID généré
+
             try (ResultSet generatedKeys = pst.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    medicament.setId(generatedKeys.getInt(1)); // mettre à jour l'objet Java
+                    medicament.setId(generatedKeys.getInt(1));
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Échec de la création", e);
+            throw new RuntimeException("Errore durante la creazione del medicinale", e);
         }
     }
 
     @Override
     public void delete(Medicament medicament) {
         String requete = "DELETE FROM medicament WHERE id = ?";
-        try {
-            pst = cnx.prepareStatement(requete);
+        try (PreparedStatement pst = cnx.prepareStatement(requete)) {
             pst.setInt(1, medicament.getId());
             pst.executeUpdate();
         } catch (SQLException e) {
@@ -88,7 +68,7 @@ public class MedicamentService implements IService<Medicament> {
                 + "quantite_stock = ?, "
                 + "date_entree = ?, "
                 + "date_expiration = ? "
-                + "WHERE id = ?"; // 8 paramètres
+                + "WHERE id = ?";
 
         try (PreparedStatement pst = cnx.prepareStatement(requete)) {
             pst.setString(1, medicament.getNom_medicament());
@@ -98,11 +78,11 @@ public class MedicamentService implements IService<Medicament> {
             pst.setInt(5, medicament.getQuantite_stock());
             pst.setDate(6, Date.valueOf(medicament.getDate_entree()));
             pst.setDate(7, Date.valueOf(medicament.getDate_expiration()));
-            pst.setInt(8, medicament.getId()); // ID en dernier
+            pst.setInt(8, medicament.getId());
 
             pst.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Échec de la mise à jour", e);
+            throw new RuntimeException("Echec de la mise à jour", e);
         }
     }
 
@@ -110,9 +90,10 @@ public class MedicamentService implements IService<Medicament> {
     public List<Medicament> readAll() {
         List<Medicament> list = new ArrayList<>();
         String requete = "SELECT * FROM medicament";
-        try {
-            ste = cnx.createStatement();
-            rs = ste.executeQuery(requete);
+        // Anche qui è meglio usare try-with-resources per Statement e ResultSet
+        try (Statement ste = cnx.createStatement();
+             ResultSet rs = ste.executeQuery(requete)) {
+
             while (rs.next()) {
                 list.add(new Medicament(
                         rs.getInt("id"),
@@ -134,31 +115,32 @@ public class MedicamentService implements IService<Medicament> {
     @Override
     public Medicament readById(int id) {
         String requete = "SELECT * FROM medicament WHERE id = ?";
-        try {
-            pst = cnx.prepareStatement(requete);
+        try (PreparedStatement pst = cnx.prepareStatement(requete)) {
             pst.setInt(1, id);
-            rs = pst.executeQuery();
-            if (rs.next()) {
-                return new Medicament(
-                        rs.getInt("id"),
-                        rs.getString("nom_medicament"),
-                        rs.getString("description_medicament"),
-                        rs.getString("type_medicament"),
-                        rs.getDouble("prix_medicament"),
-                        rs.getInt("quantite_stock"),
-                        rs.getDate("date_entree").toLocalDate(),
-                        rs.getDate("date_expiration").toLocalDate()
-                );
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return new Medicament(
+                            rs.getInt("id"),
+                            rs.getString("nom_medicament"),
+                            rs.getString("description_medicament"),
+                            rs.getString("type_medicament"),
+                            rs.getDouble("prix_medicament"),
+                            rs.getInt("quantite_stock"),
+                            rs.getDate("date_entree").toLocalDate(),
+                            rs.getDate("date_expiration").toLocalDate()
+                    );
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return null;
     }
+
     public Map<String, Integer> getTypeCounts() {
         Map<String, Integer> typeCounts = new HashMap<>();
-
         String query = "SELECT type_medicament, COUNT(*) AS count FROM medicament GROUP BY type_medicament";
+
         try (Statement stmt = cnx.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
@@ -186,18 +168,19 @@ public class MedicamentService implements IService<Medicament> {
             pst.setDate(1, Date.valueOf(today));
             pst.setDate(2, Date.valueOf(limitDate));
 
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                list.add(new Medicament(
-                        rs.getInt("id"),
-                        rs.getString("nom_medicament"),
-                        rs.getString("description_medicament"),
-                        rs.getString("type_medicament"),
-                        rs.getDouble("prix_medicament"),
-                        rs.getInt("quantite_stock"),
-                        rs.getDate("date_entree").toLocalDate(),
-                        rs.getDate("date_expiration").toLocalDate()
-                ));
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Medicament(
+                            rs.getInt("id"),
+                            rs.getString("nom_medicament"),
+                            rs.getString("description_medicament"),
+                            rs.getString("type_medicament"),
+                            rs.getDouble("prix_medicament"),
+                            rs.getInt("quantite_stock"),
+                            rs.getDate("date_entree").toLocalDate(),
+                            rs.getDate("date_expiration").toLocalDate()
+                    ));
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la récupération des médicaments proches de l'expiration", e);
@@ -205,5 +188,4 @@ public class MedicamentService implements IService<Medicament> {
 
         return list;
     }
-
 }
