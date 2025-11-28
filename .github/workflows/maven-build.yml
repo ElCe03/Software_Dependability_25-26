@@ -6,9 +6,12 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+permissions:
+  contents: read
+
 jobs:
   build:
-
     runs-on: ubuntu-22.04
 
     steps:
@@ -18,16 +21,17 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+    
     - name: Build package
       working-directory: ./integrationjavafx4/pidevjavaFx/roar
       run: mvn -B clean package 
+    
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       if: success() 
       with:
         name: clinicare-artifact
         path: integrationjavafx4/pidevjavaFx/roar/target/CliniCare.jar
-
 
   docker-push:
     needs: build  
