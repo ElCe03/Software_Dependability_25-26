@@ -10,7 +10,7 @@ public class EmailSender {
 
     private static final String EMAIL = "cryptomonnaie95@gmail.com";
     private static final String PASSWORD = "pyjk bqpq kamr xjhz";
- // Password or App Password
+    // Password or App Password
 
     private static Session getSession() {
         // Properties for connecting to Gmail
@@ -22,14 +22,15 @@ public class EmailSender {
         props.put("mail.smtp.ssl.checkserveridentity", "true");
 
         // Authentication session
-        return Session.getInstance(props, new Authenticator() {
+        Authenticator auth = new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 System.out.println("Email: " + EMAIL);
                 System.out.println("Password: " + PASSWORD);
                 return new PasswordAuthentication(EMAIL, PASSWORD);
             }
-        });
+        };
+        return Session.getInstance(props, auth);
     }
 
     public static boolean sendEmail(String to, String subject, String content) {

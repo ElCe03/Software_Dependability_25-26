@@ -4,7 +4,6 @@ import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import java.util.Properties;
 
-
 public class MailService {
 
     public static void sendEmail(String toEmail, String subject, String body) {
@@ -18,12 +17,13 @@ public class MailService {
         props.put("mail.smtp.starttls.enable", "true"); // TLS
         props.put("mail.smtp.ssl.checkserveridentity", "true"); // Enforce SSL hostname verification
 
-        Session session = Session.getInstance(props, new Authenticator() {
+        Authenticator auth = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(fromEmail, password);
             }
-        });
+        };
 
+        Session session = Session.getInstance(props, auth);
 
         try {
             Message message = new MimeMessage(session);

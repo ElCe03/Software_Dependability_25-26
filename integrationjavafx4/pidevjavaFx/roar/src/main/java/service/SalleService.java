@@ -9,11 +9,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static controllers.ReservationDialogController.LOGGER;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static java.sql.DriverManager.getConnection;
 
 public class SalleService {
 
+    private static final Logger LOGGER = Logger.getLogger(SalleService.class.getName());
+    
     public void addSalle(salle s) {
         String query = "INSERT INTO salle (nom, capacite, type_salle, status, etage_id, image, priorite) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DataSource.getInstance().getConnection();

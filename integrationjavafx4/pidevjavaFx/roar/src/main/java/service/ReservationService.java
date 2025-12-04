@@ -7,10 +7,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static controllers.ReservationDialogController.LOGGER;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ReservationService {
 
+    private static final Logger LOGGER = Logger.getLogger(ReservationService.class.getName());
+    
     public void addReservation(Connection conn, reservation reservation) throws SQLException {
         String query = "INSERT INTO reservation (salle_id, date_debut, date_fin) VALUES (?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
