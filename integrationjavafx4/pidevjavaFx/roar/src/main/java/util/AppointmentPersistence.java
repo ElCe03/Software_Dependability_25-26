@@ -29,7 +29,7 @@ public class AppointmentPersistence {
     }
 
     public static List<Appointment> loadAppointments() {
-        List<Appointment> appointments = new ArrayList<>();
+        List<Appointment> appointments = new ArrayList<Appointment>();
         File file = new File(APPOINTMENTS_FILE);
         if (!file.exists()) {
             return appointments;

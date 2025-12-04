@@ -34,7 +34,7 @@ public class QRCodeGenerator {
      */
     public static Image generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
 
-        Map<EncodeHintType, Object> hints = new HashMap<>();
+        Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
         
 
@@ -60,7 +60,7 @@ public class QRCodeGenerator {
      */
     public static byte[] generateQRCodeBytes(String text, int width, int height) throws WriterException, IOException {
 
-        Map<EncodeHintType, Object> hints = new HashMap<>();
+        Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
         hints.put(EncodeHintType.MARGIN, 2);
         

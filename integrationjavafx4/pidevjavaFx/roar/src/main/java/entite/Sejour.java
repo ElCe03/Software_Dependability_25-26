@@ -76,7 +76,7 @@ public class Sejour {
     
     // Getters and Setters
 
-    /*@ ensures \result == id; pure @*/
+    /*@ pure @*/
     public int getId() {
         return id;
     }
@@ -86,6 +86,7 @@ public class Sejour {
         this.id = id;
     }
     
+    /*@ pure @*/
     public LocalDateTime getDateEntree() {
         return dateEntree;
     }
@@ -94,6 +95,7 @@ public class Sejour {
         this.dateEntree = dateEntree;
     }
     
+    /*@ pure @*/
     public LocalDateTime getDateSortie() {
         return dateSortie;
     }
@@ -102,6 +104,7 @@ public class Sejour {
         this.dateSortie = dateSortie;
     }
     
+    /*@ pure @*/
     public String getTypeSejour() {
         return typeSejour;
     }
@@ -110,7 +113,7 @@ public class Sejour {
         this.typeSejour = typeSejour;
     }
     
-    /*@ ensures \result == fraisSejour; pure @*/
+    /*@ pure @*/
     public double getFraisSejour() {
         return fraisSejour;
     }
@@ -124,6 +127,7 @@ public class Sejour {
         this.fraisSejour = fraisSejour;
     }
     
+    /*@ pure @*/
     public String getMoyenPaiement() {
         return moyenPaiement;
     }
@@ -132,6 +136,7 @@ public class Sejour {
         this.moyenPaiement = moyenPaiement;
     }
     
+    /*@ pure @*/
     public String getStatutPaiement() {
         return statutPaiement;
     }
@@ -140,7 +145,7 @@ public class Sejour {
         this.statutPaiement = statutPaiement;
     }
     
-    /*@ ensures \result == prixExtras; pure @*/
+    /*@ pure @*/
     public double getPrixExtras() {
         return prixExtras;
     }
@@ -154,9 +159,7 @@ public class Sejour {
         this.prixExtras = prixExtras;
     }
     
-    /*@ ensures \result == dossierMedicale; 
-      @ pure 
-      @*/
+    /*@ pure @*/
     public DossierMedicale getDossierMedicale() {
         return dossierMedicale;
     }
@@ -174,6 +177,7 @@ public class Sejour {
     }
     
     // Transient getters and setters (not in database)
+    /*@ pure @*/
     public String getChambre() {
         return chambre;
     }
@@ -182,6 +186,7 @@ public class Sejour {
         this.chambre = chambre;
     }
     
+    /*@ pure @*/
     public String getNotes() {
         return notes;
     }

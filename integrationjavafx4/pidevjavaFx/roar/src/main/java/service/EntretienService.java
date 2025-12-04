@@ -34,7 +34,7 @@ public class EntretienService {
 
     // Récupérer tous les entretiens
     public List<Entretien> getAllEntretiens() {
-        List<Entretien> entretiens = new ArrayList<>();
+        List<Entretien> entretiens = new ArrayList<Entretien>();
         String sql = "SELECT * FROM entretien";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {

@@ -109,7 +109,7 @@ public class MedicamentService implements IService<Medicament> {
       @*/
     @Override
     public List<Medicament> readAll() {
-        List<Medicament> list = new ArrayList<>();
+        List<Medicament> list = new ArrayList<Medicament>();
         String requete = "SELECT * FROM medicament";
         // Anche qui è meglio usare try-with-resources per Statement e ResultSet
         try (Statement ste = cnx.createStatement();
@@ -166,7 +166,7 @@ public class MedicamentService implements IService<Medicament> {
       @ ensures \result != null;
       @*/
     public Map<String, Integer> getTypeCounts() {
-        Map<String, Integer> typeCounts = new HashMap<>();
+        Map<String, Integer> typeCounts = new HashMap<String, Integer>();
         String query = "SELECT type_medicament, COUNT(*) AS count FROM medicament GROUP BY type_medicament";
 
         try (Statement stmt = cnx.createStatement();
@@ -190,7 +190,7 @@ public class MedicamentService implements IService<Medicament> {
       @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
       @*/
     public List<Medicament> getMedicamentsProchesExpiration() {
-        List<Medicament> list = new ArrayList<>();
+        List<Medicament> list = new ArrayList<Medicament>();
         String requete = "SELECT * FROM medicament WHERE date_expiration BETWEEN ? AND ?";
 
         LocalDate today = LocalDate.now();

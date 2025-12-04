@@ -23,7 +23,7 @@ public class Users {
     
     /*@ spec_public non_null @*/
     @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> roles = new ArrayList<>();
+    private List<String> roles = new ArrayList<String>();
     /*@ spec_public nullable @*/
     private String nom;
 
@@ -43,7 +43,7 @@ public class Users {
       @ ensures id == 0;
       @*/
     public Users() {
-        this.roles = new ArrayList<>();
+        this.roles = new ArrayList<String>();
     }
 
     /*@ 
@@ -60,7 +60,7 @@ public class Users {
         this.id = id;
         this.email = email;
         this.password = password;
-        this.roles = roles != null ? roles : new ArrayList<>();
+        this.roles = roles != null ? roles : new ArrayList<String>();
         this.nom = nom;
         this.prenom = prenom;
         this.type = type;

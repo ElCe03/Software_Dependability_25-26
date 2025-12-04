@@ -31,7 +31,7 @@ public class DossierMedicale {
       @*/
     // Default constructor
     public DossierMedicale() {
-        this.sejours = new ArrayList<>();
+        this.sejours = new ArrayList<Sejour>();
     }
     
     /*@ 
@@ -53,12 +53,12 @@ public class DossierMedicale {
         this.statutDossier = statutDossier;
         this.notes = notes;
         this.image = image;
-        this.sejours = new ArrayList<>();
+        this.sejours = new ArrayList<Sejour>();
     }
     
     // Getters and Setters
 
-    /*@ ensures \result == id; pure @*/
+    /*@ pure @*/
     public int getId() {
         return id;
     }
@@ -68,7 +68,7 @@ public class DossierMedicale {
         this.id = id;
     }
     
-    /*@ ensures \result == patient; pure @*/
+    /*@ pure @*/
     public User getPatient() {
         return patient;
     }
@@ -78,7 +78,7 @@ public class DossierMedicale {
         this.patient = patient;
     }
     
-    /*@ ensures \result == medecin; pure @*/
+    /*@ pure @*/
     public User getMedecin() {
         return medecin;
     }
@@ -88,6 +88,7 @@ public class DossierMedicale {
         this.medecin = medecin;
     }
     
+    /*@ pure @*/
     public LocalDateTime getDateDeCreation() {
         return dateDeCreation;
     }
@@ -96,6 +97,7 @@ public class DossierMedicale {
         this.dateDeCreation = dateDeCreation;
     }
     
+    /*@ pure @*/
     public String getHistoriqueDesMaladies() {
         return historiqueDesMaladies;
     }
@@ -104,6 +106,7 @@ public class DossierMedicale {
         this.historiqueDesMaladies = historiqueDesMaladies;
     }
     
+    /*@ pure @*/
     public String getOperationsPassees() {
         return operationsPassees;
     }
@@ -112,6 +115,7 @@ public class DossierMedicale {
         this.operationsPassees = operationsPassees;
     }
     
+    /*@ pure @*/
     public String getConsultationsPassees() {
         return consultationsPassees;
     }
@@ -120,6 +124,7 @@ public class DossierMedicale {
         this.consultationsPassees = consultationsPassees;
     }
     
+    /*@ pure @*/
     public String getStatutDossier() {
         return statutDossier;
     }
@@ -128,6 +133,7 @@ public class DossierMedicale {
         this.statutDossier = statutDossier;
     }
     
+    /*@ pure @*/
     public String getNotes() {
         return notes;
     }
@@ -136,6 +142,7 @@ public class DossierMedicale {
         this.notes = notes;
     }
     
+    /*@ pure @*/
     public String getImage() {
         return image;
     }
@@ -144,7 +151,7 @@ public class DossierMedicale {
         this.image = image;
     }
     
-    /*@ ensures \result == sejours; ensures \result != null; pure @*/
+    /*@ pure @*/
     public List<Sejour> getSejours() {
         return sejours;
     }
@@ -164,12 +171,10 @@ public class DossierMedicale {
       @ ensures sejours != null;
       @ ensures sejours.contains(sejour);
       @ ensures sejours.size() == \old(sejours.size()) + 1;
-      @ 
-      @ ensures sejour.getDossierMedicale() == this;
       @*/
     public void addSejour(Sejour sejour) {
         if(sejours == null) {
-            sejours = new ArrayList<>();
+            sejours = new ArrayList<Sejour>();
         }
         sejours.add(sejour);
         

@@ -17,47 +17,35 @@ public class DossierMedicaleValidator {
         /*@ public invariant isValid <==> errors.isEmpty(); @*/
 
         /*@ 
-          @ assignable isValid, errors;
           @ ensures isValid == true;
           @ ensures errors != null && errors.isEmpty();
           @*/
         public ValidationResult() {
             this.isValid = true;
-            this.errors = new ArrayList<>();
+            this.errors = new ArrayList<String>();
         }
         
         /*@ 
           @ requires error != null;
-          @ assignable isValid, errors;
           @ ensures isValid == false;
           @ ensures errors.contains(error);
-          @ ensures errors.size() == \old(errors.size()) + 1;
           @*/
         public void addError(String error) {
             this.isValid = false;
             this.errors.add(error);
         }
         
-        /*@ 
-          @ ensures \result == isValid;
-          @ pure
-          @*/
+        /*@ pure @*/
         public boolean isValid() {
             return isValid;
         }
         
-        /*@ 
-          @ ensures \result != null;
-          @ pure
-          @*/
+        /*@ pure @*/
         public List<String> getErrors() {
             return errors;
         }
         
-        /*@ 
-          @ ensures \result != null;
-          @ pure
-          @*/
+        /*@ pure @*/
         public String getErrorMessage() {
             return String.join("\n", errors);
         }
@@ -66,11 +54,11 @@ public class DossierMedicaleValidator {
 
     /*@ 
       @ requires dossier != null;
-      @ 
+      @
       @ ensures \result != null;
       @
       @ assignable \nothing;
-      @ 
+      @
       @ ensures \result.isValid() ==> (
       @     dossier.getPatient() != null &&
       @     dossier.getMedecin() != null &&

@@ -32,7 +32,7 @@ public class User {
       @*/
     // Default constructor
     public User() {
-        this.roles = new ArrayList<>();
+        this.roles = new ArrayList<String>();
     }
 
     /*@ 
@@ -47,7 +47,7 @@ public class User {
                 String type, String specialite, String telephone, String adresse, LocalDate dateNaissance) {
         this.email = email;
         this.password = password;
-        this.roles = roles != null ? roles : new ArrayList<>();
+        this.roles = roles != null ? roles : new ArrayList<String>();
         this.nom = nom;
         this.prenom = prenom;
         this.type = type;
@@ -110,7 +110,7 @@ public class User {
       @*/
     public void addRole(String role) {
         if (this.roles == null) {
-            this.roles = new ArrayList<>();
+            this.roles = new ArrayList<String>();
         }
         this.roles.add(role);
     }

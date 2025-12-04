@@ -165,7 +165,7 @@ public class DossierMedicaleService {
      * @return a list of all medical records
      */
     public List<DossierMedicale> recupererTousDossiers(boolean loadSejours) {
-        List<DossierMedicale> dossiers = new ArrayList<>();
+        List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale";
         
         try (Statement stmt = connection.createStatement();
@@ -176,7 +176,7 @@ public class DossierMedicaleService {
                 dossiers.add(dossier);
             }
             
-            // Load associated séjours for each dossier if requested and sejourService is initialized
+             // Load associated séjours for each dossier if requested and sejourService is initialized
             if (loadSejours && sejourService != null) {
                 for (DossierMedicale dossier : dossiers) {
                     dossier.setSejours(sejourService.recupererSejoursParDossier(dossier.getId()));
@@ -205,7 +205,7 @@ public class DossierMedicaleService {
      * @return a list of medical records for the patient
      */
     public List<DossierMedicale> recupererDossiersParPatient(int patientId, boolean loadSejours) {
-        List<DossierMedicale> dossiers = new ArrayList<>();
+        List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale WHERE patient_id = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -248,7 +248,7 @@ public class DossierMedicaleService {
      * @return a list of medical records assigned to the doctor
      */
     public List<DossierMedicale> recupererDossiersParMedecin(int medecinId, boolean loadSejours) {
-        List<DossierMedicale> dossiers = new ArrayList<>();
+        List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale WHERE medecin_id = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -291,7 +291,7 @@ public class DossierMedicaleService {
      * @return a list of medical records with the specified status
      */
     public List<DossierMedicale> recupererDossiersParStatut(String statut, boolean loadSejours) {
-        List<DossierMedicale> dossiers = new ArrayList<>();
+        List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale WHERE statut_dossier = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -369,20 +369,20 @@ public class DossierMedicaleService {
      * @return a map containing various statistics
      */
     public java.util.Map<String, Object> getStatistiques() {
-        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        java.util.Map<String, Object> stats = new java.util.HashMap<String, Object>();
         System.out.println("DossierMedicaleService.getStatistiques() - Starting to fetch statistics");
         
         // Count total dossiers - Make sure we're counting only valid records
         String sqlTotal = "SELECT COUNT(*) FROM dossier_medicale WHERE id IS NOT NULL";
         System.out.println("SQL Query for total dossiers: " + sqlTotal);
-        
+
         // Count dossiers by status - Use COALESCE to handle NULL values
         String sqlByStatus = "SELECT COALESCE(statut_dossier, 'Non défini') as statut, COUNT(*) as count " +
                             "FROM dossier_medicale " +
                             "GROUP BY COALESCE(statut_dossier, 'Non défini')";
         System.out.println("SQL Query for dossiers by status: " + sqlByStatus);
-        
-        // Count dossiers created per month in current year - Handle NULL dates
+
+                            // Count dossiers created per month in current year - Handle NULL dates
         String sqlByMonth = "SELECT MONTH(COALESCE(date_de_creation, CURRENT_DATE())) as month, COUNT(*) as count " +
                          "FROM dossier_medicale " +
                          "WHERE YEAR(COALESCE(date_de_creation, CURRENT_DATE())) = YEAR(CURRENT_DATE()) " +
@@ -398,7 +398,7 @@ public class DossierMedicaleService {
                            "GROUP BY m.id, m.nom, m.prenom " +
                            "ORDER BY count DESC";
         System.out.println("SQL Query for dossiers by medecin: " + sqlByMedecin);
-                           
+
         try (Statement stmt = connection.createStatement()) {
             // Get total count
             try (ResultSet rs = stmt.executeQuery(sqlTotal)) {
@@ -413,7 +413,7 @@ public class DossierMedicaleService {
             }
             
             // Get counts by status
-            java.util.Map<String, Integer> statsByStatus = new java.util.HashMap<>();
+            java.util.Map<String, Integer> statsByStatus = new java.util.HashMap<String, Integer>();
             try (ResultSet rs = stmt.executeQuery(sqlByStatus)) {
                 while (rs.next()) {
                     String status = rs.getString("statut");
@@ -425,10 +425,10 @@ public class DossierMedicaleService {
                 System.err.println("Error executing dossiers by status query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("dossiersByStatus", statsByStatus);
+            stats.put("dossiersByStatus", (Object) statsByStatus);
             
             // Get counts by month
-            java.util.Map<Integer, Integer> statsByMonth = new java.util.HashMap<>();
+            java.util.Map<Integer, Integer> statsByMonth = new java.util.HashMap<Integer, Integer>();
             for (int i = 1; i <= 12; i++) {
                 statsByMonth.put(i, 0); // Initialize all months with 0
             }
@@ -443,13 +443,13 @@ public class DossierMedicaleService {
                 System.err.println("Error executing dossiers by month query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("dossiersByMonth", statsByMonth);
+            stats.put("dossiersByMonth", (Object) statsByMonth);
             
             // Get count by medecin
-            List<java.util.Map<String, Object>> statsByMedecin = new ArrayList<>();
+            List<java.util.Map<String, Object>> statsByMedecin = new ArrayList<java.util.Map<String, Object>>();
             try (ResultSet rs = stmt.executeQuery(sqlByMedecin)) {
                 while (rs.next()) {
-                    java.util.Map<String, Object> medecinStat = new java.util.HashMap<>();
+                    java.util.Map<String, Object> medecinStat = new java.util.HashMap<String, Object>();
                     int id = rs.getInt("id");
                     String nom = rs.getString("nom");
                     String prenom = rs.getString("prenom");
@@ -467,7 +467,7 @@ public class DossierMedicaleService {
                 System.err.println("Error executing dossiers by medecin query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("dossiersByMedecin", statsByMedecin);
+            stats.put("dossiersByMedecin", (Object) statsByMedecin);
             
             System.out.println("DossierMedicaleService.getStatistiques() completed successfully");
         } catch (SQLException e) {
@@ -476,5 +476,5 @@ public class DossierMedicaleService {
         }
         
         return stats;
-    }
-} 
+    }    
+}

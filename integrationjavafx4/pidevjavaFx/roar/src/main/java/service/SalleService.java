@@ -47,7 +47,7 @@ public class SalleService {
     }
 
     public List<salle> getAll() {
-        List<salle> list = new ArrayList<>();
+        List<salle> list = new ArrayList<salle>();
         String query = "SELECT s.*, e.numero as etage_numero FROM salle s LEFT JOIN etage e ON s.etage_id = e.id";
 
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -178,7 +178,7 @@ public class SalleService {
     }
 
     public List<salle> getSallesByEtage(int etageId) {
-        List<salle> list = new ArrayList<>();
+        List<salle> list = new ArrayList<salle>();
         String query = "SELECT s.*, e.numero as etage_numero FROM salle s LEFT JOIN etage e ON s.etage_id = e.id WHERE s.etage_id = ?";
 
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -282,7 +282,7 @@ public class SalleService {
         }
     }
     public List<salle> getAvailableSalles() throws SQLException {
-        List<salle> availableSalles = new ArrayList<>();
+        List<salle> availableSalles = new ArrayList<salle>();
         String query = "SELECT * FROM salle WHERE status = 'Disponible'";
 
         try (Connection conn = DataSource.getInstance().getConnection();

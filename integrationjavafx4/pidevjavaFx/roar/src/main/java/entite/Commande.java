@@ -28,7 +28,7 @@ public class Commande {
       @ ensures medicamentsCommandes != null && medicamentsCommandes.isEmpty();
       @*/
     public Commande() {
-        this.medicamentsCommandes = new ArrayList<>();
+        this.medicamentsCommandes = new ArrayList<MedicamentCommande>();
     }
 
     /*@ 
@@ -47,7 +47,7 @@ public class Commande {
         this.date_commande = date_commande;
         this.total_prix = total_prix;
         this.quantite = quantite;
-        this.medicamentsCommandes = new ArrayList<>();
+        this.medicamentsCommandes = new ArrayList<MedicamentCommande>();
     }
 
     // Getters/Setters

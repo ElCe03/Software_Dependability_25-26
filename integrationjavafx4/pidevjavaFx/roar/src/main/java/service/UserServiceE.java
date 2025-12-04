@@ -162,7 +162,7 @@ public class UserServiceE {
      * @return a list of all users
      */
     public List<User> recupererTousUsers() {
-        List<User> users = new ArrayList<>();
+        List<User> users = new ArrayList<User>();
         String sql = "SELECT * FROM users";
         
         try (Statement stmt = connection.createStatement();
@@ -186,7 +186,7 @@ public class UserServiceE {
      * @return a list of users with the specified type
      */
     public List<User> recupererUsersParRole(String type) {
-        List<User> users = new ArrayList<>();
+        List<User> users = new ArrayList<User>();
         // Query users based on the type column
         String sql = "SELECT * FROM users WHERE type = ?";
         
@@ -235,7 +235,7 @@ public class UserServiceE {
      * @return List of role strings
      */
     private List<String> convertJsonToRoles(String rolesJson) {
-        List<String> roles = new ArrayList<>();
+        List<String> roles = new ArrayList<String>();
         
         if (rolesJson != null && !rolesJson.isEmpty()) {
             try {
@@ -305,4 +305,4 @@ public class UserServiceE {
         
         return user;
     }
-} 
+}
