@@ -12,6 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
+
+    /*@ 
+      @ requires email != null && !email.isEmpty();
+      @ requires password != null && !password.isEmpty();
+      @ 
+      @ ensures \result != null ==> \result.getEmail().equals(email);
+      @ 
+      @ signals (SQLException e) true;
+      @ signals (JsonProcessingException e) true;
+      @*/
     public Users authenticate(String email, String password) throws SQLException, JsonProcessingException {
         String query = "SELECT id, nom, prenom, email, password, roles, type, adresse, telephone, date_naissance, specialite FROM users WHERE email = ?";
 
@@ -84,6 +94,17 @@ public class UserService {
         return null; // Utilisateur non trouvé
     }
 
+    /*@ 
+      @ requires user != null;
+      @ requires type != null;
+      @ requires user.getId() == 0; // Deve essere un NUOVO utente
+      @ requires user.getEmail() != null && !user.getEmail().isEmpty();
+      @ requires user.getPassword() != null && !user.getPassword().isEmpty();
+      @ 
+      @ ensures user.getId() > 0;
+      @ 
+      @ signals (IllegalArgumentException e) true;
+      @*/
     public void ajouterUtilisateur(Users user, String type) throws SQLException, JsonProcessingException {
         // Validation
         if (user == null || user.getEmail() == null || user.getEmail().isEmpty() ||
@@ -167,6 +188,9 @@ public class UserService {
         }
     }
 
+    /*@ 
+      @ requires id > 0;
+      @*/
     public void supprimer(int id) throws SQLException {
         String checkQuery = "SELECT COUNT(*) FROM users WHERE id = ?";
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -192,6 +216,10 @@ public class UserService {
         }
     }
 
+    /*@ 
+      @ ensures \result != null;
+      @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
+      @*/
     public List<Users> listerUtilisateurs() throws SQLException {
         List<Users> utilisateurs = new ArrayList<>();
         String req = "SELECT id, nom, prenom, email, roles, type, adresse, telephone, date_naissance, specialite FROM users";
@@ -256,6 +284,11 @@ public class UserService {
         return utilisateurs;
     }
 
+    /*@ 
+      @ requires user != null;
+      @ requires user.getId() > 0;
+      @ requires user.getEmail() != null && !user.getEmail().isEmpty();
+      @*/
     // La méthode updateUtilisateur peut être conservée si vous voulez modifier des utilisateurs existants
     public void updateUtilisateur(Users user) throws SQLException, JsonProcessingException {
         // Validation des champs communs, y compris password

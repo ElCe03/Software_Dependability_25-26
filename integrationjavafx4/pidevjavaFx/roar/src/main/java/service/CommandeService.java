@@ -11,8 +11,17 @@ import java.util.List;
 
 public class CommandeService implements IService<Commande> {
 
+    /*@ spec_public non_null @*/
     private Connection cnx = DataSource.getInstance().getConnection();
 
+    /*@ 
+      @ requires commande != null;
+      @ requires commande.getId() == 0;
+      @
+      @ ensures commande.getId() > 0;
+      @ 
+      @ signals (RuntimeException e) true;
+      @*/
     @Override
     public void create(Commande commande) {
         String sql = "INSERT INTO commande (date_commande, total_prix, quantite, stripe_session_id, status) VALUES (?, ?, ?, ?, ?)";
@@ -53,6 +62,12 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ requires commande != null;
+      @ requires commande.getId() > 0;
+      @ requires commande.getMedicaments() != null;
+      @ signals (SQLException e) true;
+      @*/
     private void saveLignesCommande(Commande commande) throws SQLException {
         String sql = "INSERT INTO medicament_commande (commande_id, medicament_id, quantite) VALUES (?, ?, ?)";
 
@@ -67,6 +82,10 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ requires commande != null;
+      @ requires commande.getId() > 0;
+      @*/
     public void delete(Commande commande) {
         String deleteMedicamentsSQL = "DELETE FROM medicament_commande WHERE commande_id = ?";
         String deleteCommandeSQL = "DELETE FROM commande WHERE id = ?";
@@ -83,6 +102,10 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ requires commande != null;
+      @ requires commande.getId() > 0;
+      @*/
     @Override
     public void update(Commande commande) {
         String sql = "UPDATE commande SET date_commande = ?, total_prix = ?, quantite = ?, status = ?, stripe_session_id = ? WHERE id = ?";
@@ -99,6 +122,10 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ ensures \result != null;
+      @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
+      @*/
     @Override
     public List<Commande> readAll() {
         List<Commande> commandes = new ArrayList<>();
@@ -130,6 +157,11 @@ public class CommandeService implements IService<Commande> {
         return commandes;
     }
 
+    /*@ 
+      @ requires id > 0;
+      @ 
+      @ ensures \result != null ==> \result.getId() == id;
+      @*/
     @Override
     public Commande readById(int id) {
         String sql = "SELECT * FROM commande WHERE id = ?";
@@ -156,6 +188,10 @@ public class CommandeService implements IService<Commande> {
         return commande;
     }
 
+    /*@ 
+      @ requires commandeId > 0;
+      @ ensures \result != null;
+      @*/
     public List<MedicamentCommande> getMedicamentsForCommande(int commandeId) {
         List<MedicamentCommande> lignes = new ArrayList<>();
         String sql = "SELECT m.*, cm.quantite FROM medicament_commande cm "

@@ -10,32 +10,74 @@ import java.util.List;
 public class DossierMedicaleValidator {
     
     public static class ValidationResult {
-        private boolean isValid;
-        private List<String> errors;
+        /*@ spec_public @*/ private boolean isValid;
+        /*@ spec_public non_null @*/ private List<String> errors;
         
+        /*@ public invariant errors != null; @*/
+        /*@ public invariant isValid <==> errors.isEmpty(); @*/
+
+        /*@ 
+          @ assignable isValid, errors;
+          @ ensures isValid == true;
+          @ ensures errors != null && errors.isEmpty();
+          @*/
         public ValidationResult() {
             this.isValid = true;
             this.errors = new ArrayList<>();
         }
         
+        /*@ 
+          @ requires error != null;
+          @ assignable isValid, errors;
+          @ ensures isValid == false;
+          @ ensures errors.contains(error);
+          @ ensures errors.size() == \old(errors.size()) + 1;
+          @*/
         public void addError(String error) {
             this.isValid = false;
             this.errors.add(error);
         }
         
+        /*@ 
+          @ ensures \result == isValid;
+          @ pure
+          @*/
         public boolean isValid() {
             return isValid;
         }
         
+        /*@ 
+          @ ensures \result != null;
+          @ pure
+          @*/
         public List<String> getErrors() {
             return errors;
         }
         
+        /*@ 
+          @ ensures \result != null;
+          @ pure
+          @*/
         public String getErrorMessage() {
             return String.join("\n", errors);
         }
     }
-    
+
+
+    /*@ 
+      @ requires dossier != null;
+      @ 
+      @ ensures \result != null;
+      @
+      @ assignable \nothing;
+      @ 
+      @ ensures \result.isValid() ==> (
+      @     dossier.getPatient() != null &&
+      @     dossier.getMedecin() != null &&
+      @     dossier.getDateDeCreation() != null &&
+      @     dossier.getStatutDossier() != null
+      @ );
+      @*/
     public static ValidationResult validate(DossierMedicale dossier) {
         ValidationResult result = new ValidationResult();
         
@@ -135,12 +177,27 @@ public class DossierMedicaleValidator {
         return result;
     }
     
+    /*@ 
+      @ requires statut != null;
+      @ ensures \result == (statut.equals("Actif") || statut.equals("Archivé") || statut.equals("En attente"));
+      @ pure
+      @*/
     private static boolean isValidStatut(String statut) {
         return statut.equals("Actif") || 
                statut.equals("Archivé") || 
                statut.equals("En attente");
     }
     
+    /*@ 
+      @ // Requires previene NPE su .toLowerCase()
+      @ requires filename != null; 
+      @ ensures \result == (
+      @     filename.toLowerCase().endsWith(".jpg") || 
+      @     filename.toLowerCase().endsWith(".jpeg") || 
+      @     filename.toLowerCase().endsWith(".png")
+      @ );
+      @ pure
+      @*/
     private static boolean isValidImageFormat(String filename) {
         String lowerFilename = filename.toLowerCase();
         return lowerFilename.endsWith(".jpg") || 

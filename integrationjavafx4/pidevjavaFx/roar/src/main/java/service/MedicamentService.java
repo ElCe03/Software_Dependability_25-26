@@ -12,12 +12,21 @@ import java.util.Map;
 
 public class MedicamentService implements IService<Medicament> {
 
+    /*@ spec_public non_null @*/
     private Connection cnx;
 
     public MedicamentService() {
         cnx = DataSource.getInstance().getConnection();
     }
 
+    /*@ 
+      @ requires medicament != null;
+      @ requires medicament.getId() == 0;
+      @ 
+      @ ensures medicament.getId() > 0;
+      @ 
+      @ signals (RuntimeException e) true;
+      @*/
     @Override
     public void create(Medicament medicament) {
 
@@ -47,6 +56,10 @@ public class MedicamentService implements IService<Medicament> {
         }
     }
 
+    /*@ 
+      @ requires medicament != null;
+      @ requires medicament.getId() > 0;
+      @*/
     @Override
     public void delete(Medicament medicament) {
         String requete = "DELETE FROM medicament WHERE id = ?";
@@ -58,6 +71,10 @@ public class MedicamentService implements IService<Medicament> {
         }
     }
 
+    /*@ 
+      @ requires medicament != null;
+      @ requires medicament.getId() > 0;
+      @*/
     @Override
     public void update(Medicament medicament) {
         String requete = "UPDATE medicament SET "
@@ -86,6 +103,10 @@ public class MedicamentService implements IService<Medicament> {
         }
     }
 
+    /*@ 
+      @ ensures \result != null;
+      @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
+      @*/
     @Override
     public List<Medicament> readAll() {
         List<Medicament> list = new ArrayList<>();
@@ -112,6 +133,10 @@ public class MedicamentService implements IService<Medicament> {
         return list;
     }
 
+    /*@ 
+      @ requires id > 0;
+      @ ensures \result != null ==> \result.getId() == id;
+      @*/
     @Override
     public Medicament readById(int id) {
         String requete = "SELECT * FROM medicament WHERE id = ?";
@@ -137,6 +162,9 @@ public class MedicamentService implements IService<Medicament> {
         return null;
     }
 
+    /*@ 
+      @ ensures \result != null;
+      @*/
     public Map<String, Integer> getTypeCounts() {
         Map<String, Integer> typeCounts = new HashMap<>();
         String query = "SELECT type_medicament, COUNT(*) AS count FROM medicament GROUP BY type_medicament";
@@ -157,6 +185,10 @@ public class MedicamentService implements IService<Medicament> {
         return typeCounts;
     }
 
+    /*@ 
+      @ ensures \result != null;
+      @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
+      @*/
     public List<Medicament> getMedicamentsProchesExpiration() {
         List<Medicament> list = new ArrayList<>();
         String requete = "SELECT * FROM medicament WHERE date_expiration BETWEEN ? AND ?";
