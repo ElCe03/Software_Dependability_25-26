@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+
+<VBox xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.MedicamentListController" spacing="10" style="-fx-padding: 20;"
+      stylesheets="@/medicament.css">
+
+    <!-- Header -->
+    <HBox spacing="10" style="-fx-background-color: #f0f0f0; -fx-padding: 15;">
+        <Label text="Gestion des Médicaments" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+        <Button text="Nouveau" onAction="#handleNewMedicament" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+    </HBox>
+
+    <!-- Search, Sort, Items per page -->
+    <HBox spacing="10">
+        <TextField fx:id="searchField" promptText="Rechercher par nom..." />
+        <ComboBox fx:id="sortComboBox" promptText="Trier par..." />
+        <ComboBox fx:id="itemsPerPageCombo" promptText="Éléments/page" prefWidth="150"/>
+    </HBox>
+
+    <!-- Form section (optional/placeholder) -->
+    <GridPane hgap="10" vgap="10">
+        <!-- Form fields can be added here if needed -->
+    </GridPane>
+
+    <!-- Table -->
+    <TableView fx:id="medicamentTable" styleClass="blue-header">
+        <columns>
+            <TableColumn text="Nom" fx:id="nameColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="nom_medicament" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Description" fx:id="descriptionColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="description_medicament" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Type" fx:id="typeColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="type_medicament" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Prix" fx:id="prixColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="prix_medicament" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Quantité" fx:id="stockColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="quantite_stock" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Date d'entrée" fx:id="dateEntreeColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="date_entree" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Date d'expiration" fx:id="dateExpirationColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="date_expiration" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <!-- Modifier Button Column -->
+            <TableColumn text="Modifier" fx:id="modifyColumn" styleClass="blue-header" />
+
+            <!-- Supprimer Button Column -->
+            <TableColumn text="Supprimer" fx:id="deleteColumn" styleClass="blue-header" />
+        </columns>
+    </TableView>
+
+    <!-- Diagramme circulaire des types de médicaments -->
+    <Label text="Répartition par type de médicament" style="-fx-font-size: 16; -fx-font-weight: bold;" />
+    <VBox VBox.vgrow="ALWAYS">
+        <PieChart fx:id="typePieChart" VBox.vgrow="ALWAYS"
+                  minHeight="300" minWidth="400" />
+    </VBox>
+
+    <Label fx:id="expirationAlertLabel" text="" style="-fx-text-fill: red;" />
+
+    <Pagination fx:id="pagination" maxPageIndicatorCount="10" />
+
+</VBox>

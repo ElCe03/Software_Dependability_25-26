@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.ServiceListController"
+            style="-fx-background: #f5f9ff; -fx-border-color: transparent;">
+    <content>
+        <VBox fx:id="galleryContainer" spacing="20">
+            <padding>
+                <Insets top="20" right="25" bottom="20" left="25"/>
+            </padding>
+
+            <!-- Header with back button, logo and title -->
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <Button fx:id="backBtn" text="← Back"
+                        style="-fx-background-color: linear-gradient(to bottom, #FF0000, #CC0000);
+                               -fx-text-fill: white;
+                               -fx-font-weight: bold;
+                               -fx-font-size: 14px;
+                               -fx-padding: 8 15;
+                               -fx-background-radius: 20;
+                               -fx-border-radius: 20;
+                               -fx-border-width: 0;
+                               -fx-cursor: hand;
+                               -fx-effect: dropshadow(three-pass-box, rgba(255,0,0,0.4), 5, 0, 0, 1);">
+                </Button>
+
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <ImageView fitHeight="40" fitWidth="40" preserveRatio="true"/>
+                    <Label text="Our Medical Services"
+                           style="-fx-font-size: 24px;
+                                 -fx-font-weight: bold;
+                                 -fx-text-fill: #0066cc;"/>
+                </HBox>
+            </HBox>
+
+            <!-- Search and refresh controls - Added the new button here -->
+            <HBox spacing="15" alignment="CENTER_RIGHT">
+                <Button fx:id="preScreenBtn" text="Check your self" onAction="#goToPreScreen"
+                        style="-fx-background-color: linear-gradient(to bottom, #87CEEB, #4682B4);
+                               -fx-text-fill: white;
+                               -fx-font-weight: bold;
+                               -fx-font-size: 14px;
+                               -fx-padding: 8 15;
+                               -fx-background-radius: 20;
+                               -fx-border-radius: 20;
+                               -fx-border-width: 0;
+                               -fx-cursor: hand;
+                               -fx-effect: dropshadow(three-pass-box, rgba(135,206,235,0.4), 5, 0, 0, 1);"/>
+                <TextField fx:id="searchField" promptText="Search services..."/>
+                <ComboBox fx:id="languageComboBox" promptText="Select Language" style="-fx-pref-width: 150;"/>
+                <Button fx:id="refreshBtn" text="Refresh" onAction="#handleRefresh"/>
+                <ProgressIndicator fx:id="loadingIndicator" prefWidth="30" prefHeight="30" visible="false"/>
+            </HBox>
+
+            <!-- Translation warning label -->
+            <Label fx:id="translationWarningLabel" text="" style="-fx-text-fill: #b91c1c; -fx-font-size: 12px;" visible="false"/>
+
+            <!-- Services display area -->
+            <FlowPane fx:id="servicesFlowPane" alignment="TOP_CENTER"/>
+        </VBox>
+    </content>
+</ScrollPane>

@@ -1,0 +1,165 @@
+/* Apply a red-blue gradient background */
+#navBar {
+    -fx-background-color: linear-gradient(to right, red, blue);
+    -fx-padding: 10px;
+}
+
+/* Style for buttons */
+#homeBtn, #profileBtn, #settingsBtn {
+    -fx-background-color: rgba(255, 255, 255, 0.2); /* Transparent White */
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 15px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-color: white;
+}
+
+/* Hover effect */
+#homeBtn:hover, #profileBtn:hover, #settingsBtn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+    -fx-cursor: hand;
+}
+
+/* Active button effect */
+#homeBtn:pressed, #profileBtn:pressed, #settingsBtn:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.6);
+}
+/* Apply a red-blue gradient background */
+#navBar {
+    -fx-background-color: linear-gradient(to right, red, blue);
+    -fx-padding: 10px;
+}
+
+/* Style for buttons */
+#homeBtn,
+#profileBtn,
+#settingsBtn {
+    -fx-background-color: rgba(255, 255, 255, 0.2); /* Transparent White */
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 15px;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-border-color: white;
+}
+
+/* Hover effect */
+#homeBtn:hover,
+#profileBtn:hover,
+#settingsBtn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+    -fx-cursor: hand;
+}
+
+/* Active button effect */
+#homeBtn:pressed,
+#profileBtn:pressed,
+#settingsBtn:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Sejour Details Styles */
+.sejour-detail-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0;
+}
+
+.sejour-detail-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.sejour-detail-value {
+    -fx-text-fill: #34495e;
+}
+
+.sejour-detail-section {
+    -fx-padding: 10px;
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 5px;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 5px;
+}
+
+.sejour-close-button {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.sejour-close-button:hover {
+    -fx-background-color: #5a6268;
+}
+
+/* Statistics Page Styles */
+.header-section {
+    -fx-background-color: linear-gradient(to right, #2c3e50, #3498db);
+    -fx-padding: 10px;
+}
+
+.content-section {
+    -fx-padding: 20px;
+    -fx-background-color: #f8f9fa;
+}
+
+.summary-card {
+    -fx-background-color: white;
+    -fx-padding: 15px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 5);
+    -fx-pref-width: 230px;
+    -fx-alignment: center;
+}
+
+.card-title {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6c757d;
+    -fx-padding: 0 0 5px 0;
+}
+
+.card-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.chart-container {
+    -fx-background-color: white;
+    -fx-padding: 15px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 5);
+}
+
+.chart-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10px 0;
+}
+
+.stat-header {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* PieChart styles */
+.default-color0.chart-pie { -fx-pie-color: #3498db; }
+.default-color1.chart-pie { -fx-pie-color: #2ecc71; }
+.default-color2.chart-pie { -fx-pie-color: #e74c3c; }
+.default-color3.chart-pie { -fx-pie-color: #f39c12; }
+.default-color4.chart-pie { -fx-pie-color: #9b59b6; }
+.default-color5.chart-pie { -fx-pie-color: #1abc9c; }
+.default-color6.chart-pie { -fx-pie-color: #d35400; }
+.default-color7.chart-pie { -fx-pie-color: #34495e; }
+
+/* BarChart styles */
+.default-color0.chart-bar { -fx-bar-fill: #3498db; }
+.default-color1.chart-bar { -fx-bar-fill: #2ecc71; }
+
+/* LineChart styles */
+.default-color0.chart-series-line { -fx-stroke: #e74c3c; }
+.default-color0.chart-line-symbol { -fx-background-color: #e74c3c, white; }
+

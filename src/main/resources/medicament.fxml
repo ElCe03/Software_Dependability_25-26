@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableCell?>
+<?import java.net.URL?>
+
+<VBox xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.MedicamentFormController" spacing="0" styleClass="main-container"
+      prefWidth="1000" prefHeight="700"> <!-- Added prefWidth and prefHeight for larger form -->
+
+    <stylesheets>
+        <URL value="@/medicament.css" />
+    </stylesheets>
+
+    <!-- Header Section with larger logo -->
+    <VBox styleClass="header-section" spacing="15">
+        <HBox alignment="CENTER" styleClass="logo-container">
+            <ImageView fitHeight="150" fitWidth="150" preserveRatio="true"> <!-- Increased logo size -->
+                <image>
+                    <Image url="@img/logo.png" />
+                </image>
+            </ImageView>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" styleClass="back-button-container">
+            <Button fx:id="backButton" text="← Back" onAction="#handleBackButton" styleClass="back-button"/>
+        </HBox>
+
+        <Label text="Medicament Management" styleClass="header-label"/>
+    </VBox>
+
+    <!-- Scrollable Content Section - Adjusted to take more space -->
+    <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" styleClass="content-scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox styleClass="form-container" alignment="CENTER">
+            <GridPane hgap="15" vgap="12" styleClass="form-grid" alignment="CENTER"> <!-- Increased gap values -->
+                <columnConstraints>
+                    <ColumnConstraints halignment="RIGHT" minWidth="150" prefWidth="200"/> <!-- Made labels wider -->
+                    <ColumnConstraints halignment="LEFT" minWidth="300" prefWidth="400"/> <!-- Made fields wider -->
+                </columnConstraints>
+
+                <!-- Name -->
+                <Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
+                <TextField fx:id="medicamentName" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="form-field"/>
+                <Label fx:id="nameError" styleClass="error-label" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <!-- Description -->
+                <Label text="Description:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label"/>
+                <TextArea fx:id="medicamentDescription" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="form-field"/>
+                <Label fx:id="descriptionError" styleClass="error-label" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <!-- Type -->
+                <Label text="Type:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="form-label"/>
+                <ComboBox fx:id="typeComboBox" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="form-field"/>
+
+                <!-- Price -->
+                <Label text="Price:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="form-label"/>
+                <Spinner fx:id="prixSpinner" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="form-field"/>
+                <Label fx:id="prixError" styleClass="error-label" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                <!-- Stock -->
+                <Label text="Stock:" GridPane.rowIndex="7" GridPane.columnIndex="0" styleClass="form-label"/>
+                <Spinner fx:id="stockSpinner" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="form-field"/>
+                <Label fx:id="stockError" styleClass="error-label" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+                <!-- Entry Date -->
+                <Label text="Entry Date:" GridPane.rowIndex="9" GridPane.columnIndex="0" styleClass="form-label"/>
+                <DatePicker fx:id="dateEntreePicker" GridPane.rowIndex="9" GridPane.columnIndex="1" styleClass="form-field"/>
+
+                <!-- Expiration Date -->
+                <Label text="Expiration Date:" GridPane.rowIndex="10" GridPane.columnIndex="0" styleClass="form-label"/>
+                <DatePicker fx:id="dateExpirationPicker" GridPane.rowIndex="10" GridPane.columnIndex="1" styleClass="form-field"/>
+                <Label fx:id="dateError" styleClass="error-label" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+            </GridPane>
+        </VBox>
+    </ScrollPane>
+
+    <!-- Action Buttons - Now center-aligned -->
+    <HBox styleClass="button-container" alignment="CENTER"> <!-- Changed alignment to CENTER -->
+        <Button fx:id="addButton" text="Add" onAction="#handleAddMedicament" styleClass="action-button add-button" minWidth="150"/><!-- Made button wider -->
+        <Button text="Assistant Médicament" onAction="#openChatbot" styleClass="menu-button"/>
+
+    </HBox>
+</VBox>
