@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView?>
+
+<BorderPane prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="controllers.QRCodeScannerController"
+            style="-fx-background-color: #f5f5f5;">
+    <top>
+        <VBox spacing="0">
+            <!-- Header -->
+            <HBox alignment="CENTER_LEFT" style="-fx-background-color: linear-gradient(to right, #1565c0, #0d47a1); -fx-padding: 15 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3);">
+                <MaterialDesignIconView glyphName="QRCODE" size="30" glyphStyle="-fx-fill: white;"/>
+                <Label text="Scanner de Code QR - Dossier Médical" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 30;">
+            <!-- QR Code Scanner Controls -->
+            <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <FontAwesomeIconView glyphName="SEARCH" size="20" glyphStyle="-fx-fill: #1565c0;"/>
+                    <Label text="Choisir un code QR à scanner" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1565c0; -fx-font-family: 'Segoe UI';"/>
+                </HBox>
+                
+                <Label text="Sélectionnez une image contenant un code QR de dossier médical pour afficher les informations du patient" 
+                      style="-fx-font-size: 14px; -fx-text-fill: #546e7a; -fx-font-family: 'Segoe UI';" wrapText="true" />
+                
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="txtQRCodePath" promptText="Chemin de l'image..." HBox.hgrow="ALWAYS" editable="false"
+                             style="-fx-pref-height: 40; -fx-font-size: 14px; -fx-font-family: 'Segoe UI';"/>
+                    
+                    <Button fx:id="btnBrowseQRCode" text="Parcourir" onAction="#handleBrowseQRCode"
+                           style="-fx-background-color: #2196f3; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-height: 40; -fx-padding: 0 15;">
+                        <graphic>
+                            <FontAwesomeIconView glyphName="FOLDER_OPEN" size="16" glyphStyle="-fx-fill: white;"/>
+                        </graphic>
+                    </Button>
+                </HBox>
+                
+                <Button fx:id="btnScanQRCode" text="Scanner le Code QR" onAction="#handleScanQRCode"
+                       style="-fx-background-color: #1565c0; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-height: 40; -fx-padding: 0 15; -fx-font-weight: bold;">
+                    <graphic>
+                        <MaterialDesignIconView glyphName="QRCODE" size="16" glyphStyle="-fx-fill: white;"/>
+                    </graphic>
+                </Button>
+            </VBox>
+            
+            <!-- Patient Information (Initially Hidden) -->
+            <VBox fx:id="patientInfoContainer" spacing="15" visible="false" managed="false" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <FontAwesomeIconView glyphName="USER" size="20" glyphStyle="-fx-fill: #1565c0;"/>
+                    <Label fx:id="lblPatientName" text="Nom du Patient" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1565c0; -fx-font-family: 'Segoe UI';"/>
+                </HBox>
+                
+                <Separator />
+                
+                <GridPane hgap="20" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="150" prefWidth="200"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="250" prefWidth="400"/>
+                    </columnConstraints>
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                        <FontAwesomeIconView glyphName="ID_CARD" size="14" glyphStyle="-fx-fill: #1565c0;"/>
+                        <Label text="Numéro de dossier:" style="-fx-font-weight: bold; -fx-font-family: 'Segoe UI'; -fx-text-fill: #37474f;"/>
+                    </HBox>
+                    <Label fx:id="lblDossierId" style="-fx-font-family: 'Segoe UI'; -fx-font-size: 14px; -fx-text-fill: #37474f;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                        <FontAwesomeIconView glyphName="CALENDAR" size="14" glyphStyle="-fx-fill: #1565c0;"/>
+                        <Label text="Date de création:" style="-fx-font-weight: bold; -fx-font-family: 'Segoe UI'; -fx-text-fill: #37474f;"/>
+                    </HBox>
+                    <Label fx:id="lblDateCreation" style="-fx-font-family: 'Segoe UI'; -fx-font-size: 14px; -fx-text-fill: #37474f;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="0">
+                        <FontAwesomeIconView glyphName="USER_MD" size="14" glyphStyle="-fx-fill: #1565c0;"/>
+                        <Label text="Médecin traitant:" style="-fx-font-weight: bold; -fx-font-family: 'Segoe UI'; -fx-text-fill: #37474f;"/>
+                    </HBox>
+                    <Label fx:id="lblMedecinName" style="-fx-font-family: 'Segoe UI'; -fx-font-size: 14px; -fx-text-fill: #37474f;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="10" GridPane.rowIndex="3" GridPane.columnIndex="0">
+                        <FontAwesomeIconView glyphName="INFO_CIRCLE" size="14" glyphStyle="-fx-fill: #1565c0;"/>
+                        <Label text="Statut:" style="-fx-font-weight: bold; -fx-font-family: 'Segoe UI'; -fx-text-fill: #37474f;"/>
+                    </HBox>
+                    <Label fx:id="lblStatus" style="-fx-font-family: 'Segoe UI'; -fx-font-size: 14px; -fx-text-fill: #37474f;" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                </GridPane>
+                
+                <Separator />
+                
+                <Label text="Détails du dossier médical" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1565c0; -fx-font-family: 'Segoe UI';"/>
+                
+                <TextArea fx:id="txtDossierDetails" wrapText="true" editable="false" prefHeight="250"
+                         style="-fx-font-family: 'Segoe UI'; -fx-font-size: 14px; -fx-border-color: #E0E0E0; -fx-border-radius: 5;"/>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane> 

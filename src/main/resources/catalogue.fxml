@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.CatalogueController"
+            prefWidth="800" prefHeight="600"
+            style="-fx-background-color: #f0f4f8;">
+
+    <!-- Header Section -->
+    <HBox layoutX="0" layoutY="0" prefWidth="800" prefHeight="60"
+          style="-fx-padding: 15; -fx-background-color: #e0e8f0;">
+
+        <!-- Back Button (Left) -->
+        <Button fx:id="backButton"
+                text="Retour"
+                onAction="#handleBackButtoncatalogue"
+                style="-fx-background-color: #3498db;
+                       -fx-text-fill: white;
+                       -fx-font-weight: bold;
+                       -fx-padding: 8 16;
+                       -fx-background-radius: 8;" />
+
+        <!-- Spacer -->
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Title (Centered) -->
+        <Label text="Catalogue des Médicaments"
+               style="-fx-font-size: 26px;
+                      -fx-font-weight: bold;
+                      -fx-text-fill: #2c3e50;" />
+
+        <!-- Spacer -->
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Commander Button (Right) -->
+        <Button text="Passer commande"
+                onAction="#goToCommande"
+                style="-fx-background-color: #2ecc71;
+                       -fx-text-fill: white;
+                       -fx-font-weight: bold;
+                       -fx-padding: 8 16;
+                       -fx-background-radius: 8;" />
+    </HBox>
+
+    <!-- Main Content Area -->
+    <ScrollPane fx:id="scrollPane"
+                AnchorPane.topAnchor="70"
+                AnchorPane.leftAnchor="0"
+                AnchorPane.rightAnchor="0"
+                AnchorPane.bottomAnchor="0"
+                fitToWidth="true"
+                style="-fx-background-color: transparent;">
+
+        <TilePane fx:id="tilePane"
+                  hgap="20" vgap="20"
+                  prefTileWidth="240"
+                  prefTileHeight="380"
+                  style="-fx-padding: 20; -fx-background-color: transparent;" />
+    </ScrollPane>
+
+</AnchorPane>

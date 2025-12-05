@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+
+<VBox xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.CommandeUpdateController" spacing="10" style="-fx-padding: 20;" alignment="CENTER">
+
+    <stylesheets>
+        <URL value="@/medicament.css" />
+    </stylesheets>
+
+    <!-- Header Section -->
+    <VBox spacing="5" alignment="CENTER">
+        <HBox alignment="CENTER" style="-fx-padding: 0 0 15 0;">
+            <ImageView fitHeight="180" fitWidth="180" preserveRatio="true">
+                <image>
+                    <Image url="@img/logo.png" />
+                </image>
+            </ImageView>
+        </HBox>
+
+        <Label text="Modifier la Commande" styleClass="header-label"/>
+    </VBox>
+
+    <!-- Commande Form -->
+    <GridPane hgap="10" vgap="5" styleClass="form-section">
+        <columnConstraints>
+            <ColumnConstraints halignment="RIGHT" minWidth="120"/>
+            <ColumnConstraints halignment="LEFT" minWidth="200"/>
+        </columnConstraints>
+
+        <!-- Date -->
+        <Label text="Date Commande:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
+        <DatePicker fx:id="dateCommandePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="form-field"/>
+        <Label fx:id="dateError" textFill="red" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Médicament -->
+        <Label text="Médicament:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="medicamentComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="form-field"/>
+        <Label fx:id="medicamentError" textFill="red" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <!-- Quantité -->
+        <Label text="Quantité:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="form-label"/>
+        <Spinner fx:id="quantiteSpinner" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="form-field"/>
+        <Label fx:id="quantiteError" textFill="red" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <!-- Liste des médicaments ajoutés + Total Prix -->
+    <VBox spacing="10">
+        <ListView fx:id="medicamentListView" prefHeight="120"/>
+
+        <HBox spacing="10">
+            <Label text="Total Prix:" styleClass="form-label"/>
+            <Label fx:id="totalPrixLabel" text="0.00" styleClass="form-field"/>
+        </HBox>
+    </VBox>
+
+    <!-- Action Button -->
+    <HBox spacing="10" styleClass="button-container" alignment="CENTER">
+        <Button fx:id="updateCommandeButton" text="Mettre à jour" onAction="#handleUpdateCommande" styleClass="action-button add-button"/>
+    </HBox>
+</VBox>
