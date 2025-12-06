@@ -148,7 +148,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.15.0</version>
+      <version>2.20.1</version>
     </dependency>
     <dependency>
         <groupId>com.itextpdf</groupId>
@@ -174,12 +174,12 @@
     <dependency>
         <groupId>org.apache.pdfbox</groupId>
         <artifactId>pdfbox</artifactId>
-        <version>2.0.27</version>
+        <version>2.0.35</version>
     </dependency>
     <dependency>
         <groupId>com.stripe</groupId>
         <artifactId>stripe-java</artifactId>
-        <version>24.0.0</version>
+        <version>24.24.0</version>
     </dependency>
 
     <dependency>
@@ -281,4 +281,5 @@
   </build>
 
 </project>
+
 
