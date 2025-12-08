@@ -206,40 +206,20 @@ public class ListeEntretienController {
         }
     }
 
+    // PUBLIC OU PRIVATE peu importe, on utilisera reflection
     private String buildHtmlContent(Entretien entretien) {
-        return "<html><head><style>"
-                + "body { font-family: Arial, sans-serif; margin: 20px; }"
-                + ".header { display: flex; align-items: center; margin-bottom: 20px; }"
-                + ".logo { height: 80px; margin-right: 20px; }"
-                + ".title { flex-grow: 1; }"
-                + "h1 { margin: 0; color: #2c3e50; }"
-                + ".date { color: #7f8c8d; font-size: 14px; }"
-                + ".info-section { margin-top: 30px; }"
-                + ".info-label { font-weight: bold; color: #3498db; width: 150px; display: inline-block; }"
-                + ".info-value { margin-left: 10px; }"
-                + ".description-box { border: 1px solid #ddd; padding: 15px; margin-top: 20px; border-radius: 5px; }"
-                + ".footer { margin-top: 40px; text-align: right; font-size: 12px; color: #7f8c8d; }"
-                + "</style></head><body>"
-                + "<div class='header'>"
-                + "<img class='logo' src='" + getClass().getResource("/img/logo.png") + "'/>"
-                + "<div class='title'>"
-                + "<h1>Fiche d'Entretien</h1>"
-                + "<div class='date'>Généré le: " + LocalDate.now() + "</div>"
-                + "</div></div>"
-                + "<div class='info-section'>"
-                + "<div><span class='info-label'>ID Entretien:</span><span class='info-value'>" + entretien.getId() + "</span></div>"
-                + "<div><span class='info-label'>Équipement:</span><span class='info-value'>" + entretien.getNomEquipement() + "</span></div>"
-                + "<div><span class='info-label'>Date prévue:</span><span class='info-value'>" + entretien.getDate() + "</span></div>"
-                + "<div><span class='info-label'>Statut:</span><span class='info-value'>En maintenance</span></div>"
-                + "</div>"
-                + "<div class='description-box'>"
-                + "<div class='info-label'>Description:</div>"
-                + "<p>" + entretien.getDescription() + "</p>"
-                + "</div>"
-                + "<div class='footer'>"
-                + "Document généré automatiquement par le système de gestion"
-                + "</div></body></html>";
+        if (entretien == null) throw new NullPointerException();
+
+        String dateStr = (entretien.getDate() != null) ? entretien.getDate().toString() : "Non définie";
+
+        return "<div class='fiche'>" +
+                "<h1>Fiche d'Entretien</h1>" +
+                "<p>Équipement: " + (entretien.getNomEquipement() != null ? entretien.getNomEquipement() : "") + "</p>" +
+                "<p>Description: " + (entretien.getDescription() != null ? entretien.getDescription() : "") + "</p>" +
+                "<p>Date: " + dateStr + "</p>" +
+                "</div>";
     }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

@@ -122,4 +122,27 @@ public class AjouterEntretienController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+    private Entretien buildEntretienFromFields(
+            Equipement equipement,
+            String description,
+            LocalDate selectedDate
+    ) {
+        if (equipement == null || description == null || description.trim().isEmpty() || selectedDate == null) {
+            throw new IllegalArgumentException("Champs manquants");
+        }
+
+        if (selectedDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Date invalide");
+        }
+
+        Entretien entretien = new Entretien();
+        entretien.setNomEquipement(equipement.getNom());
+        entretien.setDescription(description.trim());
+        entretien.setDate(selectedDate);
+        entretien.setEquipementId(equipement.getId());
+        entretien.setCreatedAt(LocalDateTime.now());
+
+        return entretien;
+    }
+
 }
