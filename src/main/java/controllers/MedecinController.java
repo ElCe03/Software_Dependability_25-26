@@ -116,4 +116,25 @@ public class MedecinController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+    // Dans MedecinController.java
+    Medecin buildMedecinFromFields(String specialite, String telephone) {
+        if (specialite == null || specialite.isEmpty() ||
+                telephone == null || telephone.isEmpty()) {
+            throw new IllegalArgumentException("Champs manquants");
+        }
+
+        if (!SPECIALITE_PATTERN.matcher(specialite).matches()) {
+            throw new IllegalArgumentException("Spécialité invalide");
+        }
+
+        if (!TELEPHONE_PATTERN.matcher(telephone).matches()) {
+            throw new IllegalArgumentException("Téléphone invalide");
+        }
+
+        Medecin m = new Medecin();
+        m.setSpecialite(specialite);
+        m.setTelephone(telephone);
+        return m;
+    }
+
 }

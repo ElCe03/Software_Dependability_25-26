@@ -142,4 +142,28 @@ public class PatientController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+    // Dans PatientController.java
+    Patient buildPatientFromFields(String adresse, String telephone, LocalDate dateNaissance) {
+        if (adresse == null || adresse.isEmpty() ||
+                telephone == null || telephone.isEmpty() ||
+                dateNaissance == null) {
+            throw new IllegalArgumentException("Champs manquants");
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate minDate = today.minusYears(120);
+        if (dateNaissance.isAfter(today)) {
+            throw new IllegalArgumentException("Date invalide");
+        }
+        if (dateNaissance.isBefore(minDate)) {
+            throw new IllegalArgumentException("Date invalide");
+        }
+
+        Patient p = new Patient();
+        p.setAdresse(adresse);
+        p.setTelephone(telephone);
+        p.setDateNaissance(dateNaissance);
+        return p;
+    }
+
 }
