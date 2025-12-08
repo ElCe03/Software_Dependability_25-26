@@ -40,6 +40,7 @@ public class MailService {
         props.put("mail.smtp.port", "587"); // Port TLS
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true"); // TLS
+        props.put("mail.smtp.ssl.checkserveridentity", "true"); // Validate server SSL certificate
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
