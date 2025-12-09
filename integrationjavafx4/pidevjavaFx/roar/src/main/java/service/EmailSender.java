@@ -27,7 +27,6 @@ public class EmailSender {
             }
         } catch (IOException ex) {
             System.out.println("Errore durante il caricamento del file di configurazione.");
-            ex.printStackTrace();
         }
     }
 
@@ -83,3 +82,4 @@ public class EmailSender {
         sendEmail(email, subject, content);
     }
 }
+
