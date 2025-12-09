@@ -1,66 +1,74 @@
 package controllers;
 
-import javafx.application.Platform;
 import javafx.scene.control.*;
 import org.junit.jupiter.api.*;
+import utils.JavaFXTestUtils;
 
 import java.lang.reflect.Field;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class AdminConsultationControllerTest {
 
     private AdminConsultationController controller;
 
+    @BeforeAll
+    static void beforeAll() {
+        JavaFXTestUtils.initJavaFX();
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         controller = new AdminConsultationController();
 
-        // Injection manuelle des composants FXML
-        inject("consultationTable", new TableView<>());
-        inject("searchField", new TextField());
-        inject("statusFilterCombo", new ComboBox<>());
-        inject("statsButton", new Button());
-        inject("pieChartButton", new Button());
-        inject("exportPdfButton", new Button());
-        inject("mostLikedButton", new Button());
-
-        // Exécuter initialize sur le thread JavaFX
-        Platform.runLater(controller::initialize);
-
-        // Petite pause pour s'assurer que initialize() est exécuté
-        Thread.sleep(300);
+        JavaFXTestUtils.runAndWait(() -> {
+            inject("consultationTable", new TableView<>());
+            inject("searchField", new TextField());
+            inject("statusFilterCombo", new ComboBox<>());
+            inject("statsButton", new Button());
+            inject("pieChartButton", new Button());
+            inject("exportPdfButton", new Button());
+            inject("mostLikedButton", new Button());
+            controller.initialize();
+        });
     }
 
-    private void inject(String fieldName, Object value) throws Exception {
-        Field field = AdminConsultationController.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(controller, value);
+    private void inject(String fieldName, Object value) {
+        try {
+            Field f = AdminConsultationController.class.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            f.set(controller, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private Object getField(String fieldName) throws Exception {
-        Field field = AdminConsultationController.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field.get(controller);
-    }
-
-    @Test
-    void testButtonsInjected() throws Exception {
-        assertNotNull(getField("statsButton"));
-        assertNotNull(getField("pieChartButton"));
-        assertNotNull(getField("exportPdfButton"));
-        assertNotNull(getField("mostLikedButton"));
+    private Object get(String fieldName) {
+        try {
+            Field f = AdminConsultationController.class.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            return f.get(controller);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void testComboAndTableInjected() throws Exception {
-        assertNotNull(getField("statusFilterCombo"));
-        assertNotNull(getField("consultationTable"));
+    void testButtonsInjected() {
+        assertNotNull(get("statsButton"));
+        assertNotNull(get("pieChartButton"));
+        assertNotNull(get("exportPdfButton"));
+        assertNotNull(get("mostLikedButton"));
     }
 
     @Test
-    void testSearchFieldInjected() throws Exception {
-        assertNotNull(getField("searchField"));
+    void testComboAndTableInjected() {
+        assertNotNull(get("statusFilterCombo"));
+        assertNotNull(get("consultationTable"));
+    }
+
+    @Test
+    void testSearchFieldInjected() {
+        assertNotNull(get("searchField"));
     }
 
     @Test
