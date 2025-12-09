@@ -241,6 +241,32 @@
                     <mainClass>org.example.roar.HelloApplication</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.12.0</version>
+                <configuration>
+                    <targetClasses>
+                        <param>org.example.roar.service.*</param>
+                        <param>org.example.roar.controllers.*</param>
+                    </targetClasses>
+
+                    <targetTests>
+                        <param>org.example.roar.service.*</param>
+                        <param>org.example.roar.controllers.*</param>
+                    </targetTests>
+
+                    <mutators>
+                        <mutator>DEFAULTS</mutator>
+                    </mutators>
+
+                    <outputFormats>
+                        <param>HTML</param>
+                    </outputFormats>
+                </configuration>
+            </plugin>
+
+
         </plugins>
     </build>
 
