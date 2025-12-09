@@ -25,7 +25,6 @@ public class MailService {
             }
         } catch (IOException ex) {
             System.err.println("❌ Errore durante il caricamento del file di configurazione.");
-            ex.printStackTrace();
         }
     }
 
@@ -64,3 +63,4 @@ public class MailService {
         }
     }
 }
+
