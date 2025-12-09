@@ -55,7 +55,6 @@ public class DataSource {
 
         } catch (IOException ex) {
             System.err.println("❌ Errore durante la lettura del file di configurazione.");
-            ex.printStackTrace();
             throw new RuntimeException("Failed to load database configuration", ex);
         }
     }
@@ -83,3 +82,4 @@ public class DataSource {
         return connection;
     }
 }
+
