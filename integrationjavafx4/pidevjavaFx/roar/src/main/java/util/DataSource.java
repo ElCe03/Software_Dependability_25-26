@@ -11,19 +11,18 @@ public class DataSource {
     private String url;
     private String username;
     private String password;
-    
+
     private Connection connection;
-    private static DataSource instance;
+    private static volatile DataSource instance;
 
     private DataSource() {
         loadProperties();
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-
             connection = DriverManager.getConnection(url, username, password);
             System.out.println("Database connection established successfully!");
-            
+
         } catch (ClassNotFoundException e) {
             System.err.println("MySQL JDBC Driver not found!");
             e.printStackTrace();
@@ -82,4 +81,3 @@ public class DataSource {
         return connection;
     }
 }
-
