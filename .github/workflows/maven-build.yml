@@ -25,10 +25,8 @@ jobs:
     - name: Inject Secrets into config.properties
       working-directory: ./integrationjavafx4/pidevjavaFx/roar
       run: |
-        # Assicuriamoci che la cartella resources esista
         mkdir -p src/main/resources
         
-        # Scriviamo i secrets nel file
         echo "email.username=${{ secrets.EMAIL_USERNAME }}" > src/main/resources/config.properties
         echo "email.password=${{ secrets.EMAIL_PASSWORD }}" >> src/main/resources/config.properties
         echo "db.url=${{ secrets.DB_URL }}" >> src/main/resources/config.properties
@@ -36,6 +34,8 @@ jobs:
         echo "db.password=${{ secrets.DB_PASSWORD }}" >> src/main/resources/config.properties
         echo "smtp.user=${{ secrets.SMTP_USERNAME }}" >> src/main/resources/config.properties
         echo "smtp.password=${{ secrets.SMTP_PASSWORD }}" >> src/main/resources/config.properties
+        echo "smtp.host=sandbox.smtp.mailtrap.io" >> src/main/resources/config.properties
+        echo "smtp.port=2525" >> src/main/resources/config.properties
         
 
 
