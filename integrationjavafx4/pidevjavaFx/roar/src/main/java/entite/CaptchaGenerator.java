@@ -69,4 +69,3 @@ public class CaptchaGenerator {
         return SwingFXUtils.toFXImage(ImageIO.read(generateCaptchaImage(text)), null);
     }
 }
-
