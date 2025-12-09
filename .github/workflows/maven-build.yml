@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-
 permissions:
   contents: read
 
@@ -16,16 +15,36 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
     
+    - name: Download OpenJML
+      run: wget https://github.com/OpenJML/OpenJML/releases/download/0.8.51-alpha/openjml.jar -O openjml.jar
+
+    - name: Prepare JML Environment
+      working-directory: ./integrationjavafx4/pidevjavaFx/roar
+      run: |
+        mvn compile -DskipTests
+        mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+
+    - name: Run JML Verification
+      working-directory: ./integrationjavafx4/pidevjavaFx/roar
+      run: |
+        export PROJ_CP=$(cat cp.txt)
+        OPENJML_PATH="../../../openjml.jar"
+        TARGET_DIRS="src/main/java/entite src/main/java/service src/main/java/util"
+        
+        echo "Eseguendo JML Check..."
+        java -jar $OPENJML_PATH -esc -cp "$PROJ_CP:target/classes" --dirs $TARGET_DIRS
+
     - name: Build package
       working-directory: ./integrationjavafx4/pidevjavaFx/roar
-      run: mvn -B clean package 
-    
+      run: mvn -B package
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       if: success() 
@@ -40,7 +59,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-    
+      
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
