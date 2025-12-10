@@ -31,6 +31,7 @@ jobs:
         chmod +x openjml-tool/openjml
         
     - name: Generate Classpath
+      working-directory: integrationjavafx4/pidevjavaFx/roar
       run: mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
 
     - name: Run OpenJML Check
