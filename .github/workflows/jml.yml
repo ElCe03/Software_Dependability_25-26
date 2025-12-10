@@ -37,4 +37,6 @@ jobs:
     - name: Run OpenJML Check
       working-directory: integrationjavafx4/pidevjavaFx/roar
       run: |
-        ./openjml-tool/openjml -cp "$(cat cp.txt)" --dirs ./src/main/java/entite ./src/main/java/util ./src/main/java/service
+        OPENJML_BIN=$(find openjml-tool -name "openjml" -type f | head -n 1)
+        chmod +x "$OPENJML_BIN"
+        "$OPENJML_BIN" -cp "$(cat cp.txt)" --dirs ./src/main/java/entite ./src/main/java/util ./src/main/java/service
