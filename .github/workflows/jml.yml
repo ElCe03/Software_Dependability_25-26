@@ -1,4 +1,6 @@
 name: OpenJML Formal Verification
+permissions:
+  contents: read
 
 on:
   push:
@@ -24,8 +26,8 @@ jobs:
 
     - name: Download and Install OpenJML
       run: |
-        wget https://github.com/OpenJML/OpenJML/releases/download/0.17.0-alpha-15/openjml-ubuntu-17-0.17.0-alpha-15.zip -O openjml.zip
-        unzip openjml.zip -d openjml-tool
+        wget https://github.com/OpenJML/OpenJML/releases/download/21-0.18/openjml-ubuntu-22.04-21-0.18.zip -O openjml.zip
+        unzip -q openjml.zip -d openjml-tool
         chmod +x openjml-tool/openjml
         
     - name: Generate Classpath
