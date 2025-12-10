@@ -48,7 +48,6 @@ public class CommandeFormController implements Initializable {
     private final MedicamentService medicamentService = new MedicamentService();
     private final Commande currentCommande = new Commande();
 
-
     private static final String SUCCESS_URL = "http://localhost:4242/success";
     private static final String CANCEL_URL = "http://localhost:4242/cancel";
 
@@ -59,7 +58,7 @@ public class CommandeFormController implements Initializable {
         String stripeApiKey = props.getProperty("stripe.api.key");
 
         if (stripeApiKey != null && !stripeApiKey.isEmpty()) {
-            Stripe.apiKey = stripeApiKey;
+            configureStripe(stripeApiKey);
         } else {
             System.err.println("Can't find stripe api key");
             showAlert(Alert.AlertType.ERROR, "Error in payments.");
@@ -85,9 +84,13 @@ public class CommandeFormController implements Initializable {
     }
 
 
-    private Properties loadConfig() {
+    private static void configureStripe(String apiKey) {
+        Stripe.apiKey = apiKey;
+    }
+
+    private static Properties loadConfig() {
         Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+        try (InputStream input = CommandeFormController.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
                 props.load(input);
             } else {
@@ -98,6 +101,7 @@ public class CommandeFormController implements Initializable {
         }
         return props;
     }
+    
 
     @FXML
     private void handleAddCommande() {
