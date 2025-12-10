@@ -7,10 +7,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static controllers.ReservationDialogController.LOGGER;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ReservationService {
 
+    private static final Logger LOGGER = Logger.getLogger(ReservationService.class.getName());
+    
     public void addReservation(Connection conn, reservation reservation) throws SQLException {
         String query = "INSERT INTO reservation (salle_id, date_debut, date_fin) VALUES (?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -29,7 +32,7 @@ public class ReservationService {
     }
 
     public List<reservation> getReservationsForSalle(int salleId) throws SQLException {
-        List<reservation> reservations = new ArrayList<>();
+        List<reservation> reservations = new ArrayList<reservation>();
         String query = "SELECT * FROM reservation WHERE salle_id = ?";
 
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -101,7 +104,7 @@ public class ReservationService {
     }
 
     public List<reservation> getAllReservations() throws SQLException {
-        List<reservation> reservations = new ArrayList<>();
+        List<reservation> reservations = new ArrayList<reservation>();
         String query = "SELECT r.id, r.salle_id, r.date_debut, r.date_fin, " +
                 "s.nom as salle_nom, s.status as salle_status, s.capacite, s.type_salle " +
                 "FROM reservation r JOIN salle s ON r.salle_id = s.id " +

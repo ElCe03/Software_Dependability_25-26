@@ -35,7 +35,7 @@ public class ConsultationService {
 
     // Existing method - Get consultations by patient
     public List<Consultation> getConsultationsByPatient(String patientIdentifier) {
-        List<Consultation> consultations = new ArrayList<>();
+        List<Consultation> consultations = new ArrayList<Consultation>();
         String query = "SELECT c.*, s.name as service_name FROM consultation c " +
                 "LEFT JOIN service s ON c.service_id = s.id " +
                 "WHERE c.patient_identifier = ? " +
@@ -115,7 +115,7 @@ public class ConsultationService {
 
     // NEW METHOD - Get all consultations
     public List<Consultation> getAllConsultations() {
-        List<Consultation> consultations = new ArrayList<>();
+        List<Consultation> consultations = new ArrayList<Consultation>();
         String query = "SELECT c.*, s.name as service_name FROM consultation c " +
                 "LEFT JOIN service s ON c.service_id = s.id " +
                 "ORDER BY c.date DESC";
@@ -135,7 +135,7 @@ public class ConsultationService {
 
     // NEW METHOD - Search consultations
     public List<Consultation> searchConsultations(String searchTerm) {
-        List<Consultation> consultations = new ArrayList<>();
+        List<Consultation> consultations = new ArrayList<Consultation>();
         String query = "SELECT c.*, s.name as service_name FROM consultation c " +
                 "LEFT JOIN service s ON c.service_id = s.id " +
                 "WHERE c.patient_identifier LIKE ? OR c.phone_number LIKE ? OR s.name LIKE ? " +

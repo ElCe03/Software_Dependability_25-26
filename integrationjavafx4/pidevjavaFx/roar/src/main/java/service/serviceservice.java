@@ -33,7 +33,7 @@ public class serviceservice {
 
     // Retrieve all services from the database
     public List<Service> getAllServices() {
-        List<Service> services = new ArrayList<>();
+        List<Service> services = new ArrayList<Service>();
         String query = "SELECT * FROM service";  // Ensure the correct table name
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -81,7 +81,7 @@ public class serviceservice {
     }
     // Add to serviceservice.java
     public List<String> getAllServiceNames() {
-        List<String> serviceNames = new ArrayList<>();
+        List<String> serviceNames = new ArrayList<String>();
         String query = "SELECT name FROM service";
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {

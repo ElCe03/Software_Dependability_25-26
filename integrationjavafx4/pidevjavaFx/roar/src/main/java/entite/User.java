@@ -8,29 +8,46 @@ import java.util.List;
  * Represents a user in the system who can be either a patient or a medical professional
  */
 public class User {
-    private int id;
-    private String email;
-    private String password;
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private String email;
+    /*@ spec_public nullable @*/ private String password;
+
+    /*@ spec_public non_null @*/
     private List<String> roles;
-    private String nom;
-    private String prenom;
-    private String type; // "patient", "medecin", etc.
-    private String specialite; // only for medecins
-    private String telephone;
-    private String adresse;
-    private LocalDate dateNaissance;
+
+    /*@ spec_public nullable @*/ private String nom;
+    /*@ spec_public nullable @*/ private String prenom;
+    /*@ spec_public nullable @*/ private String type; // "patient", "medecin", etc.
+    /*@ spec_public nullable @*/ private String specialite; // only for medecins
+    /*@ spec_public nullable @*/ private String telephone;
+    /*@ spec_public nullable @*/ private String adresse;
+    /*@ spec_public nullable @*/ private LocalDate dateNaissance;
     
+    /*@ public invariant roles != null; @*/
+    /*@ public invariant (\forall int i; 0 <= i && i < roles.size(); roles.get(i) != null); @*/
+    /*@ public invariant id >= 0; @*/
+
+    /*@ 
+      @ ensures roles != null && roles.isEmpty();
+      @*/
     // Default constructor
     public User() {
-        this.roles = new ArrayList<>();
+        this.roles = new ArrayList<String>();
     }
-    
+
+    /*@ 
+      @ requires true; 
+      @ 
+      @ ensures this.roles != null;
+      @ ensures (roles != null) ==> this.roles == roles;
+      @ ensures (roles == null) ==> this.roles.isEmpty();
+      @*/
     // Parameterized constructor
     public User(String email, String password, List<String> roles, String nom, String prenom, 
                 String type, String specialite, String telephone, String adresse, LocalDate dateNaissance) {
         this.email = email;
         this.password = password;
-        this.roles = roles != null ? roles : new ArrayList<>();
+        this.roles = roles != null ? roles : new ArrayList<String>();
         this.nom = nom;
         this.prenom = prenom;
         this.type = type;
@@ -41,10 +58,13 @@ public class User {
     }
     
     // Getters and Setters
+    
+    /*@ ensures \result == id; pure @*/    
     public int getId() {
         return id;
     }
     
+    /*@ requires id >= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
         this.id = id;
     }
@@ -64,18 +84,33 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
+    /*@ 
+      @ ensures \result != null;
+      @ ensures \result == roles;
+      @ pure 
+      @*/
     public List<String> getRoles() {
         return roles;
     }
     
+    /*@ 
+      @ requires roles != null;
+      @ assignable this.roles;
+      @ ensures this.roles == roles;
+      @*/
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
     
+    /*@ 
+      @ requires role != null;
+      @ ensures roles.contains(role);
+      @ ensures roles.size() == \old(roles.size()) + 1;
+      @*/
     public void addRole(String role) {
         if (this.roles == null) {
-            this.roles = new ArrayList<>();
+            this.roles = new ArrayList<String>();
         }
         this.roles.add(role);
     }
@@ -136,10 +171,17 @@ public class User {
         this.dateNaissance = dateNaissance;
     }
     
+    /*@ 
+      @ ensures \result == ("patient".equalsIgnoreCase(type) || (roles != null && roles.contains("ROLE_PATIENT")));
+      @ pure
+      @*/
     public boolean isPatient() {
         return "patient".equalsIgnoreCase(type) || (roles != null && roles.contains("ROLE_PATIENT"));
     }
     
+    /*@ 
+      @ pure
+      @*/
     public boolean isMedecin() {
         return "medecin".equalsIgnoreCase(type) || "medcin".equalsIgnoreCase(type) || 
                (roles != null && (roles.contains("ROLE_MEDECIN") || roles.contains("ROLE_MEDCIN")));

@@ -11,8 +11,16 @@ import java.util.List;
 
 public class CommandeService implements IService<Commande> {
 
+    /*@ spec_public non_null @*/
     private Connection cnx = DataSource.getInstance().getConnection();
 
+    /*@ 
+      @ also
+      @ requires commande != null;
+      @ requires commande.getId() == 0;
+      @ ensures commande.getId() > 0;
+      @ signals (RuntimeException e) true;
+      @*/
     @Override
     public void create(Commande commande) {
         String sql = "INSERT INTO commande (date_commande, total_prix, quantite, stripe_session_id, status) VALUES (?, ?, ?, ?, ?)";
@@ -21,11 +29,19 @@ public class CommandeService implements IService<Commande> {
             cnx.setAutoCommit(false);
 
             try (PreparedStatement pst = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                pst.setDate(1, Date.valueOf(commande.getDate_commande()));
+                Date sqlDate = Date.valueOf(commande.getDate_commande());
+                pst.setDate(1, sqlDate);
                 pst.setDouble(2, commande.getTotal_prix());
                 pst.setInt(3, commande.getQuantite());
                 pst.setString(4, commande.getStripeSessionId());
-                pst.setString(5, commande.getStatus() != null ? commande.getStatus() : "pending");
+                
+                // Evita operatore ternario inline per stabilità OpenJML
+                String statusToSave = commande.getStatus();
+                if (statusToSave == null) {
+                    statusToSave = "pending";
+                }
+                pst.setString(5, statusToSave);
+
                 pst.executeUpdate();
 
                 try (ResultSet rs = pst.getGeneratedKeys()) {
@@ -53,6 +69,12 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ requires commande != null;
+      @ requires commande.getId() > 0;
+      @ requires commande.getMedicaments() != null;
+      @ signals (SQLException e) true;
+      @*/
     private void saveLignesCommande(Commande commande) throws SQLException {
         String sql = "INSERT INTO medicament_commande (commande_id, medicament_id, quantite) VALUES (?, ?, ?)";
 
@@ -67,6 +89,11 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ also
+      @ requires commande != null;
+      @ requires commande.getId() > 0;
+      @*/
     public void delete(Commande commande) {
         String deleteMedicamentsSQL = "DELETE FROM medicament_commande WHERE commande_id = ?";
         String deleteCommandeSQL = "DELETE FROM commande WHERE id = ?";
@@ -83,14 +110,26 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ also
+      @ requires commande != null;
+      @ requires commande.getId() > 0;
+      @*/
     @Override
     public void update(Commande commande) {
         String sql = "UPDATE commande SET date_commande = ?, total_prix = ?, quantite = ?, status = ?, stripe_session_id = ? WHERE id = ?";
         try (PreparedStatement pst = cnx.prepareStatement(sql)) {
-            pst.setDate(1, Date.valueOf(commande.getDate_commande()));
+            Date sqlDate = Date.valueOf(commande.getDate_commande());
+            pst.setDate(1, sqlDate);
             pst.setDouble(2, commande.getTotal_prix());
             pst.setInt(3, commande.getQuantite());
-            pst.setString(4, commande.getStatus() != null ? commande.getStatus() : "pending");
+            
+            String statusToSave = commande.getStatus();
+            if (statusToSave == null) {
+                statusToSave = "pending";
+            }
+            pst.setString(4, statusToSave);
+            
             pst.setString(5, commande.getStripeSessionId());
             pst.setInt(6, commande.getId());
             pst.executeUpdate();
@@ -99,9 +138,14 @@ public class CommandeService implements IService<Commande> {
         }
     }
 
+    /*@ 
+      @ also
+      @ ensures \result != null;
+      @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
+      @*/
     @Override
     public List<Commande> readAll() {
-        List<Commande> commandes = new ArrayList<>();
+        List<Commande> commandes = new ArrayList<Commande>();
         String sql = "SELECT * FROM commande";
 
         try (Statement st = cnx.createStatement();
@@ -130,6 +174,11 @@ public class CommandeService implements IService<Commande> {
         return commandes;
     }
 
+    /*@ 
+      @ also
+      @ requires id > 0;
+      @ ensures \result != null ==> \result.getId() == id;
+      @*/
     @Override
     public Commande readById(int id) {
         String sql = "SELECT * FROM commande WHERE id = ?";
@@ -156,8 +205,12 @@ public class CommandeService implements IService<Commande> {
         return commande;
     }
 
+    /*@ 
+      @ requires commandeId > 0;
+      @ ensures \result != null;
+      @*/
     public List<MedicamentCommande> getMedicamentsForCommande(int commandeId) {
-        List<MedicamentCommande> lignes = new ArrayList<>();
+        List<MedicamentCommande> lignes = new ArrayList<MedicamentCommande>();
         String sql = "SELECT m.*, cm.quantite FROM medicament_commande cm "
                 + "JOIN medicament m ON cm.medicament_id = m.id "
                 + "WHERE cm.commande_id = ?";

@@ -17,9 +17,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PDFService {
     
@@ -40,19 +40,19 @@ public class PDFService {
                 PdfDocument pdf = new PdfDocument(writer);
                 Document document = new Document(pdf);
                 
-                // Add title
-                Paragraph title = new Paragraph("Analyse des Séjours")
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontSize(20)
-                    .setBold();
+                 // Add title
+                Paragraph title = new Paragraph("Analyse des Séjours");
+                title.setTextAlignment(TextAlignment.CENTER);
+                title.setFontSize(20);
+                title.setBold();
                 document.add(title);
-                
+
                 // Add date
-                Paragraph date = new Paragraph("Généré le: " + LocalDateTime.now().format(DATE_FORMATTER))
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontSize(12);
+                Paragraph date = new Paragraph("Généré le: " + LocalDateTime.now().format(DATE_FORMATTER));
+                date.setTextAlignment(TextAlignment.CENTER);
+                date.setFontSize(12);
                 document.add(date);
-                
+
                 // Add space
                 document.add(new Paragraph("\n"));
                 
@@ -74,21 +74,47 @@ public class PDFService {
     
     private void addSummaryStatistics(Document document, List<Sejour> sejours) {
         // Calculate statistics
-        double totalFrais = sejours.stream().mapToDouble(Sejour::getFraisSejour).sum();
-        double totalExtras = sejours.stream().mapToDouble(Sejour::getPrixExtras).sum();
+        double totalFrais = 0.0;
+        double totalExtras = 0.0;
+
+        for (Sejour s : sejours) {
+            totalFrais += s.getFraisSejour();
+            totalExtras += s.getPrixExtras();
+        }
+
         double totalRevenue = totalFrais + totalExtras;
         
         // Group by type
-        Map<String, Long> countByType = sejours.stream()
-            .collect(Collectors.groupingBy(Sejour::getTypeSejour, Collectors.counting()));
+        Map<String, Long> countByType = new HashMap<String, Long>();
+        for (Sejour s : sejours) {
+            String type = s.getTypeSejour();
+            if (countByType.containsKey(type)) {
+                countByType.put(type, countByType.get(type) + 1L);
+            } else {
+                countByType.put(type, 1L);
+            }
+        }
         
         // Group by payment status
-        Map<String, Long> countByPaymentStatus = sejours.stream()
-            .collect(Collectors.groupingBy(Sejour::getStatutPaiement, Collectors.counting()));
+        Map<String, Long> countByPaymentStatus = new HashMap<String, Long>();
+        for (Sejour s : sejours) {
+            String status = s.getStatutPaiement();
+            if (countByPaymentStatus.containsKey(status)) {
+                countByPaymentStatus.put(status, countByPaymentStatus.get(status) + 1L);
+            } else {
+                countByPaymentStatus.put(status, 1L);
+            }
+        }
         
         // Create summary table
-        Table summaryTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
-        summaryTable.addCell(new Cell().add(new Paragraph("Statistiques Générales")).setBold());
+        Table summaryTable = new Table(UnitValue.createPercentArray(2));
+        summaryTable.useAllAvailableWidth();
+
+        Cell headerCell = new Cell();
+        headerCell.add(new Paragraph("Statistiques Générales"));
+        headerCell.setBold();
+        summaryTable.addCell(headerCell);
+        
         summaryTable.addCell(new Cell().add(new Paragraph("")));
         
         summaryTable.addCell(new Cell().add(new Paragraph("Nombre total de séjours")));
@@ -107,52 +133,68 @@ public class PDFService {
         document.add(new Paragraph("\n"));
         
         // Add type distribution
-        Table typeTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
-        typeTable.addCell(new Cell().add(new Paragraph("Distribution par Type")).setBold());
+        Table typeTable = new Table(UnitValue.createPercentArray(2));
+        typeTable.useAllAvailableWidth();
+
+        Cell typeHeader = new Cell();
+        typeHeader.add(new Paragraph("Distribution par Type"));
+        typeHeader.setBold();
+        typeTable.addCell(typeHeader);
+
         typeTable.addCell(new Cell().add(new Paragraph("")));
         
-        countByType.forEach((type, count) -> {
-            typeTable.addCell(new Cell().add(new Paragraph(type)));
-            typeTable.addCell(new Cell().add(new Paragraph(String.valueOf(count))));
-        });
+        // Refactoring: Sostituito forEach((k,v) -> ...) con ciclo entrySet
+        for (Map.Entry<String, Long> entry : countByType.entrySet()) {
+            typeTable.addCell(new Cell().add(new Paragraph(entry.getKey())));
+            typeTable.addCell(new Cell().add(new Paragraph(String.valueOf(entry.getValue()))));
+        }
         
         document.add(typeTable);
         document.add(new Paragraph("\n"));
         
         // Add payment status distribution
-        Table paymentTable = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
-        paymentTable.addCell(new Cell().add(new Paragraph("Distribution par Statut de Paiement")).setBold());
+        Table paymentTable = new Table(UnitValue.createPercentArray(2));
+        paymentTable.useAllAvailableWidth();
+
+        Cell paymentHeader = new Cell();
+        paymentHeader.add(new Paragraph("Distribution par Statut de Paiement"));
+        paymentHeader.setBold();
+        paymentTable.addCell(paymentHeader);
+
         paymentTable.addCell(new Cell().add(new Paragraph("")));
         
-        countByPaymentStatus.forEach((status, count) -> {
-            paymentTable.addCell(new Cell().add(new Paragraph(status)));
-            paymentTable.addCell(new Cell().add(new Paragraph(String.valueOf(count))));
-        });
+        for (Map.Entry<String, Long> entry : countByPaymentStatus.entrySet()) {
+            paymentTable.addCell(new Cell().add(new Paragraph(entry.getKey())));
+            paymentTable.addCell(new Cell().add(new Paragraph(String.valueOf(entry.getValue()))));
+        }
         
         document.add(paymentTable);
         document.add(new Paragraph("\n"));
     }
     
     private void addDetailedTable(Document document, List<Sejour> sejours) {
-        Table table = new Table(UnitValue.createPercentArray(8)).useAllAvailableWidth();
+        Table table = new Table(UnitValue.createPercentArray(8));
+        table.useAllAvailableWidth();
         
         // Add headers
-        table.addHeaderCell(new Cell().add(new Paragraph("ID")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Date Entrée")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Date Sortie")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Type")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Frais")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Extras")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Paiement")).setBold());
-        table.addHeaderCell(new Cell().add(new Paragraph("Statut")).setBold());
+        String[] headers = {"ID", "Date Entrée", "Date Sortie", "Type", "Frais", "Extras", "Paiement", "Statut"};
+        for (String header : headers) {
+            Cell c = new Cell();
+            c.add(new Paragraph(header));
+            c.setBold();
+            table.addHeaderCell(c);
+        }
         
         // Add data rows
         for (Sejour sejour : sejours) {
             table.addCell(new Cell().add(new Paragraph(String.valueOf(sejour.getId()))));
-            table.addCell(new Cell().add(new Paragraph(sejour.getDateEntree() != null ? 
-                sejour.getDateEntree().format(DATE_FORMATTER) : "")));
-            table.addCell(new Cell().add(new Paragraph(sejour.getDateSortie() != null ? 
-                sejour.getDateSortie().format(DATE_FORMATTER) : "")));
+            
+            String dateEntree = sejour.getDateEntree() != null ? sejour.getDateEntree().format(DATE_FORMATTER) : "";
+            table.addCell(new Cell().add(new Paragraph(dateEntree)));
+            
+            String dateSortie = sejour.getDateSortie() != null ? sejour.getDateSortie().format(DATE_FORMATTER) : "";
+            table.addCell(new Cell().add(new Paragraph(dateSortie)));
+            
             table.addCell(new Cell().add(new Paragraph(sejour.getTypeSejour())));
             table.addCell(new Cell().add(new Paragraph(String.format("%.2f €", sejour.getFraisSejour()))));
             table.addCell(new Cell().add(new Paragraph(String.format("%.2f €", sejour.getPrixExtras()))));
@@ -162,4 +204,4 @@ public class PDFService {
         
         document.add(table);
     }
-} 
+}

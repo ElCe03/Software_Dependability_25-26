@@ -30,7 +30,7 @@ public class EtageService {
     }
 
     public List<etage> getAllEtages() {
-        List<etage> list = new ArrayList<>();
+        List<etage> list = new ArrayList<etage>();
         String query = "SELECT e.*, d.nom as departement_nom, d.adresse " +
                 "FROM etage e JOIN departement d ON e.departement_id = d.id";
 
@@ -86,7 +86,7 @@ public class EtageService {
     }
 
     public List<etage> searchEtages(String searchTerm) {
-        List<etage> results = new ArrayList<>();
+        List<etage> results = new ArrayList<etage>();
         String query = "SELECT e.*, d.nom as departement_nom, d.adresse " +
                 "FROM etage e JOIN departement d ON e.departement_id = d.id " +
                 "WHERE e.numero LIKE ? OR d.nom LIKE ? OR d.adresse LIKE ?";
@@ -123,7 +123,7 @@ public class EtageService {
     }
 
     public List<etage> getEtagesByDepartement(int departementId) {
-        List<etage> list = new ArrayList<>();
+        List<etage> list = new ArrayList<etage>();
         String query = "SELECT * FROM etage WHERE departement_id = ?";
 
         try (Connection conn = DataSource.getInstance().getConnection();

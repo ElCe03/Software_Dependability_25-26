@@ -70,18 +70,21 @@ public class EmailService {
             Runnable onSuccess,
             Runnable onFailure
     ) {
-        Task<Void> emailTask = new Task<>() {
+        Task<Void> emailTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 try {
                     // Ensure SSL server identity is checked for MITM protection
                     SMTP_PROPS.put("mail.smtp.ssl.checkserveridentity", "true");
-                    Session session = Session.getInstance(SMTP_PROPS, new Authenticator() {
+
+                    Authenticator auth = new Authenticator() {
                         @Override
                         protected PasswordAuthentication getPasswordAuthentication() {
                             return new PasswordAuthentication(SMTP_USERNAME, SMTP_PASSWORD);
                         }
-                    });
+                    };
+
+                    Session session = Session.getInstance(SMTP_PROPS, auth);
 
                     Message message = new MimeMessage(session);
                     message.setFrom(new InternetAddress(SENDER_EMAIL, SENDER_NAME));

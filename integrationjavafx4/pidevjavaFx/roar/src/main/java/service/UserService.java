@@ -12,6 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
+
+    /*@ 
+      @ requires email != null && !email.isEmpty();
+      @ requires password != null && !password.isEmpty();
+      @ 
+      @ ensures \result != null ==> \result.getEmail().equals(email);
+      @ 
+      @ signals (SQLException e) true;
+      @ signals (JsonProcessingException e) true;
+      @*/
     public Users authenticate(String email, String password) throws SQLException, JsonProcessingException {
         String query = "SELECT id, nom, prenom, email, password, roles, type, adresse, telephone, date_naissance, specialite FROM users WHERE email = ?";
 
@@ -29,33 +39,30 @@ public class UserService {
                     // Créer l'objet utilisateur
                     String type = rs.getString("type");
                     Users user;
-                    switch (type) {
-                        case "PATIENT":
-                            user = new Patient();
-                            ((Patient) user).setAdresse(rs.getString("adresse"));
-                            ((Patient) user).setTelephone(rs.getString("telephone"));
-                            ((Patient) user).setDateNaissance(rs.getDate("date_naissance") != null ?
-                                    rs.getDate("date_naissance").toLocalDate() : null);
-                            break;
-                        case "MEDECIN":
-                            user = new Medecin();
-                            ((Medecin) user).setSpecialite(rs.getString("specialite"));
-                            ((Medecin) user).setTelephone(rs.getString("telephone"));
-                            break;
-                        case "PHARMACIEN":
-                            user = new Pharmacien();
-                            ((Pharmacien) user).setTelephone(rs.getString("telephone"));
-                            break;
-                        case "STAFF":
-                            user = new Staff();
-                            ((Staff) user).setTelephone(rs.getString("telephone"));
-                            break;
-                        case "ADMIN":
-                            user = new Users();
-                            break;
-                        default:
-                            user = new Users();
-                            break;
+                    
+                    if ("PATIENT".equals(type)) {
+                        user = new Patient();
+                        ((Patient) user).setAdresse(rs.getString("adresse"));
+                        ((Patient) user).setTelephone(rs.getString("telephone"));
+                        
+                        Date dateN = rs.getDate("date_naissance");
+                        if (dateN != null) {
+                            ((Patient) user).setDateNaissance(dateN.toLocalDate());
+                        } else {
+                            ((Patient) user).setDateNaissance(null);
+                        }
+                    } else if ("MEDECIN".equals(type)) {
+                        user = new Medecin();
+                        ((Medecin) user).setSpecialite(rs.getString("specialite"));
+                        ((Medecin) user).setTelephone(rs.getString("telephone"));
+                    } else if ("PHARMACIEN".equals(type)) {
+                        user = new Pharmacien();
+                        ((Pharmacien) user).setTelephone(rs.getString("telephone"));
+                    } else if ("STAFF".equals(type)) {
+                        user = new Staff();
+                        ((Staff) user).setTelephone(rs.getString("telephone"));
+                    } else {
+                        user = new Users();
                     }
 
                     user.setId(rs.getInt("id"));
@@ -67,7 +74,10 @@ public class UserService {
 
                     String rolesJson = rs.getString("roles");
                     ObjectMapper mapper = new ObjectMapper();
-                    List<String> roles = mapper.readValue(rolesJson, new TypeReference<List<String>>() {});
+                    
+                    TypeReference<List<String>> typeRef = new TypeReference<List<String>>() {};
+                    List<String> roles = mapper.readValue(rolesJson, typeRef);
+                    
                     user.setRoles(roles);
 
                     return user;
@@ -84,6 +94,17 @@ public class UserService {
         return null; // Utilisateur non trouvé
     }
 
+    /*@ 
+      @ requires user != null;
+      @ requires type != null;
+      @ requires user.getId() == 0;
+      @ requires user.getEmail() != null && !user.getEmail().isEmpty();
+      @ requires user.getPassword() != null && !user.getPassword().isEmpty();
+      @ 
+      @ ensures user.getId() > 0;
+      @ 
+      @ signals (IllegalArgumentException e) true;
+      @*/
     public void ajouterUtilisateur(Users user, String type) throws SQLException, JsonProcessingException {
         // Validation
         if (user == null || user.getEmail() == null || user.getEmail().isEmpty() ||
@@ -94,14 +115,17 @@ public class UserService {
         }
 
         // Déterminer le rôle
-        String role = switch (type.toLowerCase() + "") {
-            case "patient" -> "ROLE_PATIENT";
-            case "medecin" -> "ROLE_MEDECIN";
-            case "pharmacien" -> "ROLE_PHARMACIEN";
-            case "staff" -> "ROLE_STAFF";
-            default -> "ROLE_USER";
-        };
-        user.setRoles(List.of(role));
+        String role = "ROLE_USER";
+        String lowerType = type.toLowerCase();
+        
+        if (lowerType.equals("patient")) role = "ROLE_PATIENT";
+        else if (lowerType.equals("medecin")) role = "ROLE_MEDECIN";
+        else if (lowerType.equals("pharmacien")) role = "ROLE_PHARMACIEN";
+        else if (lowerType.equals("staff")) role = "ROLE_STAFF";
+
+        List<String> rolesList = new ArrayList<String>();
+        rolesList.add(role);
+        user.setRoles(rolesList);
         user.setType(type);
 
         // Requête SQL
@@ -139,17 +163,47 @@ public class UserService {
 
             // Champs spécifiques
             int index = 7;
-            if (user instanceof Patient patient) {
-                pstmt.setString(index++, patient.getAdresse() != null ? patient.getAdresse() : "");
-                pstmt.setString(index++, patient.getTelephone() != null ? patient.getTelephone() : "");
-                pstmt.setObject(index++, patient.getDateNaissance() != null ? Date.valueOf(patient.getDateNaissance()) : null);
-            } else if (user instanceof Medecin medecin) {
-                pstmt.setString(index++, medecin.getSpecialite() != null ? medecin.getSpecialite() : "");
-                pstmt.setString(index++, medecin.getTelephone() != null ? medecin.getTelephone() : "");
-            } else if (user instanceof Pharmacien pharmacien) {
-                pstmt.setString(index++, pharmacien.getTelephone() != null ? pharmacien.getTelephone() : "");
-            } else if (user instanceof Staff staff) {
-                pstmt.setString(index++, staff.getTelephone() != null ? staff.getTelephone() : "");
+            if (user instanceof Patient) {
+                Patient patient = (Patient) user;
+                
+                String adr = patient.getAdresse();
+                if (adr == null) adr = "";
+                pstmt.setString(index++, adr);
+                
+                String tel = patient.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
+                
+                Date sqlDate = null;
+                if (patient.getDateNaissance() != null) {
+                    sqlDate = Date.valueOf(patient.getDateNaissance());
+                }
+                pstmt.setObject(index++, sqlDate);
+                
+            } else if (user instanceof Medecin) {
+                Medecin medecin = (Medecin) user;
+                
+                String spec = medecin.getSpecialite();
+                if (spec == null) spec = "";
+                pstmt.setString(index++, spec);
+                
+                String tel = medecin.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
+                
+            } else if (user instanceof Pharmacien) {
+                Pharmacien pharmacien = (Pharmacien) user;
+                
+                String tel = pharmacien.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
+                
+            } else if (user instanceof Staff) {
+                Staff staff = (Staff) user;
+                
+                String tel = staff.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
             }
 
             pstmt.executeUpdate();
@@ -167,6 +221,9 @@ public class UserService {
         }
     }
 
+    /*@ 
+      @ requires id > 0;
+      @*/
     public void supprimer(int id) throws SQLException {
         String checkQuery = "SELECT COUNT(*) FROM users WHERE id = ?";
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -192,8 +249,12 @@ public class UserService {
         }
     }
 
+    /*@ 
+      @ ensures \result != null;
+      @ ensures (\forall int i; 0 <= i && i < \result.size(); \result.get(i) != null);
+      @*/
     public List<Users> listerUtilisateurs() throws SQLException {
-        List<Users> utilisateurs = new ArrayList<>();
+        List<Users> utilisateurs = new ArrayList<Users>();
         String req = "SELECT id, nom, prenom, email, roles, type, adresse, telephone, date_naissance, specialite FROM users";
 
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -204,30 +265,29 @@ public class UserService {
                 String type = rs.getString("type");
                 Users user;
 
-                switch (type) {
-                    case "PATIENT":
-                        user = new Patient();
-                        ((Patient) user).setAdresse(rs.getString("adresse"));
-                        ((Patient) user).setTelephone(rs.getString("telephone"));
-                        ((Patient) user).setDateNaissance(rs.getDate("date_naissance") != null ?
-                                rs.getDate("date_naissance").toLocalDate() : null);
-                        break;
-                    case "MEDECIN":
-                        user = new Medecin();
-                        ((Medecin) user).setSpecialite(rs.getString("specialite"));
-                        ((Medecin) user).setTelephone(rs.getString("telephone"));
-                        break;
-                    case "PHARMACIEN":
-                        user = new Pharmacien();
-                        ((Pharmacien) user).setTelephone(rs.getString("telephone"));
-                        break;
-                    case "STAFF":
-                        user = new Staff();
-                        ((Staff) user).setTelephone(rs.getString("telephone"));
-                        break;
-                    default:
-                        user = new Users();
-                        break;
+                if ("PATIENT".equals(type)) {
+                    user = new Patient();
+                    ((Patient) user).setAdresse(rs.getString("adresse"));
+                    ((Patient) user).setTelephone(rs.getString("telephone"));
+                    
+                    Date dateN = rs.getDate("date_naissance");
+                    if (dateN != null) {
+                        ((Patient) user).setDateNaissance(dateN.toLocalDate());
+                    } else {
+                        ((Patient) user).setDateNaissance(null);
+                    }
+                } else if ("MEDECIN".equals(type)) {
+                    user = new Medecin();
+                    ((Medecin) user).setSpecialite(rs.getString("specialite"));
+                    ((Medecin) user).setTelephone(rs.getString("telephone"));
+                } else if ("PHARMACIEN".equals(type)) {
+                    user = new Pharmacien();
+                    ((Pharmacien) user).setTelephone(rs.getString("telephone"));
+                } else if ("STAFF".equals(type)) {
+                    user = new Staff();
+                    ((Staff) user).setTelephone(rs.getString("telephone"));
+                } else {
+                    user = new Users();
                 }
 
                 user.setId(rs.getInt("id"));
@@ -238,7 +298,10 @@ public class UserService {
 
                 String rolesJson = rs.getString("roles");
                 ObjectMapper mapper = new ObjectMapper();
-                List<String> roles = mapper.readValue(rolesJson, new TypeReference<List<String>>() {});
+                
+                TypeReference<List<String>> typeRef = new TypeReference<List<String>>() {};
+                List<String> roles = mapper.readValue(rolesJson, typeRef);
+                
                 user.setRoles(roles);
 
                 utilisateurs.add(user);
@@ -256,6 +319,11 @@ public class UserService {
         return utilisateurs;
     }
 
+    /*@ 
+      @ requires user != null;
+      @ requires user.getId() > 0;
+      @ requires user.getEmail() != null && !user.getEmail().isEmpty();
+      @*/
     // La méthode updateUtilisateur peut être conservée si vous voulez modifier des utilisateurs existants
     public void updateUtilisateur(Users user) throws SQLException, JsonProcessingException {
         // Validation des champs communs, y compris password
@@ -294,17 +362,47 @@ public class UserService {
 
             // Champs spécifiques
             int index = 7;
-            if (user instanceof Patient patient) {
-                pstmt.setString(index++, patient.getAdresse() != null ? patient.getAdresse() : "");
-                pstmt.setString(index++, patient.getTelephone() != null ? patient.getTelephone() : "");
-                pstmt.setObject(index++, patient.getDateNaissance() != null ? Date.valueOf(patient.getDateNaissance()) : null);
-            } else if (user instanceof Medecin medecin) {
-                pstmt.setString(index++, medecin.getSpecialite() != null ? medecin.getSpecialite() : "");
-                pstmt.setString(index++, medecin.getTelephone() != null ? medecin.getTelephone() : "");
-            } else if (user instanceof Pharmacien pharmacien) {
-                pstmt.setString(index++, pharmacien.getTelephone() != null ? pharmacien.getTelephone() : "");
-            } else if (user instanceof Staff staff) {
-                pstmt.setString(index++, staff.getTelephone() != null ? staff.getTelephone() : "");
+            if (user instanceof Patient) {
+                Patient patient = (Patient) user;
+                
+                String adr = patient.getAdresse();
+                if (adr == null) adr = "";
+                pstmt.setString(index++, adr);
+                
+                String tel = patient.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
+                
+                Date sqlDate = null;
+                if (patient.getDateNaissance() != null) {
+                    sqlDate = Date.valueOf(patient.getDateNaissance());
+                }
+                pstmt.setObject(index++, sqlDate);
+                
+            } else if (user instanceof Medecin) {
+                Medecin medecin = (Medecin) user;
+                
+                String spec = medecin.getSpecialite();
+                if (spec == null) spec = "";
+                pstmt.setString(index++, spec);
+                
+                String tel = medecin.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
+                
+            } else if (user instanceof Pharmacien) {
+                Pharmacien pharmacien = (Pharmacien) user;
+                
+                String tel = pharmacien.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
+                
+            } else if (user instanceof Staff) {
+                Staff staff = (Staff) user;
+                
+                String tel = staff.getTelephone();
+                if (tel == null) tel = "";
+                pstmt.setString(index++, tel);
             }
 
             // Clause WHERE

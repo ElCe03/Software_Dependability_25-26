@@ -70,22 +70,22 @@ public class SejourService {
             pstmt.setInt(1, sejour.getDossierMedicale().getId());
             pstmt.setTimestamp(2, Timestamp.valueOf(sejour.getDateEntree()));
             pstmt.setTimestamp(3, Timestamp.valueOf(sejour.getDateSortie()));
-            pstmt.setString(4, sejour.getTypeSejour() != null ? sejour.getTypeSejour() : "");
+            
+            String typeSejour = sejour.getTypeSejour();
+            if (typeSejour == null) typeSejour = "";
+            pstmt.setString(4, typeSejour);
+            
             pstmt.setDouble(5, sejour.getFraisSejour());
             
             // Ensure moyen_paiement is not null (as required by the database)
-            if (sejour.getMoyenPaiement() != null) {
-                pstmt.setString(6, sejour.getMoyenPaiement());
-            } else {
-                pstmt.setString(6, "Non spécifié");
-            }
+            String moyenPaiement = sejour.getMoyenPaiement();
+            if (moyenPaiement == null) moyenPaiement = "Non spécifié";
+            pstmt.setString(6, moyenPaiement);
             
             // Ensure statut_paiement is not null (as required by the database)
-            if (sejour.getStatutPaiement() != null) {
-                pstmt.setString(7, sejour.getStatutPaiement());
-            } else {
-                pstmt.setString(7, "En attente");
-            }
+            String statutPaiement = sejour.getStatutPaiement();
+            if (statutPaiement == null) statutPaiement = "En attente";
+            pstmt.setString(7, statutPaiement);
             
             // prix_extras can be null in the database
             if (sejour.getPrixExtras() > 0) {
@@ -95,11 +95,6 @@ public class SejourService {
             }
             
             System.out.println("Executing SQL: " + sql);
-            System.out.println("With values: " + sejour.getDossierMedicale().getId() + ", " 
-                + sejour.getDateEntree() + ", " + sejour.getDateSortie() + ", " 
-                + sejour.getTypeSejour() + ", " + sejour.getFraisSejour() + ", " 
-                + sejour.getMoyenPaiement() + ", " + sejour.getStatutPaiement() + ", " 
-                + sejour.getPrixExtras());
             
             int affectedRows = pstmt.executeUpdate();
             
@@ -107,7 +102,6 @@ public class SejourService {
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         sejour.setId(generatedKeys.getInt(1));
-                        
                         return true;
                     }
                 }
@@ -160,22 +154,22 @@ public class SejourService {
             pstmt.setInt(1, sejour.getDossierMedicale().getId());
             pstmt.setTimestamp(2, Timestamp.valueOf(sejour.getDateEntree()));
             pstmt.setTimestamp(3, Timestamp.valueOf(sejour.getDateSortie()));
-            pstmt.setString(4, sejour.getTypeSejour() != null ? sejour.getTypeSejour() : "");
+            
+            String typeSejour = sejour.getTypeSejour();
+            if (typeSejour == null) typeSejour = "";
+            pstmt.setString(4, typeSejour);
+            
             pstmt.setDouble(5, sejour.getFraisSejour());
             
-            // Ensure moyen_paiement is not null (as required by the database)
-            if (sejour.getMoyenPaiement() != null) {
-                pstmt.setString(6, sejour.getMoyenPaiement());
-            } else {
-                pstmt.setString(6, "Non spécifié");
-            }
+             // Ensure moyen_paiement is not null (as required by the database)
+            String moyenPaiement = sejour.getMoyenPaiement();
+            if (moyenPaiement == null) moyenPaiement = "Non spécifié";
+            pstmt.setString(6, moyenPaiement);
             
             // Ensure statut_paiement is not null (as required by the database)
-            if (sejour.getStatutPaiement() != null) {
-                pstmt.setString(7, sejour.getStatutPaiement());
-            } else {
-                pstmt.setString(7, "En attente");
-            }
+            String statutPaiement = sejour.getStatutPaiement();
+            if (statutPaiement == null) statutPaiement = "En attente";
+            pstmt.setString(7, statutPaiement);
             
             // prix_extras can be null in the database
             if (sejour.getPrixExtras() > 0) {
@@ -187,11 +181,6 @@ public class SejourService {
             pstmt.setInt(9, sejour.getId());
             
             System.out.println("Executing SQL update: " + sql);
-            System.out.println("With values: " + sejour.getDossierMedicale().getId() + ", " 
-                + sejour.getDateEntree() + ", " + sejour.getDateSortie() + ", " 
-                + sejour.getTypeSejour() + ", " + sejour.getFraisSejour() + ", " 
-                + sejour.getMoyenPaiement() + ", " + sejour.getStatutPaiement() + ", " 
-                + sejour.getPrixExtras() + ", " + sejour.getId());
             
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -253,7 +242,7 @@ public class SejourService {
      * @return a list of all stays
      */
     public List<Sejour> recupererTousSejours() {
-        List<Sejour> sejours = new ArrayList<>();
+        List<Sejour> sejours = new ArrayList<Sejour>();
         String sql = "SELECT * FROM sejour";
         
         try (Statement stmt = connection.createStatement();
@@ -277,7 +266,7 @@ public class SejourService {
      * @return a list of stays for the given medical record
      */
     public List<Sejour> recupererSejoursParDossier(int dossierId) {
-        List<Sejour> sejours = new ArrayList<>();
+        List<Sejour> sejours = new ArrayList<Sejour>();
         String sql = "SELECT * FROM sejour WHERE dossier_medicale_id = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -303,7 +292,7 @@ public class SejourService {
      * @return a list of stays with the specified payment status
      */
     public List<Sejour> recupererSejoursParStatutPaiement(String statutPaiement) {
-        List<Sejour> sejours = new ArrayList<>();
+        List<Sejour> sejours = new ArrayList<Sejour>();
         String sql = "SELECT * FROM sejour WHERE statut_paiement = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -352,7 +341,8 @@ public class SejourService {
         sejour.setMoyenPaiement(moyenPaiement);
         
         String statutPaiement = rs.getString("statut_paiement");
-        sejour.setStatutPaiement(statutPaiement != null ? statutPaiement : "En attente");
+        if (statutPaiement == null) statutPaiement = "En attente";
+        sejour.setStatutPaiement(statutPaiement);
         
         double prixExtras = rs.getDouble("prix_extras");
         if (!rs.wasNull()) {
@@ -376,7 +366,7 @@ public class SejourService {
      * @return a map containing various statistics
      */
     public java.util.Map<String, Object> getStatistiques() {
-        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        java.util.Map<String, Object> stats = new java.util.HashMap<String, Object>();
         System.out.println("SejourService.getStatistiques() - Starting to fetch statistics");
         
         // Count total sejours - make sure we count only valid records
@@ -388,7 +378,7 @@ public class SejourService {
                          "FROM sejour " +
                          "GROUP BY COALESCE(type_sejour, 'Non défini')";
         System.out.println("SQL Query for sejours by type: " + sqlByType);
-                         
+                          
         // Count sejours by payment status - handle NULL values
         String sqlByPaymentStatus = "SELECT COALESCE(statut_paiement, 'En attente') as status, COUNT(*) as count " +
                                 "FROM sejour " +
@@ -423,7 +413,7 @@ public class SejourService {
                                 "GROUP BY MONTH(COALESCE(date_entree, CURRENT_DATE())) " +
                                 "ORDER BY month";
         System.out.println("SQL Query for revenue by month: " + sqlRevenueByMonth);
-                                
+                              
         try (Statement stmt = connection.createStatement()) {
             // Get total count
             try (ResultSet rs = stmt.executeQuery(sqlTotal)) {
@@ -438,7 +428,7 @@ public class SejourService {
             }
             
             // Get counts by type
-            java.util.Map<String, Integer> statsByType = new java.util.HashMap<>();
+            java.util.Map<String, Integer> statsByType = new java.util.HashMap<String, Integer>();
             try (ResultSet rs = stmt.executeQuery(sqlByType)) {
                 while (rs.next()) {
                     String type = rs.getString("type");
@@ -450,10 +440,10 @@ public class SejourService {
                 System.err.println("Error executing sejours by type query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("sejoursByType", statsByType);
+            stats.put("sejoursByType", (Object) statsByType);
             
             // Get counts by payment status
-            java.util.Map<String, Integer> statsByPaymentStatus = new java.util.HashMap<>();
+            java.util.Map<String, Integer> statsByPaymentStatus = new java.util.HashMap<String, Integer>();
             try (ResultSet rs = stmt.executeQuery(sqlByPaymentStatus)) {
                 while (rs.next()) {
                     String status = rs.getString("status");
@@ -465,10 +455,10 @@ public class SejourService {
                 System.err.println("Error executing sejours by payment status query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("sejoursByPaymentStatus", statsByPaymentStatus);
+            stats.put("sejoursByPaymentStatus", (Object) statsByPaymentStatus);
             
             // Get counts by month
-            java.util.Map<Integer, Integer> statsByMonth = new java.util.HashMap<>();
+            java.util.Map<Integer, Integer> statsByMonth = new java.util.HashMap<Integer, Integer>();
             for (int i = 1; i <= 12; i++) {
                 statsByMonth.put(i, 0); // Initialize all months with 0
             }
@@ -483,13 +473,18 @@ public class SejourService {
                 System.err.println("Error executing sejours by month query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("sejoursByMonth", statsByMonth);
+            stats.put("sejoursByMonth", (Object) statsByMonth);
             
             // Get average duration
             try (ResultSet rs = stmt.executeQuery(sqlAvgDuration)) {
                 if (rs.next()) {
-                    Object avgDuration = rs.getObject("avg_duration");
-                    double avgDurationValue = (avgDuration != null) ? rs.getDouble("avg_duration") : 0.0;
+                    Object avgDurationObj = rs.getObject("avg_duration");
+                    double avgDurationValue;
+                    if (avgDurationObj != null) {
+                        avgDurationValue = rs.getDouble("avg_duration");
+                    } else {
+                        avgDurationValue = 0.0;
+                    }
                     stats.put("averageDuration", avgDurationValue);
                     System.out.println("Average sejour duration: " + avgDurationValue + " days");
                 }
@@ -501,8 +496,13 @@ public class SejourService {
             // Get total revenue
             try (ResultSet rs = stmt.executeQuery(sqlTotalRevenue)) {
                 if (rs.next()) {
-                    Object totalRevenue = rs.getObject("total_revenue");
-                    double totalRevenueValue = (totalRevenue != null) ? rs.getDouble("total_revenue") : 0.0;
+                    Object totalRevenueObj = rs.getObject("total_revenue");
+                    double totalRevenueValue;
+                    if (totalRevenueObj != null) {
+                        totalRevenueValue = rs.getDouble("total_revenue");
+                    } else {
+                        totalRevenueValue = 0.0;
+                    }
                     stats.put("totalRevenue", totalRevenueValue);
                     System.out.println("Total revenue: " + totalRevenueValue);
                 }
@@ -512,7 +512,7 @@ public class SejourService {
             }
             
             // Get revenue by month
-            java.util.Map<Integer, Double> revenueByMonth = new java.util.HashMap<>();
+            java.util.Map<Integer, Double> revenueByMonth = new java.util.HashMap<Integer, Double>();
             for (int i = 1; i <= 12; i++) {
                 revenueByMonth.put(i, 0.0); // Initialize all months with 0
             }
@@ -527,7 +527,7 @@ public class SejourService {
                 System.err.println("Error executing revenue by month query: " + e.getMessage());
                 e.printStackTrace();
             }
-            stats.put("revenueByMonth", revenueByMonth);
+            stats.put("revenueByMonth", (Object) revenueByMonth);
             
             System.out.println("SejourService.getStatistiques() completed successfully");
             
@@ -540,7 +540,7 @@ public class SejourService {
     }
 
     public List<Sejour> getAllSejours() {
-        List<Sejour> sejours = new ArrayList<>();
+        List<Sejour> sejours = new ArrayList<Sejour>();
         String query = "SELECT * FROM sejour";
         
         try (PreparedStatement stmt = connection.prepareStatement(query);
@@ -550,8 +550,14 @@ public class SejourService {
                 Sejour sejour = new Sejour();
                 sejour.setId(rs.getInt("id"));
                 sejour.setDateEntree(rs.getTimestamp("date_entree").toLocalDateTime());
-                sejour.setDateSortie(rs.getTimestamp("date_sortie") != null ? 
-                    rs.getTimestamp("date_sortie").toLocalDateTime() : null);
+                
+                Timestamp tsSortie = rs.getTimestamp("date_sortie");
+                if (tsSortie != null) {
+                    sejour.setDateSortie(tsSortie.toLocalDateTime());
+                } else {
+                    sejour.setDateSortie(null);
+                }
+
                 sejour.setTypeSejour(rs.getString("type_sejour"));
                 sejour.setFraisSejour(rs.getDouble("frais_sejour"));
                 sejour.setPrixExtras(rs.getDouble("prix_extras"));
@@ -566,4 +572,4 @@ public class SejourService {
         
         return sejours;
     }
-} 
+}

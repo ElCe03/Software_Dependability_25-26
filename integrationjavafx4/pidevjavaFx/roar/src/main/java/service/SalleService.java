@@ -9,11 +9,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static controllers.ReservationDialogController.LOGGER;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static java.sql.DriverManager.getConnection;
 
 public class SalleService {
 
+    private static final Logger LOGGER = Logger.getLogger(SalleService.class.getName());
+    
     public void addSalle(salle s) {
         String query = "INSERT INTO salle (nom, capacite, type_salle, status, etage_id, image, priorite) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -47,7 +51,7 @@ public class SalleService {
     }
 
     public List<salle> getAll() {
-        List<salle> list = new ArrayList<>();
+        List<salle> list = new ArrayList<salle>();
         String query = "SELECT s.*, e.numero as etage_numero FROM salle s LEFT JOIN etage e ON s.etage_id = e.id";
 
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -178,7 +182,7 @@ public class SalleService {
     }
 
     public List<salle> getSallesByEtage(int etageId) {
-        List<salle> list = new ArrayList<>();
+        List<salle> list = new ArrayList<salle>();
         String query = "SELECT s.*, e.numero as etage_numero FROM salle s LEFT JOIN etage e ON s.etage_id = e.id WHERE s.etage_id = ?";
 
         try (Connection conn = DataSource.getInstance().getConnection();
@@ -282,7 +286,7 @@ public class SalleService {
         }
     }
     public List<salle> getAvailableSalles() throws SQLException {
-        List<salle> availableSalles = new ArrayList<>();
+        List<salle> availableSalles = new ArrayList<salle>();
         String query = "SELECT * FROM salle WHERE status = 'Disponible'";
 
         try (Connection conn = DataSource.getInstance().getConnection();

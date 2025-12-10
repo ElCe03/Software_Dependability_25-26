@@ -18,21 +18,31 @@ import java.time.temporal.ChronoUnit;
  * - prix_extras
  */
 public class Sejour {
-    private int id;
-    private LocalDateTime dateEntree;
-    private LocalDateTime dateSortie;
-    private String typeSejour;
-    private double fraisSejour;
-    private String moyenPaiement;
-    private String statutPaiement;
-    private double prixExtras;
-    private DossierMedicale dossierMedicale;  // corresponds to dossier_medicale_id in SQL
+
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private LocalDateTime dateEntree;
+    /*@ spec_public nullable @*/ private LocalDateTime dateSortie;
+    /*@ spec_public nullable @*/ private String typeSejour;
+    /*@ spec_public @*/ private double fraisSejour;
+    /*@ spec_public nullable @*/ private String moyenPaiement;
+    /*@ spec_public nullable @*/ private String statutPaiement;
+    /*@ spec_public @*/ private double prixExtras;
+    /*@ spec_public nullable @*/ private DossierMedicale dossierMedicale;  // corresponds to dossier_medicale_id in SQL
     
     // These fields don't exist in the database and should be marked as transient
     // so they aren't involved in database operations
-    private transient String chambre;  // Not in database
-    private transient String notes;    // Not in database
+    /*@ spec_public nullable @*/ private transient String chambre;  // Not in database
+    /*@ spec_public nullable @*/ private transient String notes;    // Not in database
     
+    /*@ public invariant id >= 0; @*/
+    /*@ public invariant fraisSejour >= 0.0; @*/
+    /*@ public invariant prixExtras >= 0.0; @*/
+
+    /*@ 
+      @ ensures fraisSejour == 0.0;
+      @ ensures prixExtras == 0.0;
+      @ ensures statutPaiement != null && statutPaiement.equals("En attente");
+      @*/
     // Default constructor
     public Sejour() {
         // Initialize default values
@@ -41,6 +51,15 @@ public class Sejour {
         this.statutPaiement = "En attente";
     }
     
+    /*@ 
+      @ requires fraisSejour >= 0.0;
+      @ requires prixExtras >= 0.0;
+      @ 
+      @ ensures this.fraisSejour == fraisSejour;
+      @ ensures this.prixExtras == prixExtras;
+      @ ensures this.dateEntree == dateEntree;
+      @ ensures this.dateSortie == dateSortie;
+      @*/
     // Constructor with all fields that exist in the database
     public Sejour(LocalDateTime dateEntree, LocalDateTime dateSortie, String typeSejour, 
             double fraisSejour, String moyenPaiement, String statutPaiement, double prixExtras, 
@@ -56,14 +75,18 @@ public class Sejour {
     }
     
     // Getters and Setters
+
+    /*@ pure @*/
     public int getId() {
         return id;
     }
     
+    /*@ requires id >= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
         this.id = id;
     }
     
+    /*@ pure @*/
     public LocalDateTime getDateEntree() {
         return dateEntree;
     }
@@ -72,6 +95,7 @@ public class Sejour {
         this.dateEntree = dateEntree;
     }
     
+    /*@ pure @*/
     public LocalDateTime getDateSortie() {
         return dateSortie;
     }
@@ -80,6 +104,7 @@ public class Sejour {
         this.dateSortie = dateSortie;
     }
     
+    /*@ pure @*/
     public String getTypeSejour() {
         return typeSejour;
     }
@@ -88,14 +113,21 @@ public class Sejour {
         this.typeSejour = typeSejour;
     }
     
+    /*@ pure @*/
     public double getFraisSejour() {
         return fraisSejour;
     }
     
+    /*@ 
+      @ requires fraisSejour >= 0.0;
+      @ assignable this.fraisSejour;
+      @ ensures this.fraisSejour == fraisSejour;
+      @*/
     public void setFraisSejour(double fraisSejour) {
         this.fraisSejour = fraisSejour;
     }
     
+    /*@ pure @*/
     public String getMoyenPaiement() {
         return moyenPaiement;
     }
@@ -104,6 +136,7 @@ public class Sejour {
         this.moyenPaiement = moyenPaiement;
     }
     
+    /*@ pure @*/
     public String getStatutPaiement() {
         return statutPaiement;
     }
@@ -112,18 +145,28 @@ public class Sejour {
         this.statutPaiement = statutPaiement;
     }
     
+    /*@ pure @*/
     public double getPrixExtras() {
         return prixExtras;
     }
     
+    /*@ 
+      @ requires prixExtras >= 0.0;
+      @ assignable this.prixExtras;
+      @ ensures this.prixExtras == prixExtras;
+      @*/
     public void setPrixExtras(double prixExtras) {
         this.prixExtras = prixExtras;
     }
     
+    /*@ pure @*/
     public DossierMedicale getDossierMedicale() {
         return dossierMedicale;
     }
     
+    /*@ 
+      @ ensures this.dossierMedicale == dossierMedicale;
+      @*/
     public void setDossierMedicale(DossierMedicale dossierMedicale) {
         this.dossierMedicale = dossierMedicale;
         
@@ -134,6 +177,7 @@ public class Sejour {
     }
     
     // Transient getters and setters (not in database)
+    /*@ pure @*/
     public String getChambre() {
         return chambre;
     }
@@ -142,6 +186,7 @@ public class Sejour {
         this.chambre = chambre;
     }
     
+    /*@ pure @*/
     public String getNotes() {
         return notes;
     }
@@ -151,6 +196,7 @@ public class Sejour {
     }
     
     // Helper method to get dossier_medicale_id for database operations
+    /*@ pure @*/
     public int getDossierMedicaleId() {
         return dossierMedicale != null ? dossierMedicale.getId() : 0;
     }
@@ -159,6 +205,11 @@ public class Sejour {
      * Calculate the total cost of the stay including base cost and extras
      * @return The total cost
      */
+    /*@ 
+      @ ensures \result == fraisSejour + prixExtras;
+      @ ensures \result >= 0.0;
+      @ pure
+      @*/
     public double calculateTotalCost() {
         return fraisSejour + prixExtras;
     }
@@ -167,6 +218,10 @@ public class Sejour {
      * Calculate the duration of the stay in days
      * @return The number of days of the stay
      */
+    /*@ 
+      @ ensures (dateEntree == null || dateSortie == null) ==> \result == 0;
+      @ pure
+      @*/
     public long calculateStayDuration() {
         if (dateEntree == null || dateSortie == null) {
             return 0;

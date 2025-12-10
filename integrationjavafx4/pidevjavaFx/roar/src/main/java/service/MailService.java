@@ -41,12 +41,13 @@ public class MailService {
         props.put("mail.smtp.starttls.enable", "true"); // TLS
         props.put("mail.smtp.ssl.checkserveridentity", "true"); // Validate server SSL certificate
 
-        Session session = Session.getInstance(props, new Authenticator() {
-            @Override
+        Authenticator auth = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(FROM_EMAIL, PASSWORD);
             }
-        });
+        };
+
+        Session session = Session.getInstance(props, auth);
 
         try {
             Message message = new MimeMessage(session);
@@ -62,5 +63,6 @@ public class MailService {
             e.printStackTrace();
         }
     }
+}
 }
 

@@ -32,7 +32,7 @@ public class DepartemntService {
     }
 
     public List<departement> getAllDepartements() {
-        List<departement> list = new ArrayList<>();
+        List<departement> list = new ArrayList<departement>();
         String query = "SELECT d.*, COALESCE(COUNT(e.id), 0) as etage_count " +
                 "FROM departement d " +
                 "LEFT JOIN etage e ON d.id = e.departement_id " +
@@ -129,7 +129,7 @@ public class DepartemntService {
     }
 
     public List<departement> searchDepartements(String searchTerm) {
-        List<departement> results = new ArrayList<>();
+        List<departement> results = new ArrayList<departement>();
         String query = "SELECT d.*, COALESCE(COUNT(e.id), 0) as etage_count " +
                 "FROM departement d " +
                 "LEFT JOIN etage e ON d.id = e.departement_id " +

@@ -38,12 +38,14 @@ public class EmailSender {
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.ssl.checkserveridentity", "true");
 
-        return Session.getInstance(props, new Authenticator() {
+        // Authentication session
+        Authenticator auth = new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(EMAIL, PASSWORD);
             }
-        });
+        };
+        return Session.getInstance(props, auth);
     }
 
     public static boolean sendEmail(String to, String subject, String content) {

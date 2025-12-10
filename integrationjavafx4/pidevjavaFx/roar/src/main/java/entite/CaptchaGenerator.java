@@ -11,9 +11,19 @@ import java.io.IOException;
 import java.security.SecureRandom; 
 
 public class CaptchaGenerator {
+
+    /*@ spec_public non_null @*/
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    /*@ spec_public @*/
     private static final int CAPTCHA_LENGTH = 5;
 
+    /*@ public static invariant CHARS.length() > 0; @*/
+    /*@ public static invariant CAPTCHA_LENGTH > 0; @*/
+
+    /*@ 
+      @ ensures \result != null;
+      @ ensures \result.length() == CAPTCHA_LENGTH;
+      @*/
     private static final SecureRandom secureRandom = new SecureRandom();
 
     public static String generateCaptchaText() {
@@ -25,6 +35,13 @@ public class CaptchaGenerator {
         return captcha.toString();
     }
 
+    /*@ 
+      @ requires captchaText != null;
+      @ 
+      @ ensures \result != null;
+      @ ensures \result.exists(); 
+      @ signals (IOException e) true; // Dichiariamo che l'IO può fallire
+      @*/
     public static File generateCaptchaImage(String captchaText) throws IOException {
         int width = 150, height = 50;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -46,6 +63,10 @@ public class CaptchaGenerator {
         return file;
     }
 
+    /*@ 
+      @ requires text != null;
+      @ ensures \result != null;
+      @*/
     public static Image getCaptchaImage(String text) throws IOException {
         return SwingFXUtils.toFXImage(ImageIO.read(generateCaptchaImage(text)), null);
     }

@@ -29,7 +29,7 @@ public class EquipementService {
     }
 
     public List<Equipement> getAllEquipements() {
-        List<Equipement> result = new ArrayList<>();
+        List<Equipement> result = new ArrayList<Equipement>();
         String sql = "SELECT * FROM equipement";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -144,7 +144,7 @@ public class EquipementService {
     }
 
     public List<Equipement> getEquipementsByCategory(String category) {
-        List<Equipement> equipements = new ArrayList<>();
+        List<Equipement> equipements = new ArrayList<Equipement>();
         String sql = "SELECT * FROM equipement WHERE category = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, category);
