@@ -20,12 +20,12 @@ public class CaptchaGenerator {
     /*@ public static invariant CHARS.length() > 0; @*/
     /*@ public static invariant CAPTCHA_LENGTH > 0; @*/
 
+    private static final SecureRandom secureRandom = new SecureRandom();
+
     /*@ 
       @ ensures \result != null;
       @ ensures \result.length() == CAPTCHA_LENGTH;
       @*/
-    private static final SecureRandom secureRandom = new SecureRandom();
-
     public static String generateCaptchaText() {
         StringBuilder captcha = new StringBuilder();
         
