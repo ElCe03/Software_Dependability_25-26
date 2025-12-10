@@ -12,24 +12,29 @@ jobs:
   verify:
     runs-on: ubuntu-22.04
 
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+    
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgomp1
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v3
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         cache: 'maven'
 
+
     - name: Download and Install OpenJML
       run: |
-        wget https://github.com/OpenJML/OpenJML/releases/download/21-0.18/openjml-ubuntu-22.04-21-0.18.zip -O openjml.zip
+        wget https://github.com/OpenJML/OpenJML/releases/download/21-0.16/openjml-ubuntu-22.04-21-0.16.zip -O openjml.zip
         unzip -q openjml.zip -d openjml-tool
         chmod +x openjml-tool/openjml
-        
+      
     - name: Generate Classpath
       working-directory: integrationjavafx4/pidevjavaFx/roar
       run: mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
@@ -37,6 +42,4 @@ jobs:
     - name: Run OpenJML Check
       working-directory: integrationjavafx4/pidevjavaFx/roar
       run: |
-        OPENJML_BIN=$(find openjml-tool -name "openjml" -type f | head -n 1)
-        chmod +x "$OPENJML_BIN"
-        "$OPENJML_BIN" -cp "$(cat cp.txt)" --dirs ./src/main/java/entite ./src/main/java/util ./src/main/java/service
+        $GITHUB_WORKSPACE/openjml-tool/openjml -cp "$(cat cp.txt)" --dirs ./src/main/java/entite ./src/main/java/util ./src/main/java/service
