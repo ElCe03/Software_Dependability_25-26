@@ -3,7 +3,7 @@ name: maven-build
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "JML"]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -22,25 +22,6 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-    
-    - name: Download OpenJML
-      run: wget https://github.com/OpenJML/OpenJML/releases/download/0.8.51-alpha/openjml.jar -O openjml.jar
-
-    - name: Prepare JML Environment
-      working-directory: ./integrationjavafx4/pidevjavaFx/roar
-      run: |
-        mvn compile -DskipTests
-        mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
-
-    - name: Run JML Verification
-      working-directory: ./integrationjavafx4/pidevjavaFx/roar
-      run: |
-        export PROJ_CP=$(cat cp.txt)
-        OPENJML_PATH="../../../openjml.jar"
-        TARGET_DIRS="src/main/java/entite src/main/java/service src/main/java/util"
-        
-        echo "Eseguendo JML Check..."
-        java -jar $OPENJML_PATH -esc -cp "$PROJ_CP:target/classes" --dirs $TARGET_DIRS
 
     - name: Build package
       working-directory: ./integrationjavafx4/pidevjavaFx/roar

@@ -2,7 +2,7 @@ package controllers;
 
 import javafx.event.ActionEvent;
 import service.EmailSender;
-import util.DataSource ;
+import util.DataSource;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,14 +13,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.mindrot.jbcrypt.BCrypt;
+import javafx.application.Platform;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Random;
-import javafx.application.Platform;
+import java.security.SecureRandom; 
 
 public class ForgetPasswordController {
 
@@ -33,6 +33,9 @@ public class ForgetPasswordController {
 
     private String generatedCode;
     private String userEmail;
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+
     public void onLogoutButtonClick(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Login.fxml"));
@@ -43,9 +46,9 @@ public class ForgetPasswordController {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-
         }
     }
+
     @FXML
     private void sendCode() {
         String email = emailField.getText().trim();
@@ -70,6 +73,7 @@ public class ForgetPasswordController {
             setStatus("Échec de l'envoi du code.", Color.RED);
         }
     }
+
     @FXML
     private void verifyCodeAndChangePassword() {
         String enteredCode = codeField.getText().trim();
@@ -154,8 +158,6 @@ public class ForgetPasswordController {
         return false;
     }
 
-
-
     private boolean updatePassword(String email, String newPassword) {
         // Récupérer une connexion active
         Connection conn = DataSource.getInstance().getConnection();
@@ -196,9 +198,8 @@ public class ForgetPasswordController {
         }
     }
 
-
     private String generateVerificationCode() {
-        return String.valueOf(100000 + new Random().nextInt(900000));
+        return String.valueOf(100000 + secureRandom.nextInt(900000));
     }
 
     private void setStatus(String message, Color color) {

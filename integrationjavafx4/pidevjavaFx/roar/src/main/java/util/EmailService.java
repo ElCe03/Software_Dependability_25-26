@@ -12,19 +12,25 @@ import javafx.concurrent.Task;
 
 public class EmailService {
     private static final Logger LOGGER = Logger.getLogger(EmailService.class.getName());
+    
     private static final Properties CONFIG_PROPS = loadConfig();
-
-    // Configuration SMTP
+   
     private static final String SMTP_HOST = getConfig("smtp.host", "sandbox.smtp.mailtrap.io");
     private static final String SMTP_PORT = getConfig("smtp.port", "2525");
-    private static final String SMTP_USERNAME = getConfig("smtp.username", "9361312ac3db7b");
-    private static final String SMTP_PASSWORD = getConfig("smtp.password", "2b31585dc32d1c");
+    
+    private static final String SMTP_USERNAME = getConfig("smtp.user", null);
+    private static final String SMTP_PASSWORD = getConfig("smtp.password", null);
+    
     private static final String SENDER_EMAIL = getConfig("sender.email", "eyah5268@gmail.com");
     private static final String SENDER_NAME = getConfig("sender.name", "eya");
 
-    // Propriétés SMTP
     private static final Properties SMTP_PROPS = new Properties();
+    
     static {
+        if (SMTP_USERNAME == null || SMTP_PASSWORD == null) {
+            LOGGER.log(Level.WARNING, "Attenzione: Credenziali SMTP (smtp.user/password) non trovate nel config.properties!");
+        }
+
         SMTP_PROPS.put("mail.smtp.auth", "true");
         SMTP_PROPS.put("mail.smtp.starttls.enable", "true");
         SMTP_PROPS.put("mail.smtp.host", SMTP_HOST);
@@ -37,9 +43,12 @@ public class EmailService {
 
     private static Properties loadConfig() {
         Properties props = new Properties();
-        try (InputStream input = EmailService.class.getClassLoader().getResourceAsStream("mailtrap.properties")) {
+        // Usiamo config.properties per coerenza con il resto del progetto
+        try (InputStream input = EmailService.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
                 props.load(input);
+            } else {
+                LOGGER.log(Level.SEVERE, "File config.properties non trovato!");
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Erreur de chargement du fichier de configuration", e);

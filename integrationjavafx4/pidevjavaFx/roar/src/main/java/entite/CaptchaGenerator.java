@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+import java.security.SecureRandom; 
 
 public class CaptchaGenerator {
 
@@ -24,11 +24,13 @@ public class CaptchaGenerator {
       @ ensures \result != null;
       @ ensures \result.length() == CAPTCHA_LENGTH;
       @*/
+    private static final SecureRandom secureRandom = new SecureRandom();
+
     public static String generateCaptchaText() {
         StringBuilder captcha = new StringBuilder();
-        Random random = new Random();
+        
         for (int i = 0; i < CAPTCHA_LENGTH; i++) {
-            captcha.append(CHARS.charAt(random.nextInt(CHARS.length())));
+            captcha.append(CHARS.charAt(secureRandom.nextInt(CHARS.length())));
         }
         return captcha.toString();
     }

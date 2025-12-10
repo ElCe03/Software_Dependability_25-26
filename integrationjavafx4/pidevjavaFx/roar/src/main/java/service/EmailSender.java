@@ -4,16 +4,33 @@ import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class EmailSender {
 
-    private static final String EMAIL = "cryptomonnaie95@gmail.com";
-    private static final String PASSWORD = "pyjk bqpq kamr xjhz";
-    // Password or App Password
+    private static String EMAIL;
+    private static String PASSWORD;
+
+    static {
+        try (InputStream input = EmailSender.class.getClassLoader().getResourceAsStream("config.properties")) {
+            Properties prop = new Properties();
+
+            if (input == null) {
+                System.out.println("Spiacente, impossibile trovare config.properties");
+            } else {
+                prop.load(input);
+
+                EMAIL = prop.getProperty("email.username");
+                PASSWORD = prop.getProperty("email.password");
+            }
+        } catch (IOException ex) {
+            System.out.println("Errore durante il caricamento del file di configurazione.");
+        }
+    }
 
     private static Session getSession() {
-        // Properties for connecting to Gmail
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
@@ -25,8 +42,6 @@ public class EmailSender {
         Authenticator auth = new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                System.out.println("Email: " + EMAIL);
-                System.out.println("Password: " + PASSWORD);
                 return new PasswordAuthentication(EMAIL, PASSWORD);
             }
         };
@@ -35,24 +50,22 @@ public class EmailSender {
 
     public static boolean sendEmail(String to, String subject, String content) {
         if (EMAIL == null || PASSWORD == null || EMAIL.isEmpty() || PASSWORD.isEmpty()) {
-            System.out.println("Error: Gmail credentials are not set!");
+            System.out.println("Errore: Credenziali Gmail non impostate o file config.properties non letto!");
             return false;
         }
 
         try {
-            // Create the message
             Message message = new MimeMessage(getSession());
             message.setFrom(new InternetAddress(EMAIL));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject);
             message.setText(content);
 
-            // Send the message
             Transport.send(message);
-            System.out.println("Email sent successfully to " + to);
+            System.out.println("Email inviata con successo a " + to);
             return true;
         } catch (MessagingException e) {
-            System.out.println("Error sending email: " + e.getMessage());
+            System.out.println("Errore nell'invio dell'email: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -71,3 +84,4 @@ public class EmailSender {
         sendEmail(email, subject, content);
     }
 }
+
