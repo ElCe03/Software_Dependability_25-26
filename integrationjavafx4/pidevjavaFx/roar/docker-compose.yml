@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: clinicare_app
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    depends_on:
+      - db
+      - smtp
+
+  db:
+    image: mysql:8.0 
+    container_name: clinicare_db
+    environment:
+
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} 
+      MYSQL_DATABASE: clinicare_db 
+    volumes:
+      - ./db_init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+
+  smtp:
+    image: mailhog/mailhog
+    container_name: clinicare_smtp
+    ports:
+      - "1025:1025"
+      - "8025:8025"
