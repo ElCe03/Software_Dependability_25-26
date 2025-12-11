@@ -20,5 +20,5 @@ jobs:
         SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
         docker ps
