@@ -19,6 +19,7 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      working-directory: integrationjavafx4/pidevjavaFx/roar
       run: |
         docker compose up -d --build
         docker ps
