@@ -105,4 +105,31 @@ public class AjouterEquipementController {
 
         categoryField.setEditable(false);
     }
+    /**
+     * Metodo helper per i Test Unitari
+     */
+    public Equipement buildEquipementFromFields(String nom, String type, String statut, String categorie) {
+        // Validazioni
+        if (nom == null || nom.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom est obligatoire");
+        }
+        if (type == null || type.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le type est obligatoire");
+        }
+        if (statut == null || statut.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le statut est obligatoire");
+        }
+        if (categorie == null || categorie.trim().isEmpty()) {
+            throw new IllegalArgumentException("La catégorie est obligatoire");
+        }
+
+        // Costruzione
+        Equipement equipement = new Equipement();
+        equipement.setNom(nom);
+        equipement.setType(type);
+        equipement.setStatut(statut);
+        equipement.setCategory(categorie);
+        
+        return equipement;
+    }
 }

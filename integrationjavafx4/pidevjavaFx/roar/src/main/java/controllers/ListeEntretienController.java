@@ -206,7 +206,13 @@ public class ListeEntretienController {
         }
     }
 
-    private String buildHtmlContent(Entretien entretien) {
+   public String buildHtmlContent(Entretien entretien) {
+        if (entretien == null) {
+            throw new RuntimeException("Entretien cannot be null");
+        }
+        
+        String dateStr = (entretien.getDate() != null) ? entretien.getDate().toString() : "Non définie";
+
         return "<html><head><style>"
                 + "body { font-family: Arial, sans-serif; margin: 20px; }"
                 + ".header { display: flex; align-items: center; margin-bottom: 20px; }"
@@ -229,7 +235,7 @@ public class ListeEntretienController {
                 + "<div class='info-section'>"
                 + "<div><span class='info-label'>ID Entretien:</span><span class='info-value'>" + entretien.getId() + "</span></div>"
                 + "<div><span class='info-label'>Équipement:</span><span class='info-value'>" + entretien.getNomEquipement() + "</span></div>"
-                + "<div><span class='info-label'>Date prévue:</span><span class='info-value'>" + entretien.getDate() + "</span></div>"
+                + "<div><span class='info-label'>Date prévue:</span><span class='info-value'>" + dateStr + "</span></div>"
                 + "<div><span class='info-label'>Statut:</span><span class='info-value'>En maintenance</span></div>"
                 + "</div>"
                 + "<div class='description-box'>"
@@ -240,6 +246,7 @@ public class ListeEntretienController {
                 + "Document généré automatiquement par le système de gestion"
                 + "</div></body></html>";
     }
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

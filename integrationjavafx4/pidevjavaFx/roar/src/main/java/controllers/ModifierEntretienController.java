@@ -84,4 +84,29 @@ public class ModifierEntretienController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    public Entretien buildUpdatedEntretien(Entretien entretienExist, String nom, String description, LocalDate date) {
+        if (entretienExist == null) {
+            throw new IllegalArgumentException("L'entretien à modifier est null");
+        }
+
+        if (nom == null || nom.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom est obligatoire");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("La description est obligatoire");
+        }
+        if (date == null) {
+            throw new IllegalArgumentException("La date est obligatoire");
+        }
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("La date ne peut pas être dans le passé");
+        }
+
+        entretienExist.setNomEquipement(nom);
+        entretienExist.setDescription(description);
+        entretienExist.setDate(date);
+        
+        return entretienExist;
+    }
 }

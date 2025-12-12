@@ -611,4 +611,37 @@ public class SalleController {
             showAlert("Erreur", "Impossible de charger la vue: " + fxmlPath, Alert.AlertType.ERROR);
         }
     }
+
+    public salle buildSalleFromFields(String nom, String capaciteStr, String type, String status, int priorite, entite.etage etageObj, String image) {
+
+        if (nom == null || nom.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom est obligatoire");
+        }
+        
+        if (etageObj == null) {
+            throw new IllegalArgumentException("L'étage est obligatoire");
+        }
+
+        salle s = new salle();
+        s.setNom(nom);
+        
+        try {
+            int cap = Integer.parseInt(capaciteStr);
+            if (cap <= 0) {
+                throw new IllegalArgumentException("La capacité doit être positive");
+            }
+            s.setCapacite(cap);
+        } catch (NumberFormatException e) {
+             throw new IllegalArgumentException("Capacité invalide");
+        }
+        
+        s.setType_salle(type);
+        s.setStatus(status);
+        s.setPriorite(priorite);
+        s.setEtage(etageObj);
+        s.setImage(image);
+        
+        return s;
+    }
+    
 }

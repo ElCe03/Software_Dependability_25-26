@@ -16,6 +16,10 @@ public class UserServiceE {
     public UserServiceE() {
         connection = DataSource.getInstance().getConnection();
     }
+
+    public UserServiceE(Connection connection) {
+    this.connection = connection;
+}
     
     /**
      * Add a new user to the database
