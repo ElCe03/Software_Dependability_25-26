@@ -11,9 +11,9 @@ public class DataSource {
     private Connection connection;
 
     // ---- MODIFY YOUR CREDENTIALS HERE ----
-    private final String url = "jdbc:mysql://localhost:3306/appclinique?useSSL=false&serverTimezone=UTC";
-    private final String username = "java";
-    private final String password = "123456";
+    private final String url = "jdbc:mysql://localhost:3306/app?useSSL=false&serverTimezone=UTC";
+    private final String username = "root";
+    private final String password = "My_SQL_R00t";
     // ---------------------------------------
 
     private DataSource() {

@@ -28,13 +28,15 @@ public class ReservationServiceETest {
 
         // ✅ 1. Create SALLE
         try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO salle (nom, status, capacite, type_salle) VALUES (?, ?, ?, ?)",
+                "INSERT INTO salle (nom, status, capacite, type_salle, image, priorite) VALUES (?, ?, ?, ?, ?, ?)",
                 PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, "Salle Test");
             ps.setString(2, "Occupée");
             ps.setInt(3, 20);
             ps.setString(4, "Réunion");
+            ps.setString(5, "default.jpg");
+            ps.setInt(6, 1);
 
             ps.executeUpdate();
 
