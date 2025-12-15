@@ -18,7 +18,6 @@
     </properties>
 
     <dependencies>
-        <!-- JAVA FX -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -45,7 +44,6 @@
             <version>22.0.1</version>
         </dependency>
 
-        <!-- DATABASE -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -57,14 +55,12 @@
             <version>3.2.0</version>
         </dependency>
 
-        <!-- SECURITY -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
 
-        <!-- JSON / GSON -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -76,14 +72,12 @@
             <version>2.10.1</version>
         </dependency>
 
-        <!-- MAIL -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.1</version>
         </dependency>
 
-        <!-- PDF -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>kernel</artifactId>
@@ -105,7 +99,6 @@
             <version>5.5.13.3</version>
         </dependency>
 
-        <!-- UI -->
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
@@ -132,14 +125,12 @@
             <version>0.4.0</version>
         </dependency>
 
-        <!-- STRIPE -->
         <dependency>
             <groupId>com.stripe</groupId>
             <artifactId>stripe-java</artifactId>
             <version>24.0.0</version>
         </dependency>
 
-        <!-- QR CODE -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
@@ -151,7 +142,6 @@
             <version>3.5.2</version>
         </dependency>
 
-        <!-- JUNIT 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -165,7 +155,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- MOCKITO -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -184,15 +173,10 @@
             <version>3.3.2</version>
             <scope>test</scope>
         </dependency>
-
-
-
-
     </dependencies>
 
     <build>
         <plugins>
-            <!-- JACOCO -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -214,7 +198,17 @@
                 </executions>
             </plugin>
 
-            <!-- COMPILER -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                </configuration>
+            </plugin>
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -225,14 +219,6 @@
                 </configuration>
             </plugin>
 
-            <!-- JUNIT 5 FIX -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
-            </plugin>
-
-            <!-- JAVAFX -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -243,5 +229,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
