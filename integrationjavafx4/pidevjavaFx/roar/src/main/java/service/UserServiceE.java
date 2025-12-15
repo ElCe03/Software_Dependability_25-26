@@ -1,135 +1,195 @@
 package service;
 
 import entite.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import util.DataSource;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-class UserServiceETest {
-
-    @Mock
-    Connection connection;
-
-    @Mock
-    PreparedStatement preparedStatement;
-
-    @Mock
-    Statement statement;
-
-    @Mock
-    ResultSet resultSet;
-
-    private UserServiceE userService;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        // Utilizziamo il costruttore che accetta la connessione Mock
-        userService = new UserServiceE(connection);
+public class UserServiceE {
+    private Connection connection;
+    
+    // 1. Costruttore STANDARD (usato dall'applicazione)
+    public UserServiceE() {
+        connection = DataSource.getInstance().getConnection();
+    }
+    
+    // 2. Costruttore per i TEST (usato da UserServiceETest)
+    public UserServiceE(Connection connection) {
+        this.connection = connection;
+    }
+    
+    public boolean ajouterUser(User user) {
+        String sql = "INSERT INTO users (nom, prenom, email, telephone, type, adresse, date_naissance, roles, password, specialite) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                
+        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setString(1, user.getNom());
+            pstmt.setString(2, user.getPrenom());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getTelephone());
+            pstmt.setString(5, user.getType());
+            pstmt.setString(6, user.getAdresse());
+            
+            if (user.getDateNaissance() != null) {
+                pstmt.setDate(7, Date.valueOf(user.getDateNaissance()));
+            } else {
+                pstmt.setNull(7, Types.DATE);
+            }
+            
+            String rolesJson = convertRolesToJson(user.getRoles());
+            pstmt.setString(8, rolesJson);
+            
+            pstmt.setString(9, user.getPassword());
+            pstmt.setString(10, user.getSpecialite());
+            
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        user.setId(generatedKeys.getInt(1));
+                    }
+                }
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur ajout: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean modifierUser(User user) {
+        String sql = "UPDATE users SET nom = ?, prenom = ?, email = ?, telephone = ?, " +
+                "type = ?, adresse = ?, date_naissance = ?, roles = ?, password = ?, specialite = ? WHERE id = ?";
+                
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, user.getNom());
+            pstmt.setString(2, user.getPrenom());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getTelephone());
+            pstmt.setString(5, user.getType());
+            pstmt.setString(6, user.getAdresse());
+            
+            if (user.getDateNaissance() != null) {
+                pstmt.setDate(7, Date.valueOf(user.getDateNaissance()));
+            } else {
+                pstmt.setNull(7, Types.DATE);
+            }
+            
+            String rolesJson = convertRolesToJson(user.getRoles());
+            pstmt.setString(8, rolesJson);
+            pstmt.setString(9, user.getPassword());
+            pstmt.setString(10, user.getSpecialite());
+            pstmt.setInt(11, user.getId());
+            
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean supprimerUser(int userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public User recupererUserParId(int userId) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractUserFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    public List<User> recupererTousUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM users";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                users.add(extractUserFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
-    @Test
-    void testAjouterUser_Success() throws Exception {
+    public List<User> recupererUsersParRole(String type) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE type = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, type);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    users.add(extractUserFromResultSet(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+    
+    private String convertRolesToJson(List<String> roles) {
+        if (roles == null || roles.isEmpty()) return "[]";
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < roles.size(); i++) {
+            sb.append("\"").append(roles.get(i)).append("\"");
+            if (i < roles.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+    
+    private List<String> convertJsonToRoles(String rolesJson) {
+        List<String> roles = new ArrayList<>();
+        if (rolesJson != null && !rolesJson.isEmpty()) {
+            try {
+                String cleanJson = rolesJson.replace("[", "").replace("]", "").replace("\"", "");
+                if (!cleanJson.isEmpty()) {
+                    String[] roleArray = cleanJson.split(",");
+                    for (String role : roleArray) roles.add(role.trim());
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+        }
+        return roles;
+    }
+    
+    private User extractUserFromResultSet(ResultSet rs) throws SQLException {
         User user = new User();
-        user.setNom("Test");
-        user.setPrenom("User");
-        user.setEmail("test@email.com");
-        user.setTelephone("123456");
-        user.setType("patient");
-        user.setAdresse("Tunis");
-        user.setDateNaissance(LocalDate.of(2000, 1, 1));
-        user.setRoles(Arrays.asList("ROLE_USER"));
-        user.setPassword("pass");
-        user.setSpecialite("N/A"); // Assicuriamoci che non sia null per evitare problemi
-
-        // Quando viene preparata una query con RETURN_GENERATED_KEYS
-        when(connection.prepareStatement(anyString(), eq(Statement.RETURN_GENERATED_KEYS)))
-                .thenReturn(preparedStatement);
+        user.setId(rs.getInt("id"));
+        user.setNom(rs.getString("nom"));
+        user.setPrenom(rs.getString("prenom"));
+        user.setEmail(rs.getString("email"));
+        user.setPassword(rs.getString("password"));
+        user.setTelephone(rs.getString("telephone"));
+        user.setType(rs.getString("type") != null ? rs.getString("type") : "");
+        user.setAdresse(rs.getString("adresse"));
         
-        // Configura il comportamento del PreparedStatement
-        when(preparedStatement.executeUpdate()).thenReturn(1);
-        when(preparedStatement.getGeneratedKeys()).thenReturn(resultSet);
+        try { user.setSpecialite(rs.getString("specialite")); } catch (SQLException e) {}
         
-        // Configura il ResultSet delle chiavi generate
-        when(resultSet.next()).thenReturn(true);
-        when(resultSet.getInt(1)).thenReturn(10); // Simula che l'ID generato sia 10
-
-        boolean result = userService.ajouterUser(user);
-
-        assertTrue(result, "Il metodo dovrebbe restituire true");
-        assertEquals(10, user.getId(), "L'ID dell'utente dovrebbe essere aggiornato a 10");
-        verify(preparedStatement, times(1)).executeUpdate();
-    }
-
-    @Test
-    void testModifierUser_Success() throws Exception {
-        User user = new User();
-        user.setId(1);
-        user.setNom("NouveauNom");
-        user.setPrenom("Prenom");
-        user.setEmail("email@test.com");
-        user.setTelephone("555");
-        user.setType("medecin");
-        user.setAdresse("Centre");
-        user.setDateNaissance(LocalDate.of(1995, 5, 5));
-        user.setRoles(Collections.singletonList("ROLE_ADMIN"));
-        user.setPassword("pwd");
-        user.setSpecialite("Cardio");
-
-        // Per l'update usiamo prepareStatement semplice (senza generated keys)
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-        when(preparedStatement.executeUpdate()).thenReturn(1);
-
-        boolean updated = userService.modifierUser(user);
-
-        assertTrue(updated, "La modifica dovrebbe restituire true");
-        verify(preparedStatement, times(1)).executeUpdate();
-    }
-
-    @Test
-    void testSupprimerUser_Success() throws Exception {
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-        when(preparedStatement.executeUpdate()).thenReturn(1);
-
-        boolean deleted = userService.supprimerUser(1);
-
-        assertTrue(deleted, "L'eliminazione dovrebbe restituire true");
-        verify(preparedStatement, times(1)).executeUpdate();
-    }
-
-    @Test
-    void testRecupererUserParId_Success() throws Exception {
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
-        when(preparedStatement.executeQuery()).thenReturn(resultSet);
-
-        when(resultSet.next()).thenReturn(true);
-        when(resultSet.getInt("id")).thenReturn(1);
-        when(resultSet.getString("nom")).thenReturn("Ali");
-        when(resultSet.getString("prenom")).thenReturn("Test");
-        when(resultSet.getString("email")).thenReturn("ali@test.com");
-        when(resultSet.getString("password")).thenReturn("pass");
-        when(resultSet.getString("telephone")).thenReturn("999");
-        when(resultSet.getString("type")).thenReturn("patient");
-        when(resultSet.getString("specialite")).thenReturn("Cardiologie"); 
-        when(resultSet.getString("adresse")).thenReturn("Tunis");
-        when(resultSet.getDate("date_naissance")).thenReturn(Date.valueOf("2000-01-01"));
-        when(resultSet.getString("roles")).thenReturn("[\"ROLE_USER\"]");
-
-        User user = userService.recupererUserParId(1);
-
-        assertNotNull(user, "L'utente non dovrebbe essere null");
-        assertEquals("Ali", user.getNom());
-        assertEquals("patient", user.getType());
-        assertEquals("Cardiologie", user.getSpecialite());
+        Date sqlDate = rs.getDate("date_naissance");
+        if (sqlDate != null) user.setDateNaissance(sqlDate.toLocalDate());
+        
+        user.setRoles(convertJsonToRoles(rs.getString("roles")));
+        return user;
     }
 }
