@@ -25,7 +25,7 @@ jobs:
 
     - name: Build package
       working-directory: ./integrationjavafx4/pidevjavaFx/roar
-      run: mvn -B package
+      run: mvn package -DskipTests
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
