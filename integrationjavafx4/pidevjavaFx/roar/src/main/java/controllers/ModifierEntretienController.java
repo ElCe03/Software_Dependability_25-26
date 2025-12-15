@@ -84,4 +84,29 @@ public class ModifierEntretienController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    private Entretien buildUpdatedEntretien(
+            Entretien entretien,
+            String nom,
+            String description,
+            LocalDate selectedDate
+    ) {
+        if (entretien == null ||
+                nom == null || nom.trim().isEmpty() ||
+                description == null || description.trim().isEmpty() ||
+                selectedDate == null) {
+            throw new IllegalArgumentException("Champs manquants");
+        }
+
+        if (selectedDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Date invalide");
+        }
+
+        entretien.setNomEquipement(nom.trim());
+        entretien.setDescription(description.trim());
+        entretien.setDate(selectedDate);
+
+        return entretien;
+    }
+
 }

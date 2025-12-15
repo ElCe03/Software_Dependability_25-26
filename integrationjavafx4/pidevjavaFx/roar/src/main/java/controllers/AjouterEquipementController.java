@@ -105,4 +105,24 @@ public class AjouterEquipementController {
 
         categoryField.setEditable(false);
     }
+
+    private Equipement buildEquipementFromFields(
+            String nom, String type, String statut, String categorie
+    ) {
+        if (nom == null || nom.trim().isEmpty()
+                || type == null || type.trim().isEmpty()
+                || statut == null || statut.trim().isEmpty()
+                || categorie == null || categorie.trim().isEmpty()) {
+            throw new IllegalArgumentException("Champs manquants");
+        }
+
+        Equipement e = new Equipement();
+        e.setNom(nom.trim());
+        e.setType(type.trim());
+        e.setStatut(statut.trim());
+        e.setCategory(categorie.trim());
+
+        return e;
+    }
+
 }

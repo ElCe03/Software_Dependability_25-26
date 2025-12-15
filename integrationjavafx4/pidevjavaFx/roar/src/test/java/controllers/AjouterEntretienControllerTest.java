@@ -61,7 +61,7 @@ class AjouterEntretienControllerTest {
         );
 
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
-        assertEquals("Champs manquants", ex.getCause().getMessage());
+        assertEquals("Tous les champs doivent être remplis.", ex.getCause().getMessage());
     }
 
     // ✅ TEST 3 — Date nulle déclenche exception
@@ -80,7 +80,7 @@ class AjouterEntretienControllerTest {
         );
 
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
-        assertEquals("Champs manquants", ex.getCause().getMessage());
+        assertEquals("Tous les champs doivent être remplis.", ex.getCause().getMessage());
     }
 
     // ✅ TEST 4 — Date passée déclenche exception
@@ -99,7 +99,7 @@ class AjouterEntretienControllerTest {
         );
 
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
-        assertEquals("Date invalide", ex.getCause().getMessage());
+        assertEquals("La date de l'entretien ne peut pas être dans le passé.", ex.getCause().getMessage());
     }
 
     // ✅ TEST 5 — Equipement null déclenche exception
@@ -118,6 +118,6 @@ class AjouterEntretienControllerTest {
         );
 
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
-        assertEquals("Champs manquants", ex.getCause().getMessage());
+        assertEquals("Aucun équipement défini !", ex.getCause().getMessage());
     }
 }

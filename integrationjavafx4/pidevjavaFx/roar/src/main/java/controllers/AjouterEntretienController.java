@@ -114,12 +114,33 @@ public class AjouterEntretienController {
             System.err.println("Erreur lors du chargement de la liste : " + e.getMessage());
         }
     }
-
+    
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public Entretien buildEntretienFromFields(Equipement equipement, String description, LocalDate selectedDate) {
+        if (equipement == null) {
+            throw new IllegalArgumentException("Aucun équipement défini !");
+        }
+        if (description == null || description.trim().isEmpty() || selectedDate == null) {
+            throw new IllegalArgumentException("Tous les champs doivent être remplis.");
+        }
+        if (selectedDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("La date de l'entretien ne peut pas être dans le passé.");
+        }
+
+        Entretien entretien = new Entretien();
+        entretien.setNomEquipement(equipement.getNom());
+        entretien.setDescription(description.trim());
+        entretien.setDate(selectedDate);
+        entretien.setEquipementId(equipement.getId());
+        entretien.setCreatedAt(LocalDateTime.now());
+        
+        return entretien;
     }
 }

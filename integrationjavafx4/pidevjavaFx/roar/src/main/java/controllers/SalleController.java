@@ -611,4 +611,34 @@ public class SalleController {
             showAlert("Erreur", "Impossible de charger la vue: " + fxmlPath, Alert.AlertType.ERROR);
         }
     }
+
+    // Dans SalleController.java
+    salle buildSalleFromFields(String nom, String capaciteStr, String type, String status,
+                               int priorite, etage etage, String image) {
+
+        if (nom == null || nom.isEmpty() ||
+                capaciteStr == null || capaciteStr.isEmpty() ||
+                type == null || status == null || etage == null) {
+            throw new IllegalArgumentException("Champs manquants");
+        }
+
+        int capacite;
+        try {
+            capacite = Integer.parseInt(capaciteStr);
+            if (capacite <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Capacité invalide");
+        }
+
+        salle s = new salle();
+        s.setNom(nom);
+        s.setCapacite(capacite);
+        s.setType_salle(type);
+        s.setStatus(status);
+        s.setPriorite(priorite);
+        s.setEtage(etage);
+        s.setImage(image);
+
+        return s;
+    }
 }
