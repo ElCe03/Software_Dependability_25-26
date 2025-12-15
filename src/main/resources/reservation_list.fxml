@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.ReservationListController" stylesheets="@/styles1.css"
+      spacing="15" alignment="TOP_CENTER" style="-fx-padding: 20;">
+    <HBox styleClass="nav-bar" spacing="10" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
+        <Button fx:id="departementsBtn" text="Départements" onAction="#showDepartements" styleClass="nav-button"/>
+        <Button fx:id="etagesBtn" text="Étages" onAction="#showEtages" styleClass="nav-button"/>
+        <Button fx:id="reservationBtn" text="Réservations" onAction="#showReservation" styleClass="nav-button active"/>
+        <Button fx:id="sallesBtn" text="Salles" styleClass="nav-button" disable="true"/>
+    </HBox>
+
+    <Label text="Liste des Réservations" styleClass="header-label">
+        <font>
+            <Font size="18.0" />
+        </font>
+    </Label>
+
+    <HBox spacing="10" styleClass="toolbar">
+        <Label text="Rechercher:" />
+        <TextField fx:id="searchField" promptText="Rechercher..." styleClass="search-field"/>
+    </HBox>
+
+    <!-- Solution avec AnchorPane -->
+    <AnchorPane style="-fx-padding: 0;" VBox.vgrow="ALWAYS">
+        <TableView fx:id="reservationTable" styleClass="reservation-table"
+                   AnchorPane.topAnchor="0"
+                   AnchorPane.rightAnchor="0"
+                   AnchorPane.bottomAnchor="0"
+                   AnchorPane.leftAnchor="0">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="75.0" />
+                <TableColumn fx:id="salleColumn" text="Salle" prefWidth="150.0" />
+                <TableColumn fx:id="dateDebutColumn" text="Date Début" prefWidth="150.0" />
+                <TableColumn fx:id="dateFinColumn" text="Date Fin" prefWidth="150.0" />
+                <TableColumn fx:id="statusColumn" text="Statut" prefWidth="100.0" />
+                <TableColumn fx:id="actionColumn" text="Action" prefWidth="100.0" />
+            </columns>
+        </TableView>
+    </AnchorPane>
+</VBox>

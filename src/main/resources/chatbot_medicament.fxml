@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+<?import java.net.URL?>
+
+<VBox xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.ChatbotMedicamentController" spacing="0" styleClass="main-container"
+      prefWidth="1000" prefHeight="700">
+
+    <stylesheets>
+        <URL value="@/medicament.css" />
+    </stylesheets>
+
+    <!-- Header Section -->
+    <VBox styleClass="header-section" spacing="15">
+        <HBox alignment="CENTER" styleClass="logo-container">
+            <ImageView fitHeight="100" fitWidth="100" preserveRatio="true">
+                <image>
+                    <Image url="@img/logo.png" />
+                </image>
+            </ImageView>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" styleClass="back-button-container">
+            <Button fx:id="backButton" text="← Back" onAction="#handleBackButton" styleClass="back-button"/>
+        </HBox>
+
+        <Label text="Assistant Médicament" styleClass="header-label"/>
+    </VBox>
+
+    <!-- Main content - Chat Interface -->
+    <HBox VBox.vgrow="ALWAYS" styleClass="chatbot-container">
+        <!-- Suggestions sidebar -->
+        <VBox styleClass="sidebar" prefWidth="250" spacing="10">
+            <padding>
+                <Insets top="15" right="10" bottom="15" left="10" />
+            </padding>
+
+            <Label text="Historique de recherche" styleClass="sidebar-header"/>
+            <ListView fx:id="suggestionsListView" VBox.vgrow="ALWAYS" styleClass="suggestions-list"/>
+        </VBox>
+
+        <!-- Chat Area -->
+        <VBox HBox.hgrow="ALWAYS" styleClass="chat-area">
+            <!-- Messages display area -->
+            <ScrollPane fx:id="chatScrollPane" fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" styleClass="chat-scroll-pane">
+                <VBox fx:id="chatMessagesContainer" spacing="10" styleClass="chat-messages">
+                    <padding>
+                        <Insets top="15" right="15" bottom="15" left="15" />
+                    </padding>
+                </VBox>
+            </ScrollPane>
+
+            <!-- Input area -->
+            <HBox styleClass="chat-input-area" alignment="CENTER" spacing="10">
+                <padding>
+                    <Insets top="10" right="15" bottom="10" left="15" />
+                </padding>
+
+                <TextField fx:id="userInputField" HBox.hgrow="ALWAYS" promptText="Entrez le nom d'un médicament ou posez une question..." styleClass="chat-input"/>
+                <Button fx:id="sendButton" text="Envoyer" styleClass="send-button"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+
+<VBox xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.CommandeListController" spacing="10" style="-fx-padding: 20;"
+      stylesheets="@/medicament.css">
+
+    <!-- Header -->
+    <VBox spacing="10">
+        <HBox spacing="10" style="-fx-background-color: #f0f0f0; -fx-padding: 15;">
+            <Label text="Gestion des Commandes" style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+            <Button text="Nouvelle Commande" onAction="#handleNewCommande" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        </HBox>
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="Rechercher:"/>
+            <TextField fx:id="searchField" promptText="Nom médicament ou date..." style="-fx-pref-width: 300;"/>
+            <ComboBox fx:id="sortComboBox" promptText="Trier par..." style="-fx-pref-width: 200;"/>
+        </HBox>
+    </VBox>
+
+    <!-- Table -->
+    <TableView fx:id="commandeTable" styleClass="data-table">
+        <columns>
+            <TableColumn text="ID" fx:id="idColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="id" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Date de Commande" fx:id="dateCommandeColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="date_commande" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Total Prix" fx:id="totalPrixColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="total_prix" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn text="Quantité Totale" fx:id="quantiteColumn" styleClass="blue-header">
+                <cellValueFactory>
+                    <PropertyValueFactory property="quantite" />
+                </cellValueFactory>
+            </TableColumn>
+
+            <TableColumn fx:id="medicamentsColumn" text="Médicaments commandés" prefWidth="200" styleClass="blue-header"/>
+
+            <!-- Modifier Button Column -->
+            <TableColumn text="Modifier" fx:id="modifyColumn" styleClass="blue-header" />
+
+            <!-- Supprimer Button Column -->
+            <TableColumn text="Supprimer" fx:id="deleteColumn" styleClass="blue-header" />
+
+            <!--  <TableColumn text="PDF" fx:id="downloadColumn" styleClass="blue-header"/> -->
+
+        </columns>
+    </TableView>
+
+    <Pagination fx:id="pagination" style="-fx-page-information-visible: false;"/>
+
+</VBox>
