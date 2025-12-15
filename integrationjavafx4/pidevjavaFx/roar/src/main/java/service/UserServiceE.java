@@ -13,8 +13,15 @@ import java.util.List;
 public class UserServiceE {
     private Connection connection;
     
+    // 1. Costruttore STANDARD (usato dall'applicazione)
     public UserServiceE() {
         connection = DataSource.getInstance().getConnection();
+    }
+    
+    // 2. Costruttore per i TEST (AGGIUNTO ORA)
+    // Questo permette al test di passare la connessione Mock
+    public UserServiceE(Connection connection) {
+        this.connection = connection;
     }
     
     /**
@@ -23,8 +30,8 @@ public class UserServiceE {
      * @return true if successful, false otherwise
      */
     public boolean ajouterUser(User user) {
-        String sql = "INSERT INTO users (nom, prenom, email, telephone, type, adresse, date_naissance, roles, password) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (nom, prenom, email, telephone, type, adresse, date_naissance, roles, password, specialite) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, user.getNom());
@@ -47,6 +54,9 @@ public class UserServiceE {
             
             // Add password
             pstmt.setString(9, user.getPassword());
+
+            // Add specialite (aggiunto perché mancava nella query INSERT originale ma c'era nel test)
+            pstmt.setString(10, user.getSpecialite());
             
             int affectedRows = pstmt.executeUpdate();
             
