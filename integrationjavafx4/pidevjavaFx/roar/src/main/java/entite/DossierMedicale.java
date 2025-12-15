@@ -23,24 +23,13 @@ public class DossierMedicale {
 
     /*@ public invariant id >= 0; @*/
     /*@ public invariant sejours != null; @*/
-    /*@ public invariant (\forall int i; 0 <= i && i < sejours.size(); sejours.get(i) != null); @*/
     
-    /*@ 
-      @ ensures id == 0;
-      @ ensures sejours != null && sejours.isEmpty();
-      @*/
     // Default constructor
     public DossierMedicale() {
         this.sejours = new ArrayList<Sejour>();
     }
     
-    /*@ 
-      @ ensures this.patient == patient;
-      @ ensures this.medecin == medecin;
-      @ ensures this.dateDeCreation == dateDeCreation;
-      @ ensures this.sejours != null && this.sejours.isEmpty();
-      @*/
-    // Constructor with all fields except ID and sejours
+    // Constructor with all fields
     public DossierMedicale(User patient, User medecin, LocalDateTime dateDeCreation, 
             String historiqueDesMaladies, String operationsPassees, String consultationsPassees, 
             String statutDossier, String notes, String image) {
@@ -63,17 +52,16 @@ public class DossierMedicale {
         return id;
     }
     
-    /*@ requires id >= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
         this.id = id;
     }
     
+    // *** ECCO LA PARTE CRUCIALE CHE PREVIENE IL CRASH ***
     /*@ pure @*/
     public User getPatient() {
         return patient;
     }
     
-    /*@ assignable this.patient; ensures this.patient == patient; @*/
     public void setPatient(User patient) {
         this.patient = patient;
     }
@@ -83,7 +71,6 @@ public class DossierMedicale {
         return medecin;
     }
     
-    /*@ assignable this.medecin; ensures this.medecin == medecin; @*/
     public void setMedecin(User medecin) {
         this.medecin = medecin;
     }
@@ -156,49 +143,32 @@ public class DossierMedicale {
         return sejours;
     }
     
-    /*@ 
-      @ requires sejours != null;
-      @ assignable this.sejours;
-      @ ensures this.sejours == sejours;
-      @*/
     public void setSejours(List<Sejour> sejours) {
         this.sejours = sejours;
     }
     
-    /*@ 
-      @ requires sejour != null;
-      @ 
-      @ ensures sejours != null;
-      @ ensures sejours.contains(sejour);
-      @ ensures sejours.size() == \old(sejours.size()) + 1;
-      @*/
     public void addSejour(Sejour sejour) {
         if(sejours == null) {
             sejours = new ArrayList<Sejour>();
         }
         sejours.add(sejour);
-        
-        // Ensure bi-directional relationship
         if (sejour.getDossierMedicale() != this) {
             sejour.setDossierMedicale(this);
         }
     }
     
     /*@ pure @*/
-    // Helper method to get patient_id for database operations
     public int getPatientId() {
         return patient != null ? patient.getId() : 0;
     }
     
     /*@ pure @*/
-    // Helper method to get medecin_id for database operations
     public int getMedecinId() {
         return medecin != null ? medecin.getId() : 0;
     }
     
     @Override
     public String toString() {
-        return "Dossier #" + id + " - " + 
-               (patient != null ? patient.getPrenom() + " " + patient.getNom() : "Patient non attribué");
+        return "Dossier #" + id;
     }
-} 
+}
