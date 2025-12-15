@@ -1,7 +1,6 @@
 name: JMH Benchmark
 
 on:
-  push:
   workflow_dispatch:      
 permissions:
   contents: read
