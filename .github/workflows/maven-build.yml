@@ -1,4 +1,4 @@
-name: maven-build
+name: Build, tests and Docker upload
 
 on:
   workflow_dispatch:
@@ -23,11 +23,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Build package
-      working-directory: ./integrationjavafx4/pidevjavaFx/roar
-      run: mvn package -DskipTests
 
-    - name: Upload Artifact
+    - name: Build and Test
+      working-directory: ./integrationjavafx4/pidevjavaFx/roar
+      run: mvn clean verify
+
+    - name: Upload JaCoCo Report
+      uses: actions/upload-artifact@v4
+      if: always() 
+      with:
+        name: jacoco-coverage-report
+        path: integrationjavafx4/pidevjavaFx/roar/target/site/jacoco/
+        retention-days: 5
+
+    - name: Upload Jar Artifact
       uses: actions/upload-artifact@v4
       if: success() 
       with:
