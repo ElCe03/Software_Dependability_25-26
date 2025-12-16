@@ -2,6 +2,7 @@ package controllers;
 
 import entite.Consultation;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable; 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -21,11 +22,11 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class AdminConsultationControllerTest {
 
     @Mock
@@ -47,17 +48,8 @@ class AdminConsultationControllerTest {
 
     private AdminConsultationController controller;
 
-    private boolean isHeadlessCI() {
-        String ciEnv = System.getenv("CI");
-        return ciEnv != null || java.awt.GraphicsEnvironment.isHeadless();
-    }
-
     @BeforeEach
     void setUp() {
-        if (isHeadlessCI()) {
-            return;
-        }
-
         try {
             controller = new AdminConsultationController();
             inject(controller, "consultationService", consultationService);
@@ -71,21 +63,19 @@ class AdminConsultationControllerTest {
 
             lenient().when(consultationTable.getItems()).thenReturn(FXCollections.observableArrayList());
             lenient().when(consultationService.getAllConsultations()).thenReturn(List.of());
-        } catch (Throwable t) {
-            
+        } catch (Exception e) {
+            fail("Setup failed: " + e.getMessage());
         }
     }
 
     @Test
     void testButtonsInjected() {
-        assumeFalse(isHeadlessCI());
         assertNotNull(get("statsButton"));
         assertNotNull(get("pieChartButton"));
     }
 
     @Test
     void testSearchFieldInjected() {
-        assumeFalse(isHeadlessCI());
         assertNotNull(get("searchField"));
     }
 
@@ -97,9 +87,6 @@ class AdminConsultationControllerTest {
             "UNKNOWN, ''"
     })
     void testStatusSpecificMessage(String input, String expectedContent) throws Exception {
-        assumeFalse(isHeadlessCI());
-        if (controller == null) return;
-
         var method = AdminConsultationController.class.getDeclaredMethod("getStatusSpecificMessage", String.class);
         method.setAccessible(true);
         String result = (String) method.invoke(controller, input);
@@ -113,9 +100,6 @@ class AdminConsultationControllerTest {
 
     @Test
     void testRatingStorageBoundaries() throws Exception {
-        assumeFalse(isHeadlessCI());
-        if (controller == null) return;
-
         var saveMethod = AdminConsultationController.class.getDeclaredMethod("saveRatingForConsultation", int.class, int.class);
         saveMethod.setAccessible(true);
         var getMethod = AdminConsultationController.class.getDeclaredMethod("getRatingForConsultation", int.class);
@@ -131,9 +115,6 @@ class AdminConsultationControllerTest {
 
     @Test
     void testMostLikedServicesEmptyList() throws Exception {
-        assumeFalse(isHeadlessCI());
-        if (controller == null) return;
-
         var method = AdminConsultationController.class.getDeclaredMethod("showMostLikedServices");
         method.setAccessible(true);
 
