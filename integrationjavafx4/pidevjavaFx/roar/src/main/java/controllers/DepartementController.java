@@ -70,13 +70,51 @@ public class DepartementController {
 
     @FXML private TextField searchField;
 
-    private final DepartemntService departementService = new DepartemntService();
-    private final EtageService etageService = new EtageService();
-    private final SalleService salleService = new SalleService();
+  
+    private DepartemntService departementService;
+    private EtageService etageService;
+    private SalleService salleService;
+
     private final ObservableList<departement> departementData = FXCollections.observableArrayList();
     private final ObservableList<departement> filteredDepartementData = FXCollections.observableArrayList();
     private String imagePath = "";
     public static final String IMAGE_DIR = "src/main/resources/images/";
+
+
+    public void setDepartementService(DepartemntService departementService) {
+        this.departementService = departementService;
+    }
+
+    private DepartemntService getDepartementService() {
+        if (this.departementService == null) {
+            this.departementService = new DepartemntService();
+        }
+        return this.departementService;
+    }
+
+    public void setEtageService(EtageService etageService) {
+        this.etageService = etageService;
+    }
+
+    private EtageService getEtageService() {
+        if (this.etageService == null) {
+            this.etageService = new EtageService();
+        }
+        return this.etageService;
+    }
+
+    public void setSalleService(SalleService salleService) {
+        this.salleService = salleService;
+    }
+
+    private SalleService getSalleService() {
+        if (this.salleService == null) {
+            this.salleService = new SalleService();
+        }
+        return this.salleService;
+    }
+
+    // --------------------------------------------------
 
     @FXML
     public void initialize() {
@@ -171,7 +209,7 @@ public class DepartementController {
 
     private void loadDepartements() {
         departementData.clear();
-        departementData.addAll(departementService.getAllDepartements());
+        departementData.addAll(getDepartementService().getAllDepartements());
         filteredDepartementData.setAll(departementData);
         departementTable.setItems(filteredDepartementData);
     }
@@ -267,13 +305,13 @@ public class DepartementController {
         departement.setAdresse(adresseField.getText());
         departement.setImage(imagePath);
 
-        departementService.addDepartement(departement);
+        getDepartementService().addDepartement(departement);
         showAlert("Succès", "Département ajouté avec succès", Alert.AlertType.INFORMATION);
         resetForm();
         loadDepartements();
     }
 
-   /* @FXML
+    /* @FXML
     private void handleExportToPDF(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Enregistrer le PDF");
@@ -334,68 +372,68 @@ public class DepartementController {
             }
         }
     }*/
-   @FXML
-   private void handleExportToPDF(ActionEvent event) {
-       FileChooser fileChooser = new FileChooser();
-       fileChooser.setTitle("Enregistrer le PDF");
-       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers PDF", "*.pdf"));
-       fileChooser.setInitialFileName("departements.pdf");
+    @FXML
+    private void handleExportToPDF(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer le PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichiers PDF", "*.pdf"));
+        fileChooser.setInitialFileName("departements.pdf");
 
-       File file = fileChooser.showSaveDialog(departementTable.getScene().getWindow());
+        File file = fileChooser.showSaveDialog(departementTable.getScene().getWindow());
 
-       if (file != null) {
-           try {
-               // 1. Use the fully qualified iText Document class
-               com.itextpdf.text.Document document = new com.itextpdf.text.Document();
-               PdfWriter.getInstance(document, new FileOutputStream(file));
-               document.open();
+        if (file != null) {
+            try {
+                // 1. Use the fully qualified iText Document class
+                com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+                PdfWriter.getInstance(document, new FileOutputStream(file));
+                document.open();
 
-               // 2. Use iText-specific classes for styling
-               com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
-               com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Liste des Départements", titleFont);
-               title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
-               document.add(title);
+                // 2. Use iText-specific classes for styling
+                com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+                com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph("Liste des Départements", titleFont);
+                title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+                document.add(title);
 
-               // Date paragraph
-               com.itextpdf.text.Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
-               com.itextpdf.text.Paragraph date = new com.itextpdf.text.Paragraph("Généré le: " + new java.util.Date(), dateFont);
-               date.setAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
-               document.add(date);
+                // Date paragraph
+                com.itextpdf.text.Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
+                com.itextpdf.text.Paragraph date = new com.itextpdf.text.Paragraph("Généré le: " + new java.util.Date(), dateFont);
+                date.setAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+                document.add(date);
 
-               // Create table
-               PdfPTable table = new PdfPTable(4);
-               table.setWidthPercentage(100);
+                // Create table
+                PdfPTable table = new PdfPTable(4);
+                table.setWidthPercentage(100);
 
-               // Table headers
-               String[] headers = {"Nom", "Adresse", "Nombre d'étages", "Image"};
-               com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);
+                // Table headers
+                String[] headers = {"Nom", "Adresse", "Nombre d'étages", "Image"};
+                com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);
 
-               for (String header : headers) {
-                   PdfPCell cell = new PdfPCell(new com.itextpdf.text.Phrase(header, headerFont));
-                   cell.setBackgroundColor(new BaseColor(51, 122, 183));
-                   cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
-                   table.addCell(cell);
-               }
+                for (String header : headers) {
+                    PdfPCell cell = new PdfPCell(new com.itextpdf.text.Phrase(header, headerFont));
+                    cell.setBackgroundColor(new BaseColor(51, 122, 183));
+                    cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+                    table.addCell(cell);
+                }
 
-               // Table data
-               com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
-               for (departement d : departementTable.getItems()) {
-                   table.addCell(new com.itextpdf.text.Phrase(d.getNom(), dataFont));
-                   table.addCell(new com.itextpdf.text.Phrase(d.getAdresse(), dataFont));
-                   table.addCell(new com.itextpdf.text.Phrase(String.valueOf(d.getNbr_etage()), dataFont));
-                   table.addCell(new com.itextpdf.text.Phrase(d.getImage() != null ? d.getImage() : "N/A", dataFont));
-               }
+                // Table data
+                com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+                for (departement d : departementTable.getItems()) {
+                    table.addCell(new com.itextpdf.text.Phrase(d.getNom(), dataFont));
+                    table.addCell(new com.itextpdf.text.Phrase(d.getAdresse(), dataFont));
+                    table.addCell(new com.itextpdf.text.Phrase(String.valueOf(d.getNbr_etage()), dataFont));
+                    table.addCell(new com.itextpdf.text.Phrase(d.getImage() != null ? d.getImage() : "N/A", dataFont));
+                }
 
-               document.add(table);
-               document.close();
+                document.add(table);
+                document.close();
 
-               showAlert("Succès", "Export PDF réalisé avec succès", Alert.AlertType.INFORMATION);
-           } catch (Exception e) {
-               showAlert("Erreur", "Erreur lors de l'export PDF: " + e.getMessage(), Alert.AlertType.ERROR);
-               e.printStackTrace();
-           }
-       }
-   }
+                showAlert("Succès", "Export PDF réalisé avec succès", Alert.AlertType.INFORMATION);
+            } catch (Exception e) {
+                showAlert("Erreur", "Erreur lors de l'export PDF: " + e.getMessage(), Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
+        }
+    }
 
     private void showEditDialog(departement departement) {
         try {
@@ -418,7 +456,7 @@ public class DepartementController {
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 departement updatedDepartement = controller.getUpdatedDepartement();
-                departementService.updateDepartement(updatedDepartement);
+                getDepartementService().updateDepartement(updatedDepartement);
                 loadDepartements();
                 showAlert("Succès", "Département mis à jour avec succès", Alert.AlertType.INFORMATION);
             }
@@ -435,7 +473,7 @@ public class DepartementController {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            departementService.deleteDepartement(departement.getId());
+            getDepartementService().deleteDepartement(departement.getId());
             loadDepartements();
             showAlert("Succès", "Département supprimé avec succès", Alert.AlertType.INFORMATION);
         }

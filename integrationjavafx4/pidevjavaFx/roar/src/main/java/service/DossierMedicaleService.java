@@ -1,7 +1,6 @@
 package service;
 
-import entite.DossierMedicale;
-import entite.User;
+import entite.*;
 import util.DataSource;
 
 import java.sql.*;
@@ -13,13 +12,24 @@ import java.util.List;
  * Service class for handling database operations for the DossierMedicale entity
  */
 public class DossierMedicaleService {
-    private Connection connection;
-    private UserServiceE userService;
+
+    @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection getConnection() throws SQLException;
+    }
+
+    private ConnectionProvider connectionProvider;
+    private UserService userService;
     private SejourService sejourService;
-    
+
     public DossierMedicaleService() {
-        connection = DataSource.getInstance().getConnection();
-        userService = new UserServiceE();
+        this.connectionProvider = () -> DataSource.getInstance().getConnection();
+        this.userService = new UserService();
+    }
+
+    public DossierMedicaleService(ConnectionProvider connectionProvider, UserService userService) {
+        this.connectionProvider = connectionProvider;
+        this.userService = userService;
     }
     
     public void setSejourService(SejourService sejourService) {
@@ -35,8 +45,10 @@ public class DossierMedicaleService {
         String sql = "INSERT INTO dossier_medicale (date_de_creation, historique_des_maladies, " +
                 "operations_passees, consultations_passees, statut_dossier, notes, image, " +
                 "patient_id, medecin_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
             pstmt.setTimestamp(1, Timestamp.valueOf(dossier.getDateDeCreation()));
             pstmt.setString(2, dossier.getHistoriqueDesMaladies());
             pstmt.setString(3, dossier.getOperationsPassees());
@@ -75,7 +87,9 @@ public class DossierMedicaleService {
                 "operations_passees = ?, consultations_passees = ?, statut_dossier = ?, " +
                 "notes = ?, image = ?, patient_id = ?, medecin_id = ? WHERE id = ?";
                 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setTimestamp(1, Timestamp.valueOf(dossier.getDateDeCreation()));
             pstmt.setString(2, dossier.getHistoriqueDesMaladies());
             pstmt.setString(3, dossier.getOperationsPassees());
@@ -105,7 +119,9 @@ public class DossierMedicaleService {
     public boolean supprimerDossier(int dossierId) {
         String sql = "DELETE FROM dossier_medicale WHERE id = ?";
         
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setInt(1, dossierId);
             
             int affectedRows = pstmt.executeUpdate();
@@ -127,7 +143,9 @@ public class DossierMedicaleService {
     public DossierMedicale recupererDossierParId(int dossierId, boolean loadSejours) {
         String sql = "SELECT * FROM dossier_medicale WHERE id = ?";
         
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setInt(1, dossierId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -168,7 +186,8 @@ public class DossierMedicaleService {
         List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale";
         
-        try (Statement stmt = connection.createStatement();
+        try (Connection conn = this.connectionProvider.getConnection();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             
             while (rs.next()) {
@@ -198,7 +217,7 @@ public class DossierMedicaleService {
         return recupererTousDossiers(true);
     }
     
-    /**
+   /**
      * Get all medical records for a specific patient, with optional loading of related séjours
      * @param patientId the ID of the patient
      * @param loadSejours whether to load associated séjours
@@ -208,7 +227,9 @@ public class DossierMedicaleService {
         List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale WHERE patient_id = ?";
         
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setInt(1, patientId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -231,7 +252,7 @@ public class DossierMedicaleService {
         
         return dossiers;
     }
-    
+
     /**
      * Get all medical records for a specific patient, including related séjours
      * @param patientId the ID of the patient
@@ -251,7 +272,9 @@ public class DossierMedicaleService {
         List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale WHERE medecin_id = ?";
         
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setInt(1, medecinId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -274,7 +297,7 @@ public class DossierMedicaleService {
         
         return dossiers;
     }
-    
+
     /**
      * Get all medical records for a specific doctor, including related séjours
      * @param medecinId the ID of the doctor
@@ -284,7 +307,7 @@ public class DossierMedicaleService {
         return recupererDossiersParMedecin(medecinId, true);
     }
     
-    /**
+   /**
      * Get all medical records with a specific status, with optional loading of related séjours
      * @param statut the status to filter by
      * @param loadSejours whether to load associated séjours
@@ -294,7 +317,9 @@ public class DossierMedicaleService {
         List<DossierMedicale> dossiers = new ArrayList<DossierMedicale>();
         String sql = "SELECT * FROM dossier_medicale WHERE statut_dossier = ?";
         
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
             pstmt.setString(1, statut);
             
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -303,7 +328,7 @@ public class DossierMedicaleService {
                     dossiers.add(dossier);
                 }
                 
-                // Load associated séjours for each dossier if requested and sejourService is initialized
+                 // Load associated séjours for each dossier if requested and sejourService is initialized
                 if (loadSejours && sejourService != null) {
                     for (DossierMedicale dossier : dossiers) {
                         dossier.setSejours(sejourService.recupererSejoursParDossier(dossier.getId()));
@@ -317,8 +342,8 @@ public class DossierMedicaleService {
         
         return dossiers;
     }
-    
-    /**
+
+        /**
      * Get all medical records with a specific status, including related séjours
      * @param statut the status to filter by
      * @return a list of medical records with the specified status
@@ -327,13 +352,13 @@ public class DossierMedicaleService {
         return recupererDossiersParStatut(statut, true);
     }
     
-    /**
+     /**
      * Helper method to extract a DossierMedicale object from a ResultSet
      * @param rs the ResultSet containing dossier data
      * @return a DossierMedicale object populated with data from the ResultSet
      * @throws SQLException if there is an error accessing the ResultSet
      */
-    private DossierMedicale extractDossierFromResultSet(ResultSet rs) throws SQLException {
+        private DossierMedicale extractDossierFromResultSet(ResultSet rs) throws SQLException {
         DossierMedicale dossier = new DossierMedicale();
         dossier.setId(rs.getInt("id"));
         
@@ -351,15 +376,44 @@ public class DossierMedicaleService {
         dossier.setNotes(rs.getString("notes"));
         dossier.setImage(rs.getString("image"));
         
-        // Load related patient and doctor
+         // Load related patient and doctor
         int patientId = rs.getInt("patient_id");
         int medecinId = rs.getInt("medecin_id");
         
-        User patient = userService.recupererUserParId(patientId);
-        User medecin = userService.recupererUserParId(medecinId);
-        
-        dossier.setPatient(patient);
-        dossier.setMedecin(medecin);
+        try {
+            List<Users> users = userService.listerUtilisateurs();
+            
+            Users patientUsers = users.stream()
+                .filter(u -> u.getId() == patientId)
+                .findFirst()
+                .orElse(null);
+                
+            Users medecinUsers = users.stream()
+                .filter(u -> u.getId() == medecinId)
+                .findFirst()
+                .orElse(null);
+            
+            if (patientUsers != null) {
+                User u = new User();
+                u.setId(patientUsers.getId());
+                u.setNom(patientUsers.getNom());
+                u.setPrenom(patientUsers.getPrenom());
+                u.setEmail(patientUsers.getEmail());
+                 dossier.setPatient(u);
+            }
+            
+            if (medecinUsers != null) {
+                User m = new User();
+                m.setId(medecinUsers.getId());
+                m.setNom(medecinUsers.getNom());
+                m.setPrenom(medecinUsers.getPrenom());
+                m.setEmail(medecinUsers.getEmail());
+                dossier.setMedecin(m);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Warning: Impossible de récupérer les utilisateurs liés: " + e.getMessage());
+        }
         
         return dossier;
     }
@@ -376,13 +430,13 @@ public class DossierMedicaleService {
         String sqlTotal = "SELECT COUNT(*) FROM dossier_medicale WHERE id IS NOT NULL";
         System.out.println("SQL Query for total dossiers: " + sqlTotal);
 
-        // Count dossiers by status - Use COALESCE to handle NULL values
+        // Count dossiers by status - Use COALESCE to handle NULL values      
         String sqlByStatus = "SELECT COALESCE(statut_dossier, 'Non défini') as statut, COUNT(*) as count " +
                             "FROM dossier_medicale " +
                             "GROUP BY COALESCE(statut_dossier, 'Non défini')";
         System.out.println("SQL Query for dossiers by status: " + sqlByStatus);
 
-                            // Count dossiers created per month in current year - Handle NULL dates
+        // Count dossiers created per month in current year - Handle NULL dates
         String sqlByMonth = "SELECT MONTH(COALESCE(date_de_creation, CURRENT_DATE())) as month, COUNT(*) as count " +
                          "FROM dossier_medicale " +
                          "WHERE YEAR(COALESCE(date_de_creation, CURRENT_DATE())) = YEAR(CURRENT_DATE()) " +
@@ -399,7 +453,8 @@ public class DossierMedicaleService {
                            "ORDER BY count DESC";
         System.out.println("SQL Query for dossiers by medecin: " + sqlByMedecin);
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Connection conn = this.connectionProvider.getConnection();
+             Statement stmt = conn.createStatement()) {
             // Get total count
             try (ResultSet rs = stmt.executeQuery(sqlTotal)) {
                 if (rs.next()) {
@@ -407,7 +462,7 @@ public class DossierMedicaleService {
                     stats.put("totalDossiers", total);
                     System.out.println("Found " + total + " total dossiers");
                 }
-            } catch (SQLException e) {
+                } catch (SQLException e) {
                 System.err.println("Error executing total dossiers query: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -426,10 +481,10 @@ public class DossierMedicaleService {
                 e.printStackTrace();
             }
             stats.put("dossiersByStatus", (Object) statsByStatus);
-            
+
             // Get counts by month
             java.util.Map<Integer, Integer> statsByMonth = new java.util.HashMap<Integer, Integer>();
-            for (int i = 1; i <= 12; i++) {
+             for (int i = 1; i <= 12; i++) {
                 statsByMonth.put(i, 0); // Initialize all months with 0
             }
             try (ResultSet rs = stmt.executeQuery(sqlByMonth)) {
@@ -460,7 +515,7 @@ public class DossierMedicaleService {
                     medecinStat.put("prenom", prenom);
                     medecinStat.put("count", count);
                     statsByMedecin.add(medecinStat);
-                    
+
                     System.out.println("Found " + count + " dossiers for medecin: " + prenom + " " + nom);
                 }
             } catch (SQLException e) {
@@ -470,7 +525,7 @@ public class DossierMedicaleService {
             stats.put("dossiersByMedecin", (Object) statsByMedecin);
             
             System.out.println("DossierMedicaleService.getStatistiques() completed successfully");
-        } catch (SQLException e) {
+         } catch (SQLException e) {
             System.err.println("Error in DossierMedicaleService.getStatistiques(): " + e.getMessage());
             e.printStackTrace();
         }

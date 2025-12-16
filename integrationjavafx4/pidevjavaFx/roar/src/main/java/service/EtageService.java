@@ -10,9 +10,24 @@ import java.util.List;
 
 public class EtageService {
 
+    @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection getConnection() throws SQLException;
+    }
+
+    private ConnectionProvider connectionProvider;
+
+    public EtageService() {
+        this.connectionProvider = () -> DataSource.getInstance().getConnection();
+    }
+
+    public EtageService(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
+    }
+
     public void addEtage(etage e) {
         String query = "INSERT INTO etage (numero, departement_id) VALUES (?, ?)";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, e.getNumero());
@@ -34,7 +49,7 @@ public class EtageService {
         String query = "SELECT e.*, d.nom as departement_nom, d.adresse " +
                 "FROM etage e JOIN departement d ON e.departement_id = d.id";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
@@ -60,7 +75,7 @@ public class EtageService {
 
     public void updateEtage(etage e) {
         String query = "UPDATE etage SET numero=?, departement_id=? WHERE id=?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, e.getNumero());
@@ -75,7 +90,7 @@ public class EtageService {
 
     public void deleteEtage(int id) {
         String query = "DELETE FROM etage WHERE id=?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, id);
@@ -91,7 +106,7 @@ public class EtageService {
                 "FROM etage e JOIN departement d ON e.departement_id = d.id " +
                 "WHERE e.numero LIKE ? OR d.nom LIKE ? OR d.adresse LIKE ?";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             String like = "%" + searchTerm + "%";
@@ -126,7 +141,7 @@ public class EtageService {
         List<etage> list = new ArrayList<etage>();
         String query = "SELECT * FROM etage WHERE departement_id = ?";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, departementId);
@@ -150,10 +165,10 @@ public class EtageService {
         return list;
     }
 
-    public static etage getEtageById(int etageId) {
+    public etage getEtageById(int etageId) {
         String query = "SELECT e.*, d.nom as departement_nom, d.adresse " +
                 "FROM etage e JOIN departement d ON e.departement_id = d.id WHERE e.id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, etageId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -183,7 +198,7 @@ public class EtageService {
 
     public int countEtagesByDepartement(int departementId) {
         String query = "SELECT COUNT(*) FROM etage WHERE departement_id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, departementId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -201,5 +216,4 @@ public class EtageService {
         System.out.println("No etages found for departement_id " + departementId);
         return 0;
     }
-
 }

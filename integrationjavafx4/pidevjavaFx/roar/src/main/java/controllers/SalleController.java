@@ -98,13 +98,37 @@ public class SalleController {
     private TextField searchField;
 
     // Services et données
-    private final SalleService salleService = new SalleService();
-    private final EtageService etageService = new EtageService();
+    private SalleService salleService;
+    private EtageService etageService;
+    
     private final ObservableList<salle> salleData = FXCollections.observableArrayList();
     private final ObservableList<salle> filteredSalleData = FXCollections.observableArrayList();
     private String imagePath = "";
     public static final String IMAGE_DIR = "src/main/resources/images/";
 
+    public void setSalleService(SalleService salleService) {
+        this.salleService = salleService;
+    }
+
+    private SalleService getSalleService() {
+        if (this.salleService == null) {
+            this.salleService = new SalleService();
+        }
+        return this.salleService;
+    }
+
+
+    public void setEtageService(EtageService etageService) {
+        this.etageService = etageService;
+    }
+
+    private EtageService getEtageService() {
+        if (this.etageService == null) {
+            this.etageService = new EtageService();
+        }
+        return this.etageService;
+    }
+    
     @FXML
     public void initialize() {
         createImageDirectory();
@@ -133,7 +157,7 @@ public class SalleController {
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));
 
         // Chargement des étages
-        List<etage> etages = etageService.getAllEtages();
+        List<etage> etages = getEtageService().getAllEtages();
         etageCombo.setItems(FXCollections.observableArrayList(etages));
 
         // Afficher le numéro de l'étage dans le ComboBox
@@ -288,7 +312,7 @@ public class SalleController {
 
     private void loadSalles() {
         salleData.clear();
-        salleData.addAll(salleService.getAll());
+        salleData.addAll(getSalleService().getAll());
         filteredSalleData.setAll(salleData);
         salleTable.setItems(filteredSalleData);
     }
@@ -407,7 +431,7 @@ public class SalleController {
         salle.setEtage(etageCombo.getValue());
         salle.setImage(imagePath);
 
-        salleService.addSalle(salle);
+        getSalleService().addSalle(salle);
         showAlert("Succès", "Salle ajoutée avec succès", Alert.AlertType.INFORMATION);
         resetForm();
         loadSalles();
@@ -450,7 +474,7 @@ public class SalleController {
             salle.setImage(imagePath);
 
             // Update in database
-            salleService.updateSalle(salle);
+            getSalleService().updateSalle(salle);
             showAlert("Succès", "Salle mise à jour avec succès", Alert.AlertType.INFORMATION);
             resetForm();
             loadSalles();
@@ -468,7 +492,7 @@ public class SalleController {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            salleService.deleteSalle(salle.getId());
+            getSalleService().deleteSalle(salle.getId());
             showAlert("Succès", "Salle supprimée avec succès", Alert.AlertType.INFORMATION);
             loadSalles();
         }

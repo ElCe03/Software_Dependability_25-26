@@ -13,6 +13,22 @@ import java.util.List;
 
 public class UserService {
 
+   @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection getConnection() throws SQLException;
+    }
+
+    private ConnectionProvider connectionProvider;
+
+ 
+    public UserService() {
+        this.connectionProvider = () -> DataSource.getInstance().getConnection();
+    }
+
+    public UserService(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
+    }
+
     /*@ 
       @ requires email != null && !email.isEmpty();
       @ requires password != null && !password.isEmpty();
@@ -25,9 +41,11 @@ public class UserService {
     public Users authenticate(String email, String password) throws SQLException, JsonProcessingException {
         String query = "SELECT id, nom, prenom, email, password, roles, type, adresse, telephone, date_naissance, specialite FROM users WHERE email = ?";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+         try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
+            
             pstmt.setString(1, email);
+            
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     // Vérifier le mot de passe
@@ -148,8 +166,9 @@ public class UserService {
         }
         req += ")";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {
+            
             // Champs communs
             pstmt.setString(1, user.getNom());
             pstmt.setString(2, user.getPrenom());
@@ -226,7 +245,8 @@ public class UserService {
       @*/
     public void supprimer(int id) throws SQLException {
         String checkQuery = "SELECT COUNT(*) FROM users WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
             checkStmt.setInt(1, id);
             try (ResultSet rs = checkStmt.executeQuery()) {
@@ -238,7 +258,7 @@ public class UserService {
         }
 
         String req = "DELETE FROM users WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(req)) {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
@@ -257,7 +277,7 @@ public class UserService {
         List<Users> utilisateurs = new ArrayList<Users>();
         String req = "SELECT id, nom, prenom, email, roles, type, adresse, telephone, date_naissance, specialite FROM users";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(req);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -334,7 +354,7 @@ public class UserService {
                 user.getPrenom() == null || user.getPrenom().isEmpty()) {
             throw new IllegalArgumentException("Tous les champs requis doivent être remplis !");
         }
-
+        
         // Requête SQL avec password inclus
         String req = "UPDATE users SET nom = ?, prenom = ?, email = ?, password = ?, roles = ?, type = ?";
         if (user instanceof Patient) {
@@ -346,8 +366,9 @@ public class UserService {
         }
         req += " WHERE id = ?";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(req)) {
+            
             // Champs communs
             pstmt.setString(1, user.getNom());
             pstmt.setString(2, user.getPrenom());

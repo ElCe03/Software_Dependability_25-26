@@ -8,20 +8,44 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.sql.DriverManager.getConnection;
 
 public class SalleService {
 
     private static final Logger LOGGER = Logger.getLogger(SalleService.class.getName());
     
+    private Connection connection;
+    private EtageService etageService;
+
+    /**
+     * Costruttore di default.
+     * Mantiene la compatibilità con il codice esistente.
+     */
+    public SalleService() {
+        this(DataSource.getInstance().getConnection());
+    }
+
+    /**
+     * Costruttore per Dependency Injection (Testability).
+     * @param connection La connessione al database (reale o mock).
+     */
+    public SalleService(Connection connection) {
+        this.connection = connection;
+        // Inizializza il servizio dipendente di default
+        this.etageService = new EtageService(); 
+    }
+
+    /**
+     * Metodo Setter per i Test (Mocking).
+     * Permette di sostituire l'EtageService reale con un Mock.
+     */
+    public void setEtageService(EtageService etageService) {
+        this.etageService = etageService;
+    }
+    
     public void addSalle(salle s) {
         String query = "INSERT INTO salle (nom, capacite, type_salle, status, etage_id, image, priorite) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, s.getNom());
             ps.setInt(2, s.getCapacite());
@@ -41,7 +65,9 @@ public class SalleService {
 
             // Increment nbr_salle for the associated etage
             etage etage = s.getEtage();
-            etage.setNbrSalle(etage.getNbrSalle() + 1);
+            if (etage != null) {
+                etage.setNbrSalle(etage.getNbrSalle() + 1);
+            }
 
         } catch (SQLException e) {
             System.err.println("Error adding salle: " + e.getMessage());
@@ -54,8 +80,7 @@ public class SalleService {
         List<salle> list = new ArrayList<salle>();
         String query = "SELECT s.*, e.numero as etage_numero FROM salle s LEFT JOIN etage e ON s.etage_id = e.id";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
@@ -84,10 +109,12 @@ public class SalleService {
     }
 
     public void updateSalle(Connection conn, salle s) throws SQLException {
+        Connection activeConnection = (conn != null) ? conn : this.connection;
+
         // Retrieve the current etage_id to detect if etage changes
         String selectQuery = "SELECT etage_id FROM salle WHERE id = ?";
         int oldEtageId = -1;
-        try (PreparedStatement ps = conn.prepareStatement(selectQuery)) {
+        try (PreparedStatement ps = activeConnection.prepareStatement(selectQuery)) {
             ps.setInt(1, s.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -98,7 +125,7 @@ public class SalleService {
 
         // Update the salle
         String query = "UPDATE salle SET nom = ?, capacite = ?, type_salle = ?, status = ?, etage_id = ?, image = ?, priorite = ? WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = activeConnection.prepareStatement(query)) {
             ps.setString(1, s.getNom());
             ps.setInt(2, s.getCapacite());
             ps.setString(3, s.getType_salle());
@@ -118,23 +145,24 @@ public class SalleService {
                 // Decrement nbr_salle for old etage
                 if (oldEtageId != -1) {
                     String updateOldEtageQuery = "UPDATE etage SET nbr_salle = nbr_salle - 1 WHERE id = ?";
-                    try (PreparedStatement psEtage = conn.prepareStatement(updateOldEtageQuery)) {
+                    try (PreparedStatement psEtage = activeConnection.prepareStatement(updateOldEtageQuery)) {
                         psEtage.setInt(1, oldEtageId);
                         psEtage.executeUpdate();
                     }
                 }
                 // Increment nbr_salle for new etage
                 String updateNewEtageQuery = "UPDATE etage SET nbr_salle = nbr_salle + 1 WHERE id = ?";
-                try (PreparedStatement psEtage = conn.prepareStatement(updateNewEtageQuery)) {
+                try (PreparedStatement psEtage = activeConnection.prepareStatement(updateNewEtageQuery)) {
                     psEtage.setInt(1, s.getEtage().getId());
                     psEtage.executeUpdate();
                 }
             }
         }
     }
+
     public void updateSalle(salle s) {
-        try (Connection conn = DataSource.getInstance().getConnection()) {
-            updateSalle(conn, s);
+        try {
+            updateSalle(this.connection, s);
         } catch (SQLException e) {
             throw new RuntimeException("Échec de la mise à jour de la salle", e);
         }
@@ -144,8 +172,7 @@ public class SalleService {
         // Retrieve the etage_id before deleting
         String selectQuery = "SELECT etage_id FROM salle WHERE id = ?";
         int etageId = -1;
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(selectQuery)) {
+        try (PreparedStatement ps = connection.prepareStatement(selectQuery)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -160,8 +187,7 @@ public class SalleService {
 
         // Delete the salle
         String query = "DELETE FROM salle WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -185,8 +211,7 @@ public class SalleService {
         List<salle> list = new ArrayList<salle>();
         String query = "SELECT s.*, e.numero as etage_numero FROM salle s LEFT JOIN etage e ON s.etage_id = e.id WHERE s.etage_id = ?";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
 
             ps.setInt(1, etageId);
 
@@ -219,8 +244,7 @@ public class SalleService {
 
     public int countSallesByEtage(int etageId) {
         String query = "SELECT COUNT(*) FROM salle WHERE etage_id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, etageId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -235,26 +259,24 @@ public class SalleService {
         return 0;
     }
 
-    public etage getEtageById(int etageId) {
-        return EtageService.getEtageById(etageId);
-    }
-    public void updateSalleStatus(int salleId, String newStatus) throws SQLException {
-        String query = "UPDATE salle SET status = ? WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, newStatus);
-            stmt.setInt(2, salleId);
-            stmt.executeUpdate();
+   public etage getEtageById(int etageId) {
+        if (this.etageService == null) {
+            this.etageService = new EtageService();
         }
+        return this.etageService.getEtageById(etageId);
     }
+
+    public void updateSalleStatus(int salleId, String newStatus) throws SQLException {
+        updateSalleStatus(this.connection, salleId, newStatus);
+    }
+
     public boolean isSalleAvailable(int salleId, LocalDateTime start, LocalDateTime end) throws SQLException {
         String query = "SELECT COUNT(*) FROM reservation WHERE salle_id = ? " +
                 "AND ((date_debut < ? AND date_fin > ?) OR " +
                 "(date_debut BETWEEN ? AND ?) OR " +
                 "(date_fin BETWEEN ? AND ?))";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
 
             Timestamp startTs = Timestamp.valueOf(start);
             Timestamp endTs = Timestamp.valueOf(end);
@@ -277,20 +299,22 @@ public class SalleService {
         }
         return true;
     }
+
     public void updateSalleStatus(Connection conn, int salleId, String newStatus) throws SQLException {
+        Connection activeConnection = (conn != null) ? conn : this.connection;
         String query = "UPDATE salle SET status = ? WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (PreparedStatement stmt = activeConnection.prepareStatement(query)) {
             stmt.setString(1, newStatus);
             stmt.setInt(2, salleId);
             stmt.executeUpdate();
         }
     }
+
     public List<salle> getAvailableSalles() throws SQLException {
         List<salle> availableSalles = new ArrayList<salle>();
         String query = "SELECT * FROM salle WHERE status = 'Disponible'";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
+        try (PreparedStatement ps = connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -312,6 +336,5 @@ public class SalleService {
             }
         }
         return availableSalles;
-}
-
+    }
 }

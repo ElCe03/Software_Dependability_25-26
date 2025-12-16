@@ -17,7 +17,11 @@ public class SejourService {
     private DossierMedicaleService dossierService;
     
     public SejourService() {
-        connection = DataSource.getInstance().getConnection();
+        this(DataSource.getInstance().getConnection());
+    }
+
+    public SejourService(Connection connection) {
+        this.connection = connection;
     }
     
     public void setDossierService(DossierMedicaleService dossierService) {

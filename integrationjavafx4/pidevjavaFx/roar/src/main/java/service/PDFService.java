@@ -24,23 +24,61 @@ import java.util.Map;
 public class PDFService {
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    @FunctionalInterface
+    public interface FileSelectionStrategy {
+        File selectFile(Stage stage, String initialFileName);
+    }
+
+    public interface AlertStrategy {
+        void showInformation(Stage stage, String title, String content);
+        void showError(Stage stage, String title, String content);
+    }
+
+    private FileSelectionStrategy fileSelectionStrategy;
+    private AlertStrategy alertStrategy;
+
+    public PDFService() {
+        this.fileSelectionStrategy = (stage, initialFileName) -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Enregistrer l'analyse des séjours");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+            );
+            fileChooser.setInitialFileName(initialFileName);
+            return fileChooser.showSaveDialog(stage);
+        };
+
+        this.alertStrategy = new AlertStrategy() {
+            @Override
+            public void showInformation(Stage stage, String title, String content) {
+                AlertUtil.showInformation(stage, title, content);
+            }
+
+            @Override
+            public void showError(Stage stage, String title, String content) {
+                AlertUtil.showError(stage, title, content);
+            }
+        };
+    }
+
+    public PDFService(FileSelectionStrategy fileSelectionStrategy, AlertStrategy alertStrategy) {
+        this.fileSelectionStrategy = fileSelectionStrategy;
+        this.alertStrategy = alertStrategy;
+    }
     
     public void generateSejourAnalysisPDF(List<Sejour> sejours, Stage stage) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Enregistrer l'analyse des séjours");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
-        );
-        fileChooser.setInitialFileName("analyse_sejours_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".pdf");
+        String initialFileName = "analyse_sejours_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".pdf";
         
-        File file = fileChooser.showSaveDialog(stage);
+        File file = this.fileSelectionStrategy.selectFile(stage, initialFileName);
+        
         if (file != null) {
             try {
                 PdfWriter writer = new PdfWriter(file);
                 PdfDocument pdf = new PdfDocument(writer);
                 Document document = new Document(pdf);
-                
-                 // Add title
+
+                // Add title
                 Paragraph title = new Paragraph("Analyse des Séjours");
                 title.setTextAlignment(TextAlignment.CENTER);
                 title.setFontSize(20);
@@ -64,10 +102,12 @@ public class PDFService {
                 
                 document.close();
                 
-                // Show success message
-                AlertUtil.showInformation(stage, "Succès", "Le PDF a été généré avec succès !");
+                this.alertStrategy.showInformation(stage, "Succès", "Le PDF a été généré avec succès !");
             } catch (FileNotFoundException e) {
-                AlertUtil.showError(stage, "Erreur", "Erreur lors de la génération du PDF: " + e.getMessage());
+                this.alertStrategy.showError(stage, "Erreur", "Erreur lors de la génération du PDF: " + e.getMessage());
+            } catch (Exception e) {
+                 e.printStackTrace(); 
+                this.alertStrategy.showError(stage, "Erreur", "Une erreur inattendue est survenue: " + e.getMessage());
             }
         }
     }
@@ -87,23 +127,15 @@ public class PDFService {
         // Group by type
         Map<String, Long> countByType = new HashMap<String, Long>();
         for (Sejour s : sejours) {
-            String type = s.getTypeSejour();
-            if (countByType.containsKey(type)) {
-                countByType.put(type, countByType.get(type) + 1L);
-            } else {
-                countByType.put(type, 1L);
-            }
+            String type = s.getTypeSejour() != null ? s.getTypeSejour() : "Non spécifié";
+            countByType.put(type, countByType.getOrDefault(type, 0L) + 1L);
         }
         
         // Group by payment status
         Map<String, Long> countByPaymentStatus = new HashMap<String, Long>();
         for (Sejour s : sejours) {
-            String status = s.getStatutPaiement();
-            if (countByPaymentStatus.containsKey(status)) {
-                countByPaymentStatus.put(status, countByPaymentStatus.get(status) + 1L);
-            } else {
-                countByPaymentStatus.put(status, 1L);
-            }
+            String status = s.getStatutPaiement() != null ? s.getStatutPaiement() : "Inconnu";
+            countByPaymentStatus.put(status, countByPaymentStatus.getOrDefault(status, 0L) + 1L);
         }
         
         // Create summary table
@@ -195,11 +227,11 @@ public class PDFService {
             String dateSortie = sejour.getDateSortie() != null ? sejour.getDateSortie().format(DATE_FORMATTER) : "";
             table.addCell(new Cell().add(new Paragraph(dateSortie)));
             
-            table.addCell(new Cell().add(new Paragraph(sejour.getTypeSejour())));
+            table.addCell(new Cell().add(new Paragraph(sejour.getTypeSejour() != null ? sejour.getTypeSejour() : "")));
             table.addCell(new Cell().add(new Paragraph(String.format("%.2f €", sejour.getFraisSejour()))));
             table.addCell(new Cell().add(new Paragraph(String.format("%.2f €", sejour.getPrixExtras()))));
-            table.addCell(new Cell().add(new Paragraph(sejour.getMoyenPaiement())));
-            table.addCell(new Cell().add(new Paragraph(sejour.getStatutPaiement())));
+            table.addCell(new Cell().add(new Paragraph(sejour.getMoyenPaiement() != null ? sejour.getMoyenPaiement() : "")));
+            table.addCell(new Cell().add(new Paragraph(sejour.getStatutPaiement() != null ? sejour.getStatutPaiement() : "")));
         }
         
         document.add(table);

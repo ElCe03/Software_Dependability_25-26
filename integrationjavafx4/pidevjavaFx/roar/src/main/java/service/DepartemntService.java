@@ -9,9 +9,24 @@ import java.util.List;
 
 public class DepartemntService {
 
+   @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection getConnection() throws SQLException;
+    }
+
+    private ConnectionProvider connectionProvider;
+
+    public DepartemntService() {
+        this.connectionProvider = () -> DataSource.getInstance().getConnection();
+    }
+
+   public DepartemntService(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
+    }
+
     public void addDepartement(departement d) {
         String query = "INSERT INTO departement (nom, adresse, image) VALUES (?, ?, ?)";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, d.getNom());
@@ -38,7 +53,7 @@ public class DepartemntService {
                 "LEFT JOIN etage e ON d.id = e.departement_id " +
                 "GROUP BY d.id, d.nom, d.adresse, d.image";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
@@ -51,7 +66,7 @@ public class DepartemntService {
                 );
                 int count = rs.getInt("etage_count");
                 d.setNbr_etage(count);
-                System.out.println("Departement " + d.getNom() + " (ID: " + d.getId() + ") has " + count + " etages");
+                System.out.println("Departement " + d.getNom() + "..."); // Commentato per pulizia test
                 list.add(d);
             }
         } catch (SQLException ex) {
@@ -64,7 +79,7 @@ public class DepartemntService {
 
     public void updateDepartement(departement d) {
         String query = "UPDATE departement SET nom = ?, adresse = ?, image = ? WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setString(1, d.getNom());
@@ -85,7 +100,7 @@ public class DepartemntService {
 
     public void deleteDepartement(int id) {
         String query = "DELETE FROM departement WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ps.setInt(1, id);
@@ -97,13 +112,14 @@ public class DepartemntService {
         }
     }
 
-    public static departement getDepartementById(int departementId) {
+    public departement getDepartementById(int departementId) {
         String query = "SELECT d.*, COALESCE(COUNT(e.id), 0) as etage_count " +
                 "FROM departement d " +
                 "LEFT JOIN etage e ON d.id = e.departement_id " +
                 "WHERE d.id = ? " +
                 "GROUP BY d.id, d.nom, d.adresse, d.image";
-        try (Connection conn = DataSource.getInstance().getConnection();
+        
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, departementId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -136,7 +152,7 @@ public class DepartemntService {
                 "WHERE d.nom LIKE ? OR d.adresse LIKE ? OR d.image LIKE ? " +
                 "GROUP BY d.id, d.nom, d.adresse, d.image";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
+        try (Connection conn = this.connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             String like = "%" + searchTerm + "%";
