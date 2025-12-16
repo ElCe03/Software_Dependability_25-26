@@ -4,7 +4,7 @@ public class etage {
 
     /*@ spec_public @*/ private int id;
     /*@ spec_public @*/ private int numero;
-<span class="pc" id="L7">    /*@ spec_public @*/ private int  nbrSalle = 0; // Initialisé à 0</span>
+<span class="nc" id="L7">    /*@ spec_public @*/ private int  nbrSalle = 0; // Initialisé à 0</span>
     /*@ spec_public nullable @*/ private entite.departement departement;
 
     /*@ public invariant id &gt;= 0; @*/
@@ -16,7 +16,7 @@ public class etage {
       @ ensures nbrSalle == 0;
       @ ensures departement == null;
       @*/
-<span class="fc" id="L19">    public etage() {}</span>
+<span class="nc" id="L19">    public etage() {}</span>
 
     /*@ 
       @ requires id &gt;= 0;
@@ -39,8 +39,8 @@ public class etage {
 
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
-<span class="fc" id="L42">        this.id = id;</span>
-<span class="fc" id="L43">    }</span>
+<span class="nc" id="L42">        this.id = id;</span>
+<span class="nc" id="L43">    }</span>
 
     /*@ ensures \result == numero; pure @*/
     public int getNumero() {
@@ -49,8 +49,8 @@ public class etage {
 
     /*@ assignable this.numero; ensures this.numero == numero; @*/
     public void setNumero(int numero) {
-<span class="fc" id="L52">        this.numero = numero;</span>
-<span class="fc" id="L53">    }</span>
+<span class="nc" id="L52">        this.numero = numero;</span>
+<span class="nc" id="L53">    }</span>
 
     /*@ ensures \result == departement; pure @*/
     public entite.departement getDepartement() {

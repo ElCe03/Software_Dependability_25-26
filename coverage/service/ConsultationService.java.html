@@ -6,19 +6,19 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-<span class="fc" id="L9">public class ConsultationService {</span>
+<span class="nc" id="L9">public class ConsultationService {</span>
 
     private Connection cnx;
 
     public void setConnection(Connection cnx) {
-<span class="fc" id="L14">        this.cnx = cnx;</span>
-<span class="fc" id="L15">    }</span>
+<span class="nc" id="L14">        this.cnx = cnx;</span>
+<span class="nc" id="L15">    }</span>
 
     private Connection getConnection() {
-<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        if (this.cnx == null) {</span>
+<span class="nc bnc" id="L18" title="All 2 branches missed.">        if (this.cnx == null) {</span>
 <span class="nc" id="L19">            this.cnx = DataSource.getInstance().getConnection();</span>
         }
-<span class="fc" id="L21">        return this.cnx;</span>
+<span class="nc" id="L21">        return this.cnx;</span>
     }
 
     // Existing method - Add new consultation
@@ -107,14 +107,14 @@ import java.util.List;
 
     // NEW METHOD - Update only status
     public boolean updateConsultationStatus(int consultationId, String newStatus) {
-<span class="fc" id="L110">        String query = &quot;UPDATE consultation SET status = ? WHERE id = ?&quot;;</span>
-<span class="fc" id="L111">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
+<span class="nc" id="L110">        String query = &quot;UPDATE consultation SET status = ? WHERE id = ?&quot;;</span>
+<span class="nc" id="L111">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
 
-<span class="fc" id="L113">            ps.setString(1, newStatus);</span>
-<span class="fc" id="L114">            ps.setInt(2, consultationId);</span>
+<span class="nc" id="L113">            ps.setString(1, newStatus);</span>
+<span class="nc" id="L114">            ps.setInt(2, consultationId);</span>
 
-<span class="fc" id="L116">            int rows = ps.executeUpdate();</span>
-<span class="pc bpc" id="L117" title="1 of 2 branches missed.">            return rows &gt; 0;</span>
+<span class="nc" id="L116">            int rows = ps.executeUpdate();</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            return rows &gt; 0;</span>
 <span class="nc" id="L118">        } catch (SQLException e) {</span>
 <span class="nc" id="L119">            System.err.println(&quot;Error updating consultation status: &quot; + e.getMessage());</span>
 <span class="nc" id="L120">            return false;</span>
@@ -123,60 +123,60 @@ import java.util.List;
 
     // NEW METHOD - Get all consultations
     public List&lt;Consultation&gt; getAllConsultations() {
-<span class="fc" id="L126">        List&lt;Consultation&gt; consultations = new ArrayList&lt;Consultation&gt;();</span>
-<span class="fc" id="L127">        String query = &quot;SELECT c.*, s.name as service_name FROM consultation c &quot; +</span>
+<span class="nc" id="L126">        List&lt;Consultation&gt; consultations = new ArrayList&lt;Consultation&gt;();</span>
+<span class="nc" id="L127">        String query = &quot;SELECT c.*, s.name as service_name FROM consultation c &quot; +</span>
                 &quot;LEFT JOIN service s ON c.service_id = s.id &quot; +
                 &quot;ORDER BY c.date DESC&quot;;
 
-<span class="fc" id="L131">        try (Statement stmt = getConnection().createStatement();</span>
-<span class="fc" id="L132">             ResultSet rs = stmt.executeQuery(query)) {</span>
+<span class="nc" id="L131">        try (Statement stmt = getConnection().createStatement();</span>
+<span class="nc" id="L132">             ResultSet rs = stmt.executeQuery(query)) {</span>
 
-<span class="fc bfc" id="L134" title="All 2 branches covered.">            while (rs.next()) {</span>
-<span class="fc" id="L135">                consultations.add(extractConsultationFromResultSet(rs));</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L135">                consultations.add(extractConsultationFromResultSet(rs));</span>
             }
 <span class="nc" id="L137">        } catch (SQLException e) {</span>
 <span class="nc" id="L138">            System.err.println(&quot;Error fetching all consultations: &quot; + e.getMessage());</span>
-<span class="fc" id="L139">        }</span>
-<span class="fc" id="L140">        return consultations;</span>
+<span class="nc" id="L139">        }</span>
+<span class="nc" id="L140">        return consultations;</span>
     }
 
     // NEW METHOD - Search consultations
     public List&lt;Consultation&gt; searchConsultations(String searchTerm) {
-<span class="fc" id="L145">        List&lt;Consultation&gt; consultations = new ArrayList&lt;Consultation&gt;();</span>
-<span class="fc" id="L146">        String query = &quot;SELECT c.*, s.name as service_name FROM consultation c &quot; +</span>
+<span class="nc" id="L145">        List&lt;Consultation&gt; consultations = new ArrayList&lt;Consultation&gt;();</span>
+<span class="nc" id="L146">        String query = &quot;SELECT c.*, s.name as service_name FROM consultation c &quot; +</span>
                 &quot;LEFT JOIN service s ON c.service_id = s.id &quot; +
                 &quot;WHERE c.patient_identifier LIKE ? OR c.phone_number LIKE ? OR s.name LIKE ? &quot; +
                 &quot;ORDER BY c.date DESC&quot;;
 
-<span class="fc" id="L151">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
+<span class="nc" id="L151">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
 
-<span class="fc" id="L153">            String likeTerm = &quot;%&quot; + searchTerm + &quot;%&quot;;</span>
-<span class="fc" id="L154">            ps.setString(1, likeTerm);</span>
-<span class="fc" id="L155">            ps.setString(2, likeTerm);</span>
-<span class="fc" id="L156">            ps.setString(3, likeTerm);</span>
+<span class="nc" id="L153">            String likeTerm = &quot;%&quot; + searchTerm + &quot;%&quot;;</span>
+<span class="nc" id="L154">            ps.setString(1, likeTerm);</span>
+<span class="nc" id="L155">            ps.setString(2, likeTerm);</span>
+<span class="nc" id="L156">            ps.setString(3, likeTerm);</span>
 
-<span class="fc" id="L158">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="fc bfc" id="L159" title="All 2 branches covered.">                while (rs.next()) {</span>
-<span class="fc" id="L160">                    consultations.add(extractConsultationFromResultSet(rs));</span>
+<span class="nc" id="L158">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L160">                    consultations.add(extractConsultationFromResultSet(rs));</span>
                 }
             }
 <span class="nc" id="L163">        } catch (SQLException e) {</span>
 <span class="nc" id="L164">            System.err.println(&quot;Error searching consultations: &quot; + e.getMessage());</span>
-<span class="fc" id="L165">        }</span>
-<span class="fc" id="L166">        return consultations;</span>
+<span class="nc" id="L165">        }</span>
+<span class="nc" id="L166">        return consultations;</span>
     }
 
     // Helper method to extract consultation from ResultSet
     private Consultation extractConsultationFromResultSet(ResultSet rs) throws SQLException {
-<span class="fc" id="L171">        Consultation c = new Consultation();</span>
-<span class="fc" id="L172">        c.setId(rs.getInt(&quot;id&quot;));</span>
-<span class="fc" id="L173">        c.setServiceId(rs.getInt(&quot;service_id&quot;));</span>
-<span class="fc" id="L174">        c.setServiceName(rs.getString(&quot;service_name&quot;));</span>
-<span class="fc" id="L175">        c.setDate(rs.getDate(&quot;date&quot;));</span>
-<span class="fc" id="L176">        c.setPatientIdentifier(rs.getString(&quot;patient_identifier&quot;));</span>
-<span class="fc" id="L177">        c.setStatus(rs.getString(&quot;status&quot;));</span>
-<span class="fc" id="L178">        c.setPhoneNumber(rs.getString(&quot;phone_number&quot;));</span>
-<span class="fc" id="L179">        return c;</span>
+<span class="nc" id="L171">        Consultation c = new Consultation();</span>
+<span class="nc" id="L172">        c.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L173">        c.setServiceId(rs.getInt(&quot;service_id&quot;));</span>
+<span class="nc" id="L174">        c.setServiceName(rs.getString(&quot;service_name&quot;));</span>
+<span class="nc" id="L175">        c.setDate(rs.getDate(&quot;date&quot;));</span>
+<span class="nc" id="L176">        c.setPatientIdentifier(rs.getString(&quot;patient_identifier&quot;));</span>
+<span class="nc" id="L177">        c.setStatus(rs.getString(&quot;status&quot;));</span>
+<span class="nc" id="L178">        c.setPhoneNumber(rs.getString(&quot;phone_number&quot;));</span>
+<span class="nc" id="L179">        return c;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

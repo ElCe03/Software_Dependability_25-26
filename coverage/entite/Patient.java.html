@@ -20,8 +20,8 @@ public class Patient extends Users {
       @ ensures dateNaissance == null;
       @*/
     public Patient() {
-<span class="fc" id="L23">        super();</span>
-<span class="fc" id="L24">    }</span>
+<span class="nc" id="L23">        super();</span>
+<span class="nc" id="L24">    }</span>
 
     /*@ 
       @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);
@@ -45,27 +45,27 @@ public class Patient extends Users {
 
     /*@ pure @*/
     public String getAdresse() {
-<span class="fc" id="L48">        return adresse;</span>
+<span class="nc" id="L48">        return adresse;</span>
     }
 
     /*@ assignable this.adresse; @*/
     public void setAdresse(String adresse) {
-<span class="fc" id="L53">        this.adresse = adresse;</span>
-<span class="fc" id="L54">    }</span>
+<span class="nc" id="L53">        this.adresse = adresse;</span>
+<span class="nc" id="L54">    }</span>
 
     /*@ pure @*/
     public String getTelephone() {
-<span class="fc" id="L58">        return telephone;</span>
+<span class="nc" id="L58">        return telephone;</span>
     }
 
     /*@ assignable this.telephone; @*/
     public void setTelephone(String telephone) {
-<span class="fc" id="L63">        this.telephone = telephone;</span>
-<span class="fc" id="L64">    }</span>
+<span class="nc" id="L63">        this.telephone = telephone;</span>
+<span class="nc" id="L64">    }</span>
 
     /*@ pure @*/
     public LocalDate getDateNaissance() {
-<span class="fc" id="L68">        return dateNaissance;</span>
+<span class="nc" id="L68">        return dateNaissance;</span>
     }
 
     /*@ 
@@ -73,8 +73,8 @@ public class Patient extends Users {
       @ ensures this.dateNaissance == dateNaissance;
       @*/
     public void setDateNaissance(LocalDate dateNaissance) {
-<span class="fc" id="L76">        this.dateNaissance = dateNaissance;</span>
-<span class="fc" id="L77">    }</span>
+<span class="nc" id="L76">        this.dateNaissance = dateNaissance;</span>
+<span class="nc" id="L77">    }</span>
 
 
     @Override

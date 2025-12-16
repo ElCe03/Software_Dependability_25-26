@@ -22,7 +22,7 @@ public class Users {
     private String password;
     
     /*@ spec_public non_null @*/
-<span class="pc" id="L25">    @ElementCollection(fetch = FetchType.EAGER)</span>
+<span class="nc" id="L25">    @ElementCollection(fetch = FetchType.EAGER)</span>
     private List&lt;String&gt; roles = new ArrayList&lt;String&gt;();
     /*@ spec_public nullable @*/
     private String nom;
@@ -42,9 +42,9 @@ public class Users {
       @ ensures roles != null &amp;&amp; roles.isEmpty();
       @ ensures id == 0;
       @*/
-<span class="fc" id="L45">    public Users() {</span>
-<span class="fc" id="L46">        this.roles = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L47">    }</span>
+<span class="nc" id="L45">    public Users() {</span>
+<span class="nc" id="L46">        this.roles = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L47">    }</span>
 
     /*@ 
       @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);

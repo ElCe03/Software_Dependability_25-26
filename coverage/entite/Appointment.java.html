@@ -22,22 +22,22 @@ public class Appointment {
       @ ensures this.start == start;
       @ ensures this.end == end;
       @*/
-<span class="fc" id="L25">    public Appointment(String title, String description, LocalDateTime start, LocalDateTime end, String group) {</span>
-<span class="fc" id="L26">        this.title = title;</span>
-<span class="fc" id="L27">        this.description = description;</span>
-<span class="fc" id="L28">        this.start = start;</span>
-<span class="fc" id="L29">        this.end = end;</span>
-<span class="fc" id="L30">        this.group = group;</span>
-<span class="fc" id="L31">    }</span>
+<span class="nc" id="L25">    public Appointment(String title, String description, LocalDateTime start, LocalDateTime end, String group) {</span>
+<span class="nc" id="L26">        this.title = title;</span>
+<span class="nc" id="L27">        this.description = description;</span>
+<span class="nc" id="L28">        this.start = start;</span>
+<span class="nc" id="L29">        this.end = end;</span>
+<span class="nc" id="L30">        this.group = group;</span>
+<span class="nc" id="L31">    }</span>
 
     // Getters
-<span class="fc" id="L34">    public String getTitle() { return title; }</span>
-<span class="fc" id="L35">    public String getDescription() { return description; }</span>
+<span class="nc" id="L34">    public String getTitle() { return title; }</span>
+<span class="nc" id="L35">    public String getDescription() { return description; }</span>
     /*@ ensures \result == start; pure @*/
-<span class="fc" id="L37">    public LocalDateTime getStart() { return start; }</span>
+<span class="nc" id="L37">    public LocalDateTime getStart() { return start; }</span>
     /*@ ensures \result == end; pure @*/
-<span class="fc" id="L39">    public LocalDateTime getEnd() { return end; }</span>
-<span class="fc" id="L40">    public String getGroup() { return group; }</span>
+<span class="nc" id="L39">    public LocalDateTime getEnd() { return end; }</span>
+<span class="nc" id="L40">    public String getGroup() { return group; }</span>
 
     // Setters
 <span class="nc" id="L43">    public void setTitle(String title) { this.title = title; }</span>

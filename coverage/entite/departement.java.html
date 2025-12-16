@@ -16,9 +16,9 @@ public class departement {
       @ ensures nbr_etage == 0;
       @*/
     // Constructeurs
-<span class="fc" id="L19">    public departement() {</span>
-<span class="fc" id="L20">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
-<span class="fc" id="L21">    }</span>
+<span class="nc" id="L19">    public departement() {</span>
+<span class="nc" id="L20">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="nc" id="L21">    }</span>
 
     /*@ 
       @ ensures this.id == 0;
@@ -58,13 +58,13 @@ public class departement {
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
 <span class="nc" id="L59">    public void setId(int id) { this.id = id; }</span>
     /*@ pure @*/
-<span class="fc" id="L61">    public String getNom() { return nom; }</span>
+<span class="nc" id="L61">    public String getNom() { return nom; }</span>
     /*@ assignable this.nom; @*/
-<span class="fc" id="L63">    public void setNom(String nom) { this.nom = nom; }</span>
+<span class="nc" id="L63">    public void setNom(String nom) { this.nom = nom; }</span>
     /*@ pure @*/
-<span class="fc" id="L65">    public String getAdresse() { return adresse; }</span>
+<span class="nc" id="L65">    public String getAdresse() { return adresse; }</span>
     /*@ assignable this.adresse; @*/
-<span class="fc" id="L67">    public void setAdresse(String adresse) { this.adresse = adresse; }</span>
+<span class="nc" id="L67">    public void setAdresse(String adresse) { this.adresse = adresse; }</span>
     /*@ pure @*/
 <span class="nc" id="L69">    public String getImage() { return image; }</span>
     /*@ assignable this.image; @*/

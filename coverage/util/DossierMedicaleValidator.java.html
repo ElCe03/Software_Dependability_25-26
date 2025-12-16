@@ -20,10 +20,10 @@ import java.util.List;
           @ ensures isValid == true;
           @ ensures errors != null &amp;&amp; errors.isEmpty();
           @*/
-<span class="fc" id="L23">        public ValidationResult() {</span>
-<span class="fc" id="L24">            this.isValid = true;</span>
-<span class="fc" id="L25">            this.errors = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L26">        }</span>
+<span class="nc" id="L23">        public ValidationResult() {</span>
+<span class="nc" id="L24">            this.isValid = true;</span>
+<span class="nc" id="L25">            this.errors = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L26">        }</span>
         
         /*@ 
           @ requires error != null;
@@ -31,23 +31,23 @@ import java.util.List;
           @ ensures errors.contains(error);
           @*/
         public void addError(String error) {
-<span class="fc" id="L34">            this.isValid = false;</span>
-<span class="fc" id="L35">            this.errors.add(error);</span>
-<span class="fc" id="L36">        }</span>
+<span class="nc" id="L34">            this.isValid = false;</span>
+<span class="nc" id="L35">            this.errors.add(error);</span>
+<span class="nc" id="L36">        }</span>
         
         /*@ pure @*/
         public boolean isValid() {
-<span class="fc" id="L40">            return isValid;</span>
+<span class="nc" id="L40">            return isValid;</span>
         }
         
         /*@ pure @*/
         public List&lt;String&gt; getErrors() {
-<span class="fc" id="L45">            return errors;</span>
+<span class="nc" id="L45">            return errors;</span>
         }
         
         /*@ pure @*/
         public String getErrorMessage() {
-<span class="fc" id="L50">            return String.join(&quot;\n&quot;, errors);</span>
+<span class="nc" id="L50">            return String.join(&quot;\n&quot;, errors);</span>
         }
     }
 
@@ -67,107 +67,107 @@ import java.util.List;
       @ );
       @*/
     public static ValidationResult validate(DossierMedicale dossier) {
-<span class="fc" id="L70">        ValidationResult result = new ValidationResult();</span>
+<span class="nc" id="L70">        ValidationResult result = new ValidationResult();</span>
         
         // Vérifier le patient
-<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (dossier.getPatient() == null) {</span>
-<span class="fc" id="L74">            result.addError(&quot;Le patient est requis&quot;);</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (dossier.getPatient() == null) {</span>
+<span class="nc" id="L74">            result.addError(&quot;Le patient est requis&quot;);</span>
         } else {
-<span class="fc" id="L76">            User patient = dossier.getPatient();</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">            if (patient.getId() &lt;= 0) {</span>
-<span class="fc" id="L78">                result.addError(&quot;ID du patient invalide&quot;);</span>
+<span class="nc" id="L76">            User patient = dossier.getPatient();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            if (patient.getId() &lt;= 0) {</span>
+<span class="nc" id="L78">                result.addError(&quot;ID du patient invalide&quot;);</span>
             }
-<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (!patient.isPatient()) {</span>
-<span class="fc" id="L81">                result.addError(&quot;L'utilisateur sélectionné n'est pas un patient&quot;);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (!patient.isPatient()) {</span>
+<span class="nc" id="L81">                result.addError(&quot;L'utilisateur sélectionné n'est pas un patient&quot;);</span>
             }
         }
         
         // Vérifier le médecin
-<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (dossier.getMedecin() == null) {</span>
-<span class="fc" id="L87">            result.addError(&quot;Le médecin est requis&quot;);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (dossier.getMedecin() == null) {</span>
+<span class="nc" id="L87">            result.addError(&quot;Le médecin est requis&quot;);</span>
         } else {
-<span class="fc" id="L89">            User medecin = dossier.getMedecin();</span>
-<span class="fc bfc" id="L90" title="All 2 branches covered.">            if (medecin.getId() &lt;= 0) {</span>
-<span class="fc" id="L91">                result.addError(&quot;ID du médecin invalide&quot;);</span>
+<span class="nc" id="L89">            User medecin = dossier.getMedecin();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (medecin.getId() &lt;= 0) {</span>
+<span class="nc" id="L91">                result.addError(&quot;ID du médecin invalide&quot;);</span>
             }
-<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (!medecin.isMedecin()) {</span>
-<span class="fc" id="L94">                result.addError(&quot;L'utilisateur sélectionné n'est pas un médecin&quot;);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if (!medecin.isMedecin()) {</span>
+<span class="nc" id="L94">                result.addError(&quot;L'utilisateur sélectionné n'est pas un médecin&quot;);</span>
             }
         }
         
         // Vérifier la date de création
-<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (dossier.getDateDeCreation() == null) {</span>
-<span class="fc" id="L100">            result.addError(&quot;La date de création est requise&quot;);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (dossier.getDateDeCreation() == null) {</span>
+<span class="nc" id="L100">            result.addError(&quot;La date de création est requise&quot;);</span>
         } else {
-<span class="fc" id="L102">            LocalDateTime dateCreation = dossier.getDateDeCreation();</span>
-<span class="fc bfc" id="L103" title="All 2 branches covered.">            if (dateCreation.isAfter(LocalDateTime.now())) {</span>
-<span class="fc" id="L104">                result.addError(&quot;La date de création ne peut pas être dans le futur&quot;);</span>
+<span class="nc" id="L102">            LocalDateTime dateCreation = dossier.getDateDeCreation();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            if (dateCreation.isAfter(LocalDateTime.now())) {</span>
+<span class="nc" id="L104">                result.addError(&quot;La date de création ne peut pas être dans le futur&quot;);</span>
             }
         }
         
         // Vérifier l'historique des maladies
-<span class="fc" id="L109">        String historique = dossier.getHistoriqueDesMaladies();</span>
-<span class="pc bpc" id="L110" title="1 of 4 branches missed.">        if (historique == null || historique.trim().isEmpty()) {</span>
-<span class="fc" id="L111">            result.addError(&quot;L'historique des maladies est requis&quot;);</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">        } else if (historique.length() &gt; 1000) {</span>
-<span class="fc" id="L113">            result.addError(&quot;L'historique des maladies ne peut pas dépasser 1000 caractères&quot;);</span>
+<span class="nc" id="L109">        String historique = dossier.getHistoriqueDesMaladies();</span>
+<span class="nc bnc" id="L110" title="All 4 branches missed.">        if (historique == null || historique.trim().isEmpty()) {</span>
+<span class="nc" id="L111">            result.addError(&quot;L'historique des maladies est requis&quot;);</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        } else if (historique.length() &gt; 1000) {</span>
+<span class="nc" id="L113">            result.addError(&quot;L'historique des maladies ne peut pas dépasser 1000 caractères&quot;);</span>
         }
         
         // Vérifier les opérations passées
-<span class="fc" id="L117">        String operations = dossier.getOperationsPassees();</span>
-<span class="pc bpc" id="L118" title="1 of 4 branches missed.">        if (operations == null || operations.trim().isEmpty()) {</span>
-<span class="fc" id="L119">            result.addError(&quot;Les opérations passées sont requises&quot;);</span>
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        } else if (operations.length() &gt; 1000) {</span>
+<span class="nc" id="L117">        String operations = dossier.getOperationsPassees();</span>
+<span class="nc bnc" id="L118" title="All 4 branches missed.">        if (operations == null || operations.trim().isEmpty()) {</span>
+<span class="nc" id="L119">            result.addError(&quot;Les opérations passées sont requises&quot;);</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        } else if (operations.length() &gt; 1000) {</span>
 <span class="nc" id="L121">            result.addError(&quot;Les opérations passées ne peuvent pas dépasser 1000 caractères&quot;);</span>
         }
         
         // Vérifier les consultations passées
-<span class="fc" id="L125">        String consultations = dossier.getConsultationsPassees();</span>
-<span class="pc bpc" id="L126" title="1 of 4 branches missed.">        if (consultations == null || consultations.trim().isEmpty()) {</span>
-<span class="fc" id="L127">            result.addError(&quot;Les consultations passées sont requises&quot;);</span>
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        } else if (consultations.length() &gt; 1000) {</span>
+<span class="nc" id="L125">        String consultations = dossier.getConsultationsPassees();</span>
+<span class="nc bnc" id="L126" title="All 4 branches missed.">        if (consultations == null || consultations.trim().isEmpty()) {</span>
+<span class="nc" id="L127">            result.addError(&quot;Les consultations passées sont requises&quot;);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        } else if (consultations.length() &gt; 1000) {</span>
 <span class="nc" id="L129">            result.addError(&quot;Les consultations passées ne peuvent pas dépasser 1000 caractères&quot;);</span>
         }
         
         // Vérifier le statut du dossier
-<span class="fc" id="L133">        String statut = dossier.getStatutDossier();</span>
-<span class="pc bpc" id="L134" title="2 of 4 branches missed.">        if (statut == null || statut.trim().isEmpty()) {</span>
+<span class="nc" id="L133">        String statut = dossier.getStatutDossier();</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">        if (statut == null || statut.trim().isEmpty()) {</span>
 <span class="nc" id="L135">            result.addError(&quot;Le statut du dossier est requis&quot;);</span>
-<span class="fc bfc" id="L136" title="All 2 branches covered.">        } else if (!isValidStatut(statut)) {</span>
-<span class="fc" id="L137">            result.addError(&quot;Le statut du dossier est invalide&quot;);</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        } else if (!isValidStatut(statut)) {</span>
+<span class="nc" id="L137">            result.addError(&quot;Le statut du dossier est invalide&quot;);</span>
         }
         
         // Vérifier les notes
-<span class="fc" id="L141">        String notes = dossier.getNotes();</span>
-<span class="fc bfc" id="L142" title="All 2 branches covered.">        if (notes != null) {</span>
-<span class="fc" id="L143">            notes = notes.trim();</span>
-<span class="fc bfc" id="L144" title="All 2 branches covered.">            if (notes.length() &gt; 500) {</span>
-<span class="fc" id="L145">                result.addError(&quot;Les notes ne peuvent pas dépasser 500 caractères&quot;);</span>
+<span class="nc" id="L141">        String notes = dossier.getNotes();</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (notes != null) {</span>
+<span class="nc" id="L143">            notes = notes.trim();</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (notes.length() &gt; 500) {</span>
+<span class="nc" id="L145">                result.addError(&quot;Les notes ne peuvent pas dépasser 500 caractères&quot;);</span>
             }
             
             // --- MODIFICATION SÉCURITÉ XSS ---
             // Normalisation en minuscules et suppression de la dépendance au chevron fermant '&gt;'
             // Cela détecte &lt;script&gt;, &lt;SCRIPT&gt;, &lt;script src=...&gt;, etc.
-<span class="fc" id="L151">            String lowerNotes = notes.toLowerCase();</span>
-<span class="fc bfc" id="L152" title="All 4 branches covered.">            if (lowerNotes.contains(&quot;&lt;script&quot;) || lowerNotes.contains(&quot;javascript:&quot;)) {</span>
-<span class="fc" id="L153">                result.addError(&quot;Les notes contiennent du code malveillant&quot;);</span>
+<span class="nc" id="L151">            String lowerNotes = notes.toLowerCase();</span>
+<span class="nc bnc" id="L152" title="All 4 branches missed.">            if (lowerNotes.contains(&quot;&lt;script&quot;) || lowerNotes.contains(&quot;javascript:&quot;)) {</span>
+<span class="nc" id="L153">                result.addError(&quot;Les notes contiennent du code malveillant&quot;);</span>
             }
             
             // Vérifier les caractères spéciaux (Complément à la vérification XSS)
-<span class="fc bfc" id="L157" title="All 2 branches covered.">            if (!notes.matches(&quot;^[\\p{L}\\p{N}\\p{P}\\p{Z}\\s]*$&quot;)) {</span>
-<span class="fc" id="L158">                result.addError(&quot;Les notes contiennent des caractères non autorisés&quot;);</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">            if (!notes.matches(&quot;^[\\p{L}\\p{N}\\p{P}\\p{Z}\\s]*$&quot;)) {</span>
+<span class="nc" id="L158">                result.addError(&quot;Les notes contiennent des caractères non autorisés&quot;);</span>
             }
         }
         
         // Vérifier l'image
-<span class="fc" id="L163">        String image = dossier.getImage();</span>
-<span class="fc bfc" id="L164" title="All 4 branches covered.">        if (image != null &amp;&amp; !image.isEmpty()) {</span>
-<span class="fc bfc" id="L165" title="All 2 branches covered.">            if (!isValidImageFormat(image)) {</span>
-<span class="fc" id="L166">                result.addError(&quot;Le format de l'image n'est pas valide (formats acceptés: jpg, jpeg, png)&quot;);</span>
+<span class="nc" id="L163">        String image = dossier.getImage();</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        if (image != null &amp;&amp; !image.isEmpty()) {</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            if (!isValidImageFormat(image)) {</span>
+<span class="nc" id="L166">                result.addError(&quot;Le format de l'image n'est pas valide (formats acceptés: jpg, jpeg, png)&quot;);</span>
             }
         }
         
-<span class="fc" id="L170">        return result;</span>
+<span class="nc" id="L170">        return result;</span>
     }
     
     /*@ 
@@ -176,9 +176,9 @@ import java.util.List;
       @ pure
       @*/
     private static boolean isValidStatut(String statut) {
-<span class="fc bfc" id="L179" title="All 2 branches covered.">        return statut.equals(&quot;Actif&quot;) || </span>
-<span class="fc bfc" id="L180" title="All 2 branches covered.">               statut.equals(&quot;Archivé&quot;) || </span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">               statut.equals(&quot;En attente&quot;);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        return statut.equals(&quot;Actif&quot;) || </span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">               statut.equals(&quot;Archivé&quot;) || </span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">               statut.equals(&quot;En attente&quot;);</span>
     }
     
     /*@ 
@@ -192,10 +192,10 @@ import java.util.List;
       @ pure
       @*/
     private static boolean isValidImageFormat(String filename) {
-<span class="fc" id="L195">        String lowerFilename = filename.toLowerCase();</span>
-<span class="fc bfc" id="L196" title="All 2 branches covered.">        return lowerFilename.endsWith(&quot;.jpg&quot;) || </span>
-<span class="fc bfc" id="L197" title="All 2 branches covered.">               lowerFilename.endsWith(&quot;.jpeg&quot;) || </span>
-<span class="fc bfc" id="L198" title="All 2 branches covered.">               lowerFilename.endsWith(&quot;.png&quot;);</span>
+<span class="nc" id="L195">        String lowerFilename = filename.toLowerCase();</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        return lowerFilename.endsWith(&quot;.jpg&quot;) || </span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">               lowerFilename.endsWith(&quot;.jpeg&quot;) || </span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">               lowerFilename.endsWith(&quot;.png&quot;);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

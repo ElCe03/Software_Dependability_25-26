@@ -60,21 +60,21 @@ import java.util.Map;
      */
     public static byte[] generateQRCodeBytes(String text, int width, int height) throws WriterException, IOException {
 
-<span class="fc" id="L63">        Map&lt;EncodeHintType, Object&gt; hints = new HashMap&lt;EncodeHintType, Object&gt;();</span>
-<span class="fc" id="L64">        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);</span>
-<span class="fc" id="L65">        hints.put(EncodeHintType.MARGIN, 2);</span>
+<span class="nc" id="L63">        Map&lt;EncodeHintType, Object&gt; hints = new HashMap&lt;EncodeHintType, Object&gt;();</span>
+<span class="nc" id="L64">        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);</span>
+<span class="nc" id="L65">        hints.put(EncodeHintType.MARGIN, 2);</span>
         
 
-<span class="fc" id="L68">        QRCodeWriter qrCodeWriter = new QRCodeWriter();</span>
-<span class="fc" id="L69">        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height, hints);</span>
+<span class="nc" id="L68">        QRCodeWriter qrCodeWriter = new QRCodeWriter();</span>
+<span class="nc" id="L69">        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height, hints);</span>
         
 
-<span class="fc" id="L72">        BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);</span>
+<span class="nc" id="L72">        BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);</span>
         
 
-<span class="fc" id="L75">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
-<span class="fc" id="L76">        ImageIO.write(bufferedImage, &quot;png&quot;, baos);</span>
-<span class="fc" id="L77">        return baos.toByteArray();</span>
+<span class="nc" id="L75">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L76">        ImageIO.write(bufferedImage, &quot;png&quot;, baos);</span>
+<span class="nc" id="L77">        return baos.toByteArray();</span>
     }
 } 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -11,115 +11,115 @@ public class EntretienService {
     
     private Connection connection;
 
-<span class="fc" id="L14">    public EntretienService() {</span>
-<span class="fc" id="L15">        }</span>
+<span class="nc" id="L14">    public EntretienService() {</span>
+<span class="nc" id="L15">        }</span>
 
     public void setConnection(Connection connection) {
-<span class="fc" id="L18">        this.connection = connection;</span>
-<span class="fc" id="L19">    }</span>
+<span class="nc" id="L18">        this.connection = connection;</span>
+<span class="nc" id="L19">    }</span>
 
     private Connection getConnection() {
-<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        if (this.connection == null) {</span>
+<span class="nc bnc" id="L22" title="All 2 branches missed.">        if (this.connection == null) {</span>
 <span class="nc" id="L23">            this.connection = DataSource.getInstance().getConnection();</span>
         }
-<span class="fc" id="L25">        return this.connection;</span>
+<span class="nc" id="L25">        return this.connection;</span>
     }
 
     // Ajouter un entretien
     public void ajouterEntretien(Entretien e) {
-<span class="fc" id="L30">        String sql = &quot;INSERT INTO entretien (equipement_id, date, description, nom_equipement, created_at) VALUES (?, ?, ?, ?, ?)&quot;;</span>
-<span class="fc" id="L31">        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {</span>
-<span class="fc" id="L32">            pst.setInt(1, e.getEquipementId());</span>
-<span class="fc" id="L33">            pst.setDate(2, Date.valueOf(e.getDate()));</span>
-<span class="fc" id="L34">            pst.setString(3, e.getDescription());</span>
-<span class="fc" id="L35">            pst.setString(4, e.getNomEquipement());</span>
-<span class="fc" id="L36">            pst.setTimestamp(5, Timestamp.valueOf(e.getCreatedAt()));</span>
-<span class="fc" id="L37">            pst.executeUpdate();</span>
-<span class="fc" id="L38">            System.out.println(&quot;✅ Entretien ajouté avec succès !&quot;);</span>
+<span class="nc" id="L30">        String sql = &quot;INSERT INTO entretien (equipement_id, date, description, nom_equipement, created_at) VALUES (?, ?, ?, ?, ?)&quot;;</span>
+<span class="nc" id="L31">        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L32">            pst.setInt(1, e.getEquipementId());</span>
+<span class="nc" id="L33">            pst.setDate(2, Date.valueOf(e.getDate()));</span>
+<span class="nc" id="L34">            pst.setString(3, e.getDescription());</span>
+<span class="nc" id="L35">            pst.setString(4, e.getNomEquipement());</span>
+<span class="nc" id="L36">            pst.setTimestamp(5, Timestamp.valueOf(e.getCreatedAt()));</span>
+<span class="nc" id="L37">            pst.executeUpdate();</span>
+<span class="nc" id="L38">            System.out.println(&quot;✅ Entretien ajouté avec succès !&quot;);</span>
 <span class="nc" id="L39">        } catch (SQLException ex) {</span>
 <span class="nc" id="L40">            System.err.println(&quot;❌ Erreur lors de l'ajout de l'entretien : &quot; + ex.getMessage());</span>
-<span class="fc" id="L41">        }</span>
-<span class="fc" id="L42">    }</span>
+<span class="nc" id="L41">        }</span>
+<span class="nc" id="L42">    }</span>
 
     // Récupérer tous les entretiens
     public List&lt;Entretien&gt; getAllEntretiens() {
-<span class="fc" id="L46">        List&lt;Entretien&gt; entretiens = new ArrayList&lt;Entretien&gt;();</span>
-<span class="fc" id="L47">        String sql = &quot;SELECT * FROM entretien&quot;;</span>
-<span class="fc" id="L48">        try (Statement stmt = getConnection().createStatement();</span>
-<span class="fc" id="L49">             ResultSet rs = stmt.executeQuery(sql)) {</span>
-<span class="fc bfc" id="L50" title="All 2 branches covered.">            while (rs.next()) {</span>
-<span class="fc" id="L51">                Entretien e = new Entretien(</span>
-<span class="fc" id="L52">                        rs.getInt(&quot;id&quot;),</span>
-<span class="fc" id="L53">                        rs.getInt(&quot;equipement_id&quot;),</span>
-<span class="fc" id="L54">                        rs.getDate(&quot;date&quot;).toLocalDate(),</span>
-<span class="fc" id="L55">                        rs.getString(&quot;description&quot;),</span>
-<span class="fc" id="L56">                        rs.getString(&quot;nom_equipement&quot;),</span>
-<span class="fc" id="L57">                        rs.getTimestamp(&quot;created_at&quot;).toLocalDateTime()</span>
+<span class="nc" id="L46">        List&lt;Entretien&gt; entretiens = new ArrayList&lt;Entretien&gt;();</span>
+<span class="nc" id="L47">        String sql = &quot;SELECT * FROM entretien&quot;;</span>
+<span class="nc" id="L48">        try (Statement stmt = getConnection().createStatement();</span>
+<span class="nc" id="L49">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L51">                Entretien e = new Entretien(</span>
+<span class="nc" id="L52">                        rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L53">                        rs.getInt(&quot;equipement_id&quot;),</span>
+<span class="nc" id="L54">                        rs.getDate(&quot;date&quot;).toLocalDate(),</span>
+<span class="nc" id="L55">                        rs.getString(&quot;description&quot;),</span>
+<span class="nc" id="L56">                        rs.getString(&quot;nom_equipement&quot;),</span>
+<span class="nc" id="L57">                        rs.getTimestamp(&quot;created_at&quot;).toLocalDateTime()</span>
                 );
-<span class="fc" id="L59">                entretiens.add(e);</span>
-<span class="fc" id="L60">            }</span>
+<span class="nc" id="L59">                entretiens.add(e);</span>
+<span class="nc" id="L60">            }</span>
 <span class="nc" id="L61">        } catch (SQLException ex) {</span>
 <span class="nc" id="L62">            System.err.println(&quot;❌ Erreur lors de la récupération des entretiens : &quot; + ex.getMessage());</span>
-<span class="fc" id="L63">        }</span>
-<span class="fc" id="L64">        return entretiens;</span>
+<span class="nc" id="L63">        }</span>
+<span class="nc" id="L64">        return entretiens;</span>
     }
 
     // Mise à jour d’un entretien
     public void updateEntretien(Entretien entretien) {
-<span class="fc" id="L69">        String query = &quot;UPDATE entretien SET equipement_id=?, date=?, description=?, nom_equipement=?, created_at=? WHERE id=?&quot;;</span>
-<span class="fc" id="L70">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
-<span class="fc" id="L71">            ps.setInt(1, entretien.getEquipementId());</span>
-<span class="fc" id="L72">            ps.setDate(2, Date.valueOf(entretien.getDate()));</span>
-<span class="fc" id="L73">            ps.setString(3, entretien.getDescription());</span>
-<span class="fc" id="L74">            ps.setString(4, entretien.getNomEquipement());</span>
-<span class="fc" id="L75">            ps.setTimestamp(5, Timestamp.valueOf(entretien.getCreatedAt()));</span>
-<span class="fc" id="L76">            ps.setInt(6, entretien.getId());</span>
+<span class="nc" id="L69">        String query = &quot;UPDATE entretien SET equipement_id=?, date=?, description=?, nom_equipement=?, created_at=? WHERE id=?&quot;;</span>
+<span class="nc" id="L70">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
+<span class="nc" id="L71">            ps.setInt(1, entretien.getEquipementId());</span>
+<span class="nc" id="L72">            ps.setDate(2, Date.valueOf(entretien.getDate()));</span>
+<span class="nc" id="L73">            ps.setString(3, entretien.getDescription());</span>
+<span class="nc" id="L74">            ps.setString(4, entretien.getNomEquipement());</span>
+<span class="nc" id="L75">            ps.setTimestamp(5, Timestamp.valueOf(entretien.getCreatedAt()));</span>
+<span class="nc" id="L76">            ps.setInt(6, entretien.getId());</span>
 
-<span class="fc" id="L78">            int rows = ps.executeUpdate();</span>
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">            if (rows == 0) {</span>
+<span class="nc" id="L78">            int rows = ps.executeUpdate();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">            if (rows == 0) {</span>
 <span class="nc" id="L80">                System.err.println(&quot;❌ Aucune ligne affectée - échec de la mise à jour&quot;);</span>
             } else {
-<span class="fc" id="L82">                System.out.println(&quot;✅ L'entretien a été mis à jour avec succès !&quot;);</span>
+<span class="nc" id="L82">                System.out.println(&quot;✅ L'entretien a été mis à jour avec succès !&quot;);</span>
             }
 <span class="nc" id="L84">        } catch (SQLException e) {</span>
 <span class="nc" id="L85">            System.err.println(&quot;❌ Erreur lors de la mise à jour de l'entretien : &quot; + e.getMessage());</span>
-<span class="fc" id="L86">        }</span>
-<span class="fc" id="L87">    }</span>
+<span class="nc" id="L86">        }</span>
+<span class="nc" id="L87">    }</span>
 
     // Supprimer un entretien
     public void deleteEntretien(int id) {
-<span class="fc" id="L91">        String sql = &quot;DELETE FROM entretien WHERE id=?&quot;;</span>
-<span class="fc" id="L92">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
-<span class="fc" id="L93">            ps.setInt(1, id);</span>
-<span class="fc" id="L94">            int rows = ps.executeUpdate();</span>
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">            if (rows == 0) {</span>
+<span class="nc" id="L91">        String sql = &quot;DELETE FROM entretien WHERE id=?&quot;;</span>
+<span class="nc" id="L92">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L93">            ps.setInt(1, id);</span>
+<span class="nc" id="L94">            int rows = ps.executeUpdate();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            if (rows == 0) {</span>
 <span class="nc" id="L96">                System.err.println(&quot;❌ Aucune ligne supprimée - aucun entretien trouvé avec l'ID &quot; + id);</span>
             } else {
-<span class="fc" id="L98">                System.out.println(&quot;✅ Entretien supprimé avec succès !&quot;);</span>
+<span class="nc" id="L98">                System.out.println(&quot;✅ Entretien supprimé avec succès !&quot;);</span>
             }
 <span class="nc" id="L100">        } catch (SQLException ex) {</span>
 <span class="nc" id="L101">            System.err.println(&quot;❌ Erreur lors de la suppression de l'entretien : &quot; + ex.getMessage());</span>
-<span class="fc" id="L102">        }</span>
-<span class="fc" id="L103">    }</span>
+<span class="nc" id="L102">        }</span>
+<span class="nc" id="L103">    }</span>
 
     // 🔍 Récupérer un entretien par son ID
     public Entretien getEntretienById(int id) {
-<span class="fc" id="L107">        String sql = &quot;SELECT * FROM entretien WHERE id = ?&quot;;</span>
-<span class="fc" id="L108">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
-<span class="fc" id="L109">            ps.setInt(1, id);</span>
-<span class="fc" id="L110">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">                if (rs.next()) {</span>
-<span class="fc" id="L112">                    return new Entretien(</span>
-<span class="fc" id="L113">                            rs.getInt(&quot;id&quot;),</span>
-<span class="fc" id="L114">                            rs.getInt(&quot;equipement_id&quot;),</span>
-<span class="fc" id="L115">                            rs.getDate(&quot;date&quot;).toLocalDate(),</span>
-<span class="fc" id="L116">                            rs.getString(&quot;description&quot;),</span>
-<span class="fc" id="L117">                            rs.getString(&quot;nom_equipement&quot;),</span>
-<span class="fc" id="L118">                            rs.getTimestamp(&quot;created_at&quot;).toLocalDateTime()</span>
+<span class="nc" id="L107">        String sql = &quot;SELECT * FROM entretien WHERE id = ?&quot;;</span>
+<span class="nc" id="L108">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L109">            ps.setInt(1, id);</span>
+<span class="nc" id="L110">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L112">                    return new Entretien(</span>
+<span class="nc" id="L113">                            rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L114">                            rs.getInt(&quot;equipement_id&quot;),</span>
+<span class="nc" id="L115">                            rs.getDate(&quot;date&quot;).toLocalDate(),</span>
+<span class="nc" id="L116">                            rs.getString(&quot;description&quot;),</span>
+<span class="nc" id="L117">                            rs.getString(&quot;nom_equipement&quot;),</span>
+<span class="nc" id="L118">                            rs.getTimestamp(&quot;created_at&quot;).toLocalDateTime()</span>
                     );
                 }
-<span class="pc bpc" id="L121" title="1 of 2 branches missed.">            }</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        } catch (SQLException ex) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        } catch (SQLException ex) {</span>
 <span class="nc" id="L123">            System.err.println(&quot;❌ Erreur lors de la récupération de l'entretien par ID : &quot; + ex.getMessage());</span>
 <span class="nc" id="L124">        }</span>
 <span class="nc" id="L125">        return null;</span>

@@ -27,9 +27,9 @@ public class Commande {
       @ ensures quantite == 0;
       @ ensures medicamentsCommandes != null &amp;&amp; medicamentsCommandes.isEmpty();
       @*/
-<span class="fc" id="L30">    public Commande() {</span>
-<span class="fc" id="L31">        this.medicamentsCommandes = new ArrayList&lt;MedicamentCommande&gt;();</span>
-<span class="fc" id="L32">    }</span>
+<span class="nc" id="L30">    public Commande() {</span>
+<span class="nc" id="L31">        this.medicamentsCommandes = new ArrayList&lt;MedicamentCommande&gt;();</span>
+<span class="nc" id="L32">    }</span>
 
     /*@ 
       @ requires id &gt;= 0;
@@ -42,46 +42,46 @@ public class Commande {
       @ ensures this.medicamentsCommandes != null &amp;&amp; this.medicamentsCommandes.isEmpty();
       @*/
     // Constructeur
-<span class="fc" id="L45">    public Commande(int id, LocalDate date_commande, double total_prix, int quantite) {</span>
-<span class="fc" id="L46">        this.id = id;</span>
-<span class="fc" id="L47">        this.date_commande = date_commande;</span>
-<span class="fc" id="L48">        this.total_prix = total_prix;</span>
-<span class="fc" id="L49">        this.quantite = quantite;</span>
-<span class="fc" id="L50">        this.medicamentsCommandes = new ArrayList&lt;MedicamentCommande&gt;();</span>
-<span class="fc" id="L51">    }</span>
+<span class="nc" id="L45">    public Commande(int id, LocalDate date_commande, double total_prix, int quantite) {</span>
+<span class="nc" id="L46">        this.id = id;</span>
+<span class="nc" id="L47">        this.date_commande = date_commande;</span>
+<span class="nc" id="L48">        this.total_prix = total_prix;</span>
+<span class="nc" id="L49">        this.quantite = quantite;</span>
+<span class="nc" id="L50">        this.medicamentsCommandes = new ArrayList&lt;MedicamentCommande&gt;();</span>
+<span class="nc" id="L51">    }</span>
 
     // Getters/Setters
 
     /*@ ensures \result == id; pure @*/
-<span class="fc" id="L56">    public int getId() { return id; }</span>
+<span class="nc" id="L56">    public int getId() { return id; }</span>
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
-<span class="fc" id="L58">    public void setId(int id) { this.id = id; }</span>
+<span class="nc" id="L58">    public void setId(int id) { this.id = id; }</span>
 
     /*@ pure @*/
-<span class="fc" id="L61">    public LocalDate getDate_commande() { return date_commande; }</span>
+<span class="nc" id="L61">    public LocalDate getDate_commande() { return date_commande; }</span>
     /*@ assignable this.date_commande; @*/
-<span class="fc" id="L63">    public void setDate_commande(LocalDate date_commande) { this.date_commande = date_commande; }</span>
+<span class="nc" id="L63">    public void setDate_commande(LocalDate date_commande) { this.date_commande = date_commande; }</span>
 
     /*@ ensures \result == total_prix; pure @*/
-<span class="fc" id="L66">    public double getTotal_prix() { return total_prix; }</span>
+<span class="nc" id="L66">    public double getTotal_prix() { return total_prix; }</span>
     /*@ 
       @ requires total_prix &gt;= 0.0;
       @ assignable this.total_prix;
       @ ensures this.total_prix == total_prix;
       @*/
-<span class="fc" id="L72">    public void setTotal_prix(double total_prix) { this.total_prix = total_prix; }</span>
+<span class="nc" id="L72">    public void setTotal_prix(double total_prix) { this.total_prix = total_prix; }</span>
 
     /*@ ensures \result == quantite; pure @*/
-<span class="fc" id="L75">    public int getQuantite() { return quantite; } // New getter</span>
+<span class="nc" id="L75">    public int getQuantite() { return quantite; } // New getter</span>
     /*@ 
       @ requires quantite &gt;= 0;
       @ assignable this.quantite;
       @ ensures this.quantite == quantite;
       @*/
-<span class="fc" id="L81">    public void setQuantite(int quantite) { this.quantite = quantite; }</span>
+<span class="nc" id="L81">    public void setQuantite(int quantite) { this.quantite = quantite; }</span>
 
     /*@ ensures \result == medicamentsCommandes; ensures \result != null; pure @*/
-<span class="fc" id="L84">    public List&lt;MedicamentCommande&gt; getMedicaments() { return medicamentsCommandes; }</span>
+<span class="nc" id="L84">    public List&lt;MedicamentCommande&gt; getMedicaments() { return medicamentsCommandes; }</span>
     /*@ 
       @ requires m != null;
       @ requires quantite &gt; 0;
@@ -89,8 +89,8 @@ public class Commande {
       @ ensures medicamentsCommandes.size() == \old(medicamentsCommandes.size()) + 1;
       @*/
     public void addMedicament(Medicament m, int quantite) {
-<span class="fc" id="L92">        this.medicamentsCommandes.add(new MedicamentCommande(this, m, quantite));</span>
-<span class="fc" id="L93">    }</span>
+<span class="nc" id="L92">        this.medicamentsCommandes.add(new MedicamentCommande(this, m, quantite));</span>
+<span class="nc" id="L93">    }</span>
 
     /*@
       @ ensures \result != null;
@@ -102,11 +102,11 @@ public class Commande {
 <span class="nc" id="L102">                .map(mc -&gt; mc.getMedicament().getNom_medicament())</span>
 <span class="nc" id="L103">                .collect(Collectors.joining(&quot;, &quot;));</span>
     }
-<span class="fc" id="L105">    public String getStripeSessionId() { return stripeSessionId; }</span>
-<span class="fc" id="L106">    public void setStripeSessionId(String stripeSessionId) { this.stripeSessionId = stripeSessionId; }</span>
+<span class="nc" id="L105">    public String getStripeSessionId() { return stripeSessionId; }</span>
+<span class="nc" id="L106">    public void setStripeSessionId(String stripeSessionId) { this.stripeSessionId = stripeSessionId; }</span>
 
-<span class="fc" id="L108">    public String getStatus() { return status; }</span>
-<span class="fc" id="L109">    public void setStatus(String status) { this.status = status; }</span>
+<span class="nc" id="L108">    public String getStatus() { return status; }</span>
+<span class="nc" id="L109">    public void setStatus(String status) { this.status = status; }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

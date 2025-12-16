@@ -14,9 +14,9 @@ import java.util.logging.Logger;
 
 import static java.sql.DriverManager.getConnection;
 
-<span class="fc" id="L17">public class SalleService {</span>
+<span class="nc" id="L17">public class SalleService {</span>
 
-<span class="fc" id="L19">    private static final Logger LOGGER = Logger.getLogger(SalleService.class.getName());</span>
+<span class="nc" id="L19">    private static final Logger LOGGER = Logger.getLogger(SalleService.class.getName());</span>
     
     public void addSalle(salle s) {
 <span class="nc" id="L22">        String query = &quot;INSERT INTO salle (nom, capacite, type_salle, status, etage_id, image, priorite) VALUES (?, ?, ?, ?, ?, ?, ?)&quot;;</span>

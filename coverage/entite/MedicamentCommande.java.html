@@ -24,21 +24,21 @@ public class MedicamentCommande {
       @ ensures this.medicament == medicament;
       @ ensures this.quantite == quantite;
       @*/
-<span class="fc" id="L27">    public MedicamentCommande(Commande commande, Medicament medicament, int quantite) {</span>
-<span class="fc" id="L28">        this.commande = commande;</span>
-<span class="fc" id="L29">        this.medicament = medicament;</span>
-<span class="fc" id="L30">        this.quantite = quantite;</span>
+<span class="nc" id="L27">    public MedicamentCommande(Commande commande, Medicament medicament, int quantite) {</span>
+<span class="nc" id="L28">        this.commande = commande;</span>
+<span class="nc" id="L29">        this.medicament = medicament;</span>
+<span class="nc" id="L30">        this.quantite = quantite;</span>
 
-<span class="fc" id="L32">    }</span>
+<span class="nc" id="L32">    }</span>
 
     // Getters/Setters
 
     /*@ ensures \result == commande; ensures \result != null; pure @*/
 <span class="nc" id="L37">    public Commande getCommande() { return commande; }</span>
     /*@ ensures \result == medicament; ensures \result != null; pure @*/
-<span class="fc" id="L39">    public Medicament getMedicament() { return medicament; }</span>
+<span class="nc" id="L39">    public Medicament getMedicament() { return medicament; }</span>
     /*@ ensures \result == quantite; ensures \result &gt; 0; pure @*/
-<span class="fc" id="L41">    public int getQuantite() { return quantite; }</span>
+<span class="nc" id="L41">    public int getQuantite() { return quantite; }</span>
     /*@ 
       @ requires commande != null;
       @ assignable this.commande;
