@@ -144,11 +144,16 @@ public class DossierMedicaleValidator {
             if (notes.length() > 500) {
                 result.addError("Les notes ne peuvent pas dépasser 500 caractères");
             }
-            // Vérifier le contenu des notes
-            if (notes.contains("<script>") || notes.contains("javascript:")) {
+            
+            // --- MODIFICATION SÉCURITÉ XSS ---
+            // Normalisation en minuscules et suppression de la dépendance au chevron fermant '>'
+            // Cela détecte <script>, <SCRIPT>, <script src=...>, etc.
+            String lowerNotes = notes.toLowerCase();
+            if (lowerNotes.contains("<script") || lowerNotes.contains("javascript:")) {
                 result.addError("Les notes contiennent du code malveillant");
             }
-            // Vérifier les caractères spéciaux
+            
+            // Vérifier les caractères spéciaux (Complément à la vérification XSS)
             if (!notes.matches("^[\\p{L}\\p{N}\\p{P}\\p{Z}\\s]*$")) {
                 result.addError("Les notes contiennent des caractères non autorisés");
             }
@@ -192,4 +197,4 @@ public class DossierMedicaleValidator {
                lowerFilename.endsWith(".jpeg") || 
                lowerFilename.endsWith(".png");
     }
-} 
+}
