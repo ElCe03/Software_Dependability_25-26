@@ -1,4 +1,4 @@
-name: Build, tests and Docker upload
+name: Build, Tests, PiTest and Docker
 
 on:
   workflow_dispatch:
@@ -8,45 +8,68 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Build and Test
-      working-directory: ./integrationjavafx4/pidevjavaFx/roar
-      run: mvn clean verify
+      - name: Build and Test (JaCoCo)
+        working-directory: ./integrationjavafx4/pidevjavaFx/roar
+        run: mvn clean verify
 
-    - name: Upload JaCoCo Report
-      uses: actions/upload-artifact@v4
-      if: always() 
-      with:
-        name: jacoco-coverage-report
-        path: integrationjavafx4/pidevjavaFx/roar/target/site/jacoco/
-        retention-days: 5
+      
+      - name: Run PiTest
+        working-directory: ./integrationjavafx4/pidevjavaFx/roar
+        run: mvn org.pitest:pitest-maven:mutationCoverage
+        continue-on-error: true 
 
-    - name: Upload Jar Artifact
-      uses: actions/upload-artifact@v4
-      if: success() 
-      with:
-        name: clinicare-artifact
-        path: integrationjavafx4/pidevjavaFx/roar/target/CliniCare.jar
+      
+      - name: Prepare Reporting Site
+        working-directory: ./integrationjavafx4/pidevjavaFx/roar
+        run: |
+          mkdir -p site-report/coverage
+          mkdir -p site-report/pitest
+          
+          if [ -d "target/site/jacoco" ]; then
+            cp -r target/site/jacoco/* site-report/coverage/
+          fi
+          
+          if [ -d "target/pit-reports" ]; then
+            cp -r target/pit-reports/* site-report/pitest/
+          fi
+          
+          echo '<html><body><h1>Project Reports</h1><ul><li><a href="coverage/index.html">JaCoCo Coverage Report</a></li><li><a href="pitest/index.html">PiTest Mutation Report</a></li></ul></body></html>' > site-report/index.html
+
+      
+      - name: Deploy Reports to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./integrationjavafx4/pidevjavaFx/roar/site-report
+          keep_files: true
+
+      - name: Upload Jar Artifact
+        uses: actions/upload-artifact@v4
+        if: success() 
+        with:
+          name: clinicare-artifact
+          path: integrationjavafx4/pidevjavaFx/roar/target/CliniCare.jar
 
   docker-push:
     needs: build  
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +81,7 @@ jobs:
           path: integrationjavafx4/pidevjavaFx/roar
 
       - name: Login to Docker Hub
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
