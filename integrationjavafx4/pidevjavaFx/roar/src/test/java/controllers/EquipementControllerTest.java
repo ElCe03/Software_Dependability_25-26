@@ -8,41 +8,31 @@ import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable; 
 
 import java.lang.reflect.Field;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class EquipementControllerTest {
 
     private EquipementController controller;
     private VBox categoryListMock;
 
-    private static boolean isHeadlessCI() {
-        return System.getenv("CI") != null || java.awt.GraphicsEnvironment.isHeadless();
-    }
-
     @BeforeAll
     static void initJavaFX() throws InterruptedException {
-        if (isHeadlessCI()) {
-            return;
-        }
-
         try {
             CountDownLatch latch = new CountDownLatch(1);
             Platform.startup(latch::countDown);
             latch.await();
         } catch (IllegalStateException e) {
-            
         }
     }
 
     @BeforeEach
     void setUp() throws Exception {
-        if (isHeadlessCI()) return;
-
         controller = new EquipementController();
         categoryListMock = new VBox();
 
@@ -53,16 +43,12 @@ class EquipementControllerTest {
 
     @Test
     void testAddCategoryAddsItemToList() {
-        Assumptions.assumeFalse(isHeadlessCI());
-
         controller.addCategory("Test Category");
         assertEquals(1, categoryListMock.getChildren().size());
     }
 
     @Test
     void testAddCategoryContainsCorrectLabelAndButton() {
-        Assumptions.assumeFalse(isHeadlessCI());
-
         controller.addCategory("Radiologie");
 
         HBox item = (HBox) categoryListMock.getChildren().get(0);
