@@ -6,38 +6,38 @@ roar,entite,Sejour,186,0,14,0,60,0,35,0,28,0
 roar,entite,MedicamentCommande,7,18,0,0,3,7,2,3,2,3
 roar,entite,etage,35,14,0,0,13,6,7,3,7,3
 roar,entite,Pharmacien,38,0,0,0,14,0,5,0,5,0
-roar,entite,DossierMedicale,163,0,8,0,57,0,32,0,28,0
+roar,entite,DossierMedicale,92,71,8,0,27,30,13,19,9,19
 roar,entite,Patient,39,24,0,0,11,11,2,7,2,7
 roar,entite,Service,51,0,0,0,20,0,11,0,11,0
 roar,entite,CaptchaGenerator,105,0,4,0,20,0,7,0,5,0
 roar,entite,Medecin,50,0,0,0,18,0,7,0,7,0
 roar,entite,Equipement,27,56,0,0,7,23,2,12,2,12
 roar,entite,departement,57,20,0,0,21,7,10,5,10,5
-roar,entite,User,103,85,20,0,20,36,15,23,5,23
+roar,entite,User,59,129,10,10,17,39,11,27,3,25
 roar,entite,Consultation,36,34,0,0,13,9,7,9,7,9
 roar,entite,Entretien,34,66,0,0,8,27,2,14,2,14
 roar,entite,reservation,15,31,0,0,6,9,1,9,1,9
-roar,entite,Appointment,53,0,0,0,17,0,11,0,11,0
+roar,entite,Appointment,20,33,0,0,5,12,5,6,5,6
 roar,entite,salle,48,59,0,0,19,17,3,17,3,17
 roar,entite,Commande,23,84,4,0,4,25,4,16,2,16
 roar,form,FormulairePharmacien,44,0,0,0,15,0,2,0,2,0
 roar,form,FormulaireMedecin,51,0,0,0,17,0,2,0,2,0
 roar,form,FormulairePatient,72,0,0,0,22,0,2,0,2,0
 roar,form,FormulaireStaff,44,0,0,0,15,0,2,0,2,0
-roar,util,ImageUploadUtil,131,0,16,0,32,0,14,0,6,0
-roar,util,SessionManager,76,0,4,0,29,0,13,0,11,0
-roar,util,LocalDateTimeAdapter,18,0,0,0,4,0,4,0,4,0
+roar,util,ImageUploadUtil,11,120,0,16,4,28,1,13,1,5
+roar,util,SessionManager,3,73,0,4,1,28,1,12,1,10
+roar,util,LocalDateTimeAdapter,0,18,0,0,0,4,0,4,0,4
 roar,util,EmailService.EmailException,5,0,0,0,2,0,1,0,1,0
 roar,util,AlertUtil,97,0,4,0,29,0,7,0,5,0
 roar,util,EmailService,137,0,6,0,34,0,8,0,5,0
 roar,util,EmailService.new Task() {...},177,0,0,0,25,0,2,0,2,0
-roar,util,DossierMedicaleValidator,231,0,68,0,62,0,38,0,4,0
-roar,util,DossierMedicaleValidator.ValidationResult,31,0,0,0,10,0,5,0,5,0
-roar,util,QRCodeGenerator,73,0,0,0,16,0,3,0,3,0
+roar,util,DossierMedicaleValidator,13,221,7,61,4,59,8,30,1,3
+roar,util,DossierMedicaleValidator.ValidationResult,0,31,0,0,0,10,0,5,0,5
+roar,util,QRCodeGenerator,31,42,0,0,7,9,2,1,2,1
 roar,util,DataSource,147,0,16,0,43,0,12,0,4,0
 roar,util,EmailService.1.new Authenticator() {...},12,0,0,0,2,0,2,0,2,0
-roar,util,AppointmentPersistence.new TypeToken() {...},3,0,0,0,1,0,1,0,1,0
-roar,util,AppointmentPersistence,64,0,2,0,21,0,5,0,4,0
+roar,util,AppointmentPersistence.new TypeToken() {...},0,3,0,0,0,1,0,1,0,1
+roar,util,AppointmentPersistence,9,55,0,2,5,16,1,4,1,3
 roar,test,MainFx,92,0,6,0,27,0,7,0,4,0
 roar,test,Launcher,6,0,0,0,3,0,2,0,2,0
 roar,test,Main,182,0,6,0,49,0,5,0,2,0

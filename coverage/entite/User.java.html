@@ -176,15 +176,15 @@ public class User {
       @ pure
       @*/
     public boolean isPatient() {
-<span class="nc bnc" id="L179" title="All 6 branches missed.">        return &quot;patient&quot;.equalsIgnoreCase(type) || (roles != null &amp;&amp; roles.contains(&quot;ROLE_PATIENT&quot;));</span>
+<span class="pc bpc" id="L179" title="2 of 6 branches missed.">        return &quot;patient&quot;.equalsIgnoreCase(type) || (roles != null &amp;&amp; roles.contains(&quot;ROLE_PATIENT&quot;));</span>
     }
     
     /*@ 
       @ pure
       @*/
     public boolean isMedecin() {
-<span class="nc bnc" id="L186" title="All 6 branches missed.">        return &quot;medecin&quot;.equalsIgnoreCase(type) || &quot;medcin&quot;.equalsIgnoreCase(type) || </span>
-<span class="nc bnc" id="L187" title="All 4 branches missed.">               (roles != null &amp;&amp; (roles.contains(&quot;ROLE_MEDECIN&quot;) || roles.contains(&quot;ROLE_MEDCIN&quot;)));</span>
+<span class="pc bpc" id="L186" title="2 of 6 branches missed.">        return &quot;medecin&quot;.equalsIgnoreCase(type) || &quot;medcin&quot;.equalsIgnoreCase(type) || </span>
+<span class="pc bpc" id="L187" title="2 of 4 branches missed.">               (roles != null &amp;&amp; (roles.contains(&quot;ROLE_MEDECIN&quot;) || roles.contains(&quot;ROLE_MEDCIN&quot;)));</span>
     }
     
     @Override
