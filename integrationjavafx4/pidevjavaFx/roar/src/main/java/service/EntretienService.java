@@ -4,22 +4,31 @@ import entite.Entretien;
 import util.DataSource;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EntretienService {
-    private final Connection connection;
+    
+    private Connection connection;
 
     public EntretienService() {
-        this.connection = DataSource.getInstance().getConnection();
+        }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
+
+    private Connection getConnection() {
+        if (this.connection == null) {
+            this.connection = DataSource.getInstance().getConnection();
+        }
+        return this.connection;
     }
 
     // Ajouter un entretien
     public void ajouterEntretien(Entretien e) {
         String sql = "INSERT INTO entretien (equipement_id, date, description, nom_equipement, created_at) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {
             pst.setInt(1, e.getEquipementId());
             pst.setDate(2, Date.valueOf(e.getDate()));
             pst.setString(3, e.getDescription());
@@ -36,7 +45,7 @@ public class EntretienService {
     public List<Entretien> getAllEntretiens() {
         List<Entretien> entretiens = new ArrayList<Entretien>();
         String sql = "SELECT * FROM entretien";
-        try (Statement stmt = connection.createStatement();
+        try (Statement stmt = getConnection().createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 Entretien e = new Entretien(
@@ -58,7 +67,7 @@ public class EntretienService {
     // Mise à jour d’un entretien
     public void updateEntretien(Entretien entretien) {
         String query = "UPDATE entretien SET equipement_id=?, date=?, description=?, nom_equipement=?, created_at=? WHERE id=?";
-        try (PreparedStatement ps = connection.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
             ps.setInt(1, entretien.getEquipementId());
             ps.setDate(2, Date.valueOf(entretien.getDate()));
             ps.setString(3, entretien.getDescription());
@@ -80,7 +89,7 @@ public class EntretienService {
     // Supprimer un entretien
     public void deleteEntretien(int id) {
         String sql = "DELETE FROM entretien WHERE id=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             int rows = ps.executeUpdate();
             if (rows == 0) {
@@ -96,7 +105,7 @@ public class EntretienService {
     // 🔍 Récupérer un entretien par son ID
     public Entretien getEntretienById(int id) {
         String sql = "SELECT * FROM entretien WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -116,4 +125,3 @@ public class EntretienService {
         return null;
     }
 }
-

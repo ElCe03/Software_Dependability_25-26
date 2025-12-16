@@ -11,8 +11,19 @@ import java.util.List;
 
 public class CommandeService implements IService<Commande> {
 
-    /*@ spec_public non_null @*/
-    private Connection cnx = DataSource.getInstance().getConnection();
+    /*@ spec_public @*/
+    private Connection cnx;
+
+    public void setConnection(Connection cnx) {
+        this.cnx = cnx;
+    }
+
+    private Connection getConnection() {
+        if (this.cnx == null) {
+            this.cnx = DataSource.getInstance().getConnection();
+        }
+        return this.cnx;
+    }
 
     /*@ 
       @ also
@@ -26,16 +37,15 @@ public class CommandeService implements IService<Commande> {
         String sql = "INSERT INTO commande (date_commande, total_prix, quantite, stripe_session_id, status) VALUES (?, ?, ?, ?, ?)";
 
         try {
-            cnx.setAutoCommit(false);
+            getConnection().setAutoCommit(false);
 
-            try (PreparedStatement pst = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement pst = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 Date sqlDate = Date.valueOf(commande.getDate_commande());
                 pst.setDate(1, sqlDate);
                 pst.setDouble(2, commande.getTotal_prix());
                 pst.setInt(3, commande.getQuantite());
                 pst.setString(4, commande.getStripeSessionId());
                 
-                // Evita operatore ternario inline per stabilità OpenJML
                 String statusToSave = commande.getStatus();
                 if (statusToSave == null) {
                     statusToSave = "pending";
@@ -51,18 +61,18 @@ public class CommandeService implements IService<Commande> {
                 }
 
                 saveLignesCommande(commande);
-                cnx.commit();
+                getConnection().commit();
             }
         } catch (SQLException e) {
             try {
-                cnx.rollback();
+                if (cnx != null) getConnection().rollback();
             } catch (SQLException ex) {
                 throw new RuntimeException("Erreur lors du rollback", ex);
             }
             throw new RuntimeException("Échec de la création de commande", e);
         } finally {
             try {
-                cnx.setAutoCommit(true);
+                if (cnx != null) getConnection().setAutoCommit(true);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -78,7 +88,7 @@ public class CommandeService implements IService<Commande> {
     private void saveLignesCommande(Commande commande) throws SQLException {
         String sql = "INSERT INTO medicament_commande (commande_id, medicament_id, quantite) VALUES (?, ?, ?)";
 
-        try (PreparedStatement pst = cnx.prepareStatement(sql)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {
             for(MedicamentCommande mc : commande.getMedicaments()) {
                 pst.setInt(1, commande.getId());
                 pst.setInt(2, mc.getMedicament().getId());
@@ -98,8 +108,8 @@ public class CommandeService implements IService<Commande> {
         String deleteMedicamentsSQL = "DELETE FROM medicament_commande WHERE commande_id = ?";
         String deleteCommandeSQL = "DELETE FROM commande WHERE id = ?";
 
-        try (PreparedStatement ps1 = cnx.prepareStatement(deleteMedicamentsSQL);
-             PreparedStatement ps2 = cnx.prepareStatement(deleteCommandeSQL)) {
+        try (PreparedStatement ps1 = getConnection().prepareStatement(deleteMedicamentsSQL);
+             PreparedStatement ps2 = getConnection().prepareStatement(deleteCommandeSQL)) {
             ps1.setInt(1, commande.getId());
             ps1.executeUpdate();
 
@@ -118,7 +128,7 @@ public class CommandeService implements IService<Commande> {
     @Override
     public void update(Commande commande) {
         String sql = "UPDATE commande SET date_commande = ?, total_prix = ?, quantite = ?, status = ?, stripe_session_id = ? WHERE id = ?";
-        try (PreparedStatement pst = cnx.prepareStatement(sql)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {
             Date sqlDate = Date.valueOf(commande.getDate_commande());
             pst.setDate(1, sqlDate);
             pst.setDouble(2, commande.getTotal_prix());
@@ -148,7 +158,7 @@ public class CommandeService implements IService<Commande> {
         List<Commande> commandes = new ArrayList<Commande>();
         String sql = "SELECT * FROM commande";
 
-        try (Statement st = cnx.createStatement();
+        try (Statement st = getConnection().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while(rs.next()) {
@@ -184,7 +194,7 @@ public class CommandeService implements IService<Commande> {
         String sql = "SELECT * FROM commande WHERE id = ?";
         Commande commande = null;
 
-        try (PreparedStatement pst = cnx.prepareStatement(sql)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {
             pst.setInt(1, id);
 
             try (ResultSet rs = pst.executeQuery()) {
@@ -215,7 +225,7 @@ public class CommandeService implements IService<Commande> {
                 + "JOIN medicament m ON cm.medicament_id = m.id "
                 + "WHERE cm.commande_id = ?";
 
-        try (PreparedStatement pst = cnx.prepareStatement(sql)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {
             pst.setInt(1, commandeId);
 
             try (ResultSet rs = pst.executeQuery()) {

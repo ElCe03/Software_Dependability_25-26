@@ -32,11 +32,33 @@ public class AjouterEntretienController {
 
     private Equipement equipement;
 
-    private final EntretienService entretienService = new EntretienService();
-    private final EquipementService equipementService = new EquipementService(); // Pour mettre à jour l'équipement
+    private EntretienService entretienService;
+    private EquipementService equipementService;
 
     // Callback pour notifier l'ajout de l'entretien
     private Runnable onEntretienAjoute;
+
+   public void setEntretienService(EntretienService service) {
+        this.entretienService = service;
+    }
+    
+    public void setEquipementService(EquipementService service) {
+        this.equipementService = service;
+    }
+
+   private EntretienService getEntretienService() {
+        if (this.entretienService == null) {
+            this.entretienService = new EntretienService();
+        }
+        return this.entretienService;
+    }
+
+    private EquipementService getEquipementService() {
+        if (this.equipementService == null) {
+            this.equipementService = new EquipementService();
+        }
+        return this.equipementService;
+    }
 
     public void setEquipement(Equipement equipement) {
         this.equipement = equipement;
@@ -81,9 +103,8 @@ public class AjouterEntretienController {
         entretien.setCreatedAt(LocalDateTime.now());
 
         // Sauvegarde de l'entretien
-        entretienService.ajouterEntretien(entretien);
+        getEntretienService().ajouterEntretien(entretien);
 
-        // ✅ Envoi de l'email
         String emailUtilisateur = "bouhjarmariem012@gmail.com"; // à adapter dynamiquement
         String sujet = "Nouvel entretien créé";
         String message = "Bonjour,\n\nUn nouvel entretien a été enregistré pour l’équipement : " +
@@ -115,13 +136,6 @@ public class AjouterEntretienController {
         }
     }
     
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 
     public Entretien buildEntretienFromFields(Equipement equipement, String description, LocalDate selectedDate) {
         if (equipement == null) {
@@ -142,5 +156,13 @@ public class AjouterEntretienController {
         entretien.setCreatedAt(LocalDateTime.now());
         
         return entretien;
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

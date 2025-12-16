@@ -8,12 +8,24 @@ import java.util.List;
 
 public class ConsultationService {
 
+    private Connection cnx;
+
+    public void setConnection(Connection cnx) {
+        this.cnx = cnx;
+    }
+
+    private Connection getConnection() {
+        if (this.cnx == null) {
+            this.cnx = DataSource.getInstance().getConnection();
+        }
+        return this.cnx;
+    }
+
     // Existing method - Add new consultation
     public void addConsultation(Consultation c) {
         String query = "INSERT INTO consultation (service_id, date, patient_identifier, status, phone_number) " +
                 "VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, c.getServiceId());
             ps.setDate(2, c.getDate());
@@ -41,8 +53,7 @@ public class ConsultationService {
                 "WHERE c.patient_identifier = ? " +
                 "ORDER BY c.date DESC";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
 
             ps.setString(1, patientIdentifier);
             try (ResultSet rs = ps.executeQuery()) {
@@ -60,8 +71,7 @@ public class ConsultationService {
     public void updateConsultation(Consultation c) {
         String query = "UPDATE consultation SET service_id=?, date=?, phone_number=? " +
                 "WHERE id=? AND patient_identifier=?";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
 
             ps.setInt(1, c.getServiceId());
             ps.setDate(2, c.getDate());
@@ -81,8 +91,7 @@ public class ConsultationService {
     // Existing method - Delete consultation
     public void deleteConsultation(int id, String patientIdentifier) {
         String query = "DELETE FROM consultation WHERE id=? AND patient_identifier=?";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
 
             ps.setInt(1, id);
             ps.setString(2, patientIdentifier);
@@ -99,8 +108,7 @@ public class ConsultationService {
     // NEW METHOD - Update only status
     public boolean updateConsultationStatus(int consultationId, String newStatus) {
         String query = "UPDATE consultation SET status = ? WHERE id = ?";
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
 
             ps.setString(1, newStatus);
             ps.setInt(2, consultationId);
@@ -120,8 +128,7 @@ public class ConsultationService {
                 "LEFT JOIN service s ON c.service_id = s.id " +
                 "ORDER BY c.date DESC";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = getConnection().createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
@@ -141,8 +148,7 @@ public class ConsultationService {
                 "WHERE c.patient_identifier LIKE ? OR c.phone_number LIKE ? OR s.name LIKE ? " +
                 "ORDER BY c.date DESC";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
 
             String likeTerm = "%" + searchTerm + "%";
             ps.setString(1, likeTerm);
@@ -172,7 +178,4 @@ public class ConsultationService {
         c.setPhoneNumber(rs.getString("phone_number"));
         return c;
     }
-
-
-
 }

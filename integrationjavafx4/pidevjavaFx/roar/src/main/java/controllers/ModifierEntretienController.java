@@ -21,9 +21,20 @@ public class ModifierEntretienController {
 
     private Entretien entretien;
 
-    private final EntretienService entretienService = new EntretienService();
+    private EntretienService entretienService;
 
     private Runnable onEntretienModifie; // ✅ Callback pour rafraîchir la liste
+
+    private EntretienService getEntretienService() {
+        if (this.entretienService == null) {
+            this.entretienService = new EntretienService();
+        }
+        return this.entretienService;
+    }
+
+    public void setEntretienService(EntretienService entretienService) {
+        this.entretienService = entretienService;
+    }
 
     // Méthode pour initialiser les données de l'entretien à modifier
     public void initData(Entretien entretien) {
@@ -46,23 +57,10 @@ public class ModifierEntretienController {
         LocalDate selectedDate = datePicker.getValue();
 
         // Validation des champs
-        if (nom.isEmpty() || description.isEmpty() || selectedDate == null) {
-            showAlert("Erreur", "Tous les champs doivent être remplis.");
-            return;
-        }
-
-        if (selectedDate.isBefore(LocalDate.now())) {
-            showAlert("Erreur", "La date de l'entretien ne peut pas être dans le passé.");
-            return;
-        }
-
-        // Mise à jour de l'entretien
-        entretien.setNomEquipement(nom);
-        entretien.setDescription(description);
-        entretien.setDate(selectedDate);
-
         try {
-            entretienService.updateEntretien(entretien);
+            buildUpdatedEntretien(this.entretien, nom, description, selectedDate);
+
+            getEntretienService().updateEntretien(this.entretien);
 
             // Rafraîchissement de la liste après mise à jour
             if (onEntretienModifie != null) {
@@ -71,6 +69,9 @@ public class ModifierEntretienController {
 
             showAlert("Succès", "L'entretien a été modifié avec succès.");
             ((Stage) nomEquipementField.getScene().getWindow()).close();
+
+        } catch (IllegalArgumentException e) {
+            showAlert("Erreur", e.getMessage());
         } catch (Exception e) {
             showAlert("Erreur", "Une erreur est survenue lors de la mise à jour : " + e.getMessage());
         }
@@ -85,14 +86,17 @@ public class ModifierEntretienController {
         alert.showAndWait();
     }
 
-    private Entretien buildUpdatedEntretien(
+    public Entretien buildUpdatedEntretien(
             Entretien entretien,
             String nom,
             String description,
             LocalDate selectedDate
     ) {
-        if (entretien == null ||
-                nom == null || nom.trim().isEmpty() ||
+        if (entretien == null) {
+             throw new IllegalArgumentException("Champs manquants");
+        }
+        
+        if (nom == null || nom.trim().isEmpty() ||
                 description == null || description.trim().isEmpty() ||
                 selectedDate == null) {
             throw new IllegalArgumentException("Champs manquants");
@@ -108,5 +112,4 @@ public class ModifierEntretienController {
 
         return entretien;
     }
-
 }

@@ -27,9 +27,20 @@ public class AjouterEquipementController {
     // ✅ Ajouté pour gérer la zone dynamique
     private VBox contentArea;
 
-    private final EquipementService equipementService = new EquipementService();
+    private EquipementService equipementService;
 
     private Runnable onEquipementAjoute;
+
+    private EquipementService getEquipementService() {
+        if (this.equipementService == null) {
+            this.equipementService = new EquipementService();
+        }
+        return this.equipementService;
+    }
+
+    public void setEquipementService(EquipementService equipementService) {
+        this.equipementService = equipementService;
+    }
 
     // ✅ Setter pour contentArea (appelé par le contrôleur principal)
     public void setContentArea(VBox contentArea) {
@@ -47,46 +58,42 @@ public class AjouterEquipementController {
 
     @FXML
     private void handleEnregistrer() {
-        String nom = nomField.getText().trim();
-        String type = typeField.getText().trim();
-        String statut = statutCombo.getValue();
-        String categorie = categoryField.getText().trim();
+        try {
+            Equipement nouvelEquipement = buildEquipementFromFields(
+                    nomField.getText(),
+                    typeField.getText(),
+                    statutCombo.getValue(),
+                    categoryField.getText()
+            );
 
-        if (nom.isEmpty() || type.isEmpty() || statut == null || categorie.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Champs manquants", "Veuillez remplir tous les champs !");
-            return;
-        }
+            
+            getEquipementService().ajouterEquipement(nouvelEquipement);
 
-        Equipement nouvelEquipement = new Equipement();
-        nouvelEquipement.setNom(nom);
-        nouvelEquipement.setType(type);
-        nouvelEquipement.setStatut(statut);
-        nouvelEquipement.setCategory(categorie);
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "L’équipement a été ajouté avec succès !");
 
-        equipementService.ajouterEquipement(nouvelEquipement);
-
-        showAlert(Alert.AlertType.INFORMATION, "Succès", "L’équipement a été ajouté avec succès !");
-
-        if (onEquipementAjoute != null) {
-            onEquipementAjoute.run();
-        }
-
-        // ✅ Nouvelle logique pour revenir à la vue equipement_category.fxml
-        if (contentArea != null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/equipement_category.fxml"));
-                Parent categoryView = loader.load();
-
-                // Transmettre la catégorie à la nouvelle vue :
-                EquipementCategoryController controller = loader.getController();
-                controller.setCategorie(categorie);
-
-                contentArea.getChildren().setAll(categoryView);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (onEquipementAjoute != null) {
+                onEquipementAjoute.run();
             }
-        }
 
+            // ✅ Nouvelle logique pour revenir à la vue equipement_category.fxml
+            if (contentArea != null) {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/equipement_category.fxml"));
+                    Parent categoryView = loader.load();
+
+                    // Transmettre la catégorie à la nouvelle vue :
+                    EquipementCategoryController controller = loader.getController();
+                    controller.setCategorie(categoryField.getText());
+
+                    contentArea.getChildren().setAll(categoryView);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (IllegalArgumentException e) {
+            showAlert(Alert.AlertType.WARNING, "Champs manquants", e.getMessage());
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String message) {
@@ -124,5 +131,4 @@ public class AjouterEquipementController {
 
         return e;
     }
-
 }

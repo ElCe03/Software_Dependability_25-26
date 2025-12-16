@@ -13,10 +13,28 @@ import java.util.logging.Logger;
 public class ReservationService {
 
     private static final Logger LOGGER = Logger.getLogger(ReservationService.class.getName());
+
+    private Connection connection;
+
+    public ReservationService() {
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
+
+    private Connection getConnection() {
+        if (this.connection == null) {
+            this.connection = DataSource.getInstance().getConnection();
+        }
+        return this.connection;
+    }
     
     public void addReservation(Connection conn, reservation reservation) throws SQLException {
+        Connection activeConn = (conn != null) ? conn : getConnection();
+        
         String query = "INSERT INTO reservation (salle_id, date_debut, date_fin) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = activeConn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, reservation.getSalle().getId());
             ps.setTimestamp(2, reservation.getDate_debut());
             ps.setTimestamp(3, reservation.getDate_fin());
@@ -35,8 +53,7 @@ public class ReservationService {
         List<reservation> reservations = new ArrayList<reservation>();
         String query = "SELECT * FROM reservation WHERE salle_id = ?";
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
             ps.setInt(1, salleId);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -112,8 +129,7 @@ public class ReservationService {
 
         LOGGER.info("Exécution de la requête pour obtenir toutes les réservations");
 
-        try (Connection conn = DataSource.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
+        try (PreparedStatement ps = getConnection().prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -143,17 +159,15 @@ public class ReservationService {
 
         return reservations;
     }
-    public void terminerReservation(int reservationId) throws SQLException {
-        try (Connection conn = DataSource.getInstance().getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                terminerReservation(conn, reservationId);
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
-            }
-  }
-}
 
+    public void terminerReservation(int reservationId) throws SQLException {
+        
+        Connection conn = getConnection();
+
+        if(conn.getAutoCommit()) {
+             terminerReservation(conn, reservationId);
+        } else {
+             terminerReservation(conn, reservationId);
+        }
+    }
 }

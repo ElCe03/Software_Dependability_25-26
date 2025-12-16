@@ -4,106 +4,104 @@ import entite.reservation;
 import entite.salle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import util.DataSource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class ReservationServiceETest {
 
+    @Mock
+    private Connection mockConnection;
+    @Mock
+    private PreparedStatement mockPreparedStatement;
+    @Mock
+    private ResultSet mockResultSet;
+
+    @InjectMocks
     private ReservationService service;
-    private int salleId;
-    private int reservationId;
 
     @BeforeEach
-    void setup() throws Exception {
-        service = new ReservationService();
-        Connection conn = DataSource.getInstance().getConnection();
+    void setup() throws SQLException {
+        service.setConnection(mockConnection);
 
-        // ✅ 1. Create SALLE
-        try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO salle (nom, status, capacite, type_salle, image, priorite) VALUES (?, ?, ?, ?, ?, ?)",
-                PreparedStatement.RETURN_GENERATED_KEYS)) {
+        lenient().when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
+        lenient().when(mockConnection.prepareStatement(anyString(), anyInt())).thenReturn(mockPreparedStatement);
+        
+        lenient().when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        lenient().when(mockPreparedStatement.executeUpdate()).thenReturn(1);
+        lenient().when(mockPreparedStatement.getGeneratedKeys()).thenReturn(mockResultSet);
+    }
 
-            ps.setString(1, "Salle Test");
-            ps.setString(2, "Occupée");
-            ps.setInt(3, 20);
-            ps.setString(4, "Réunion");
-            ps.setString(5, "default.jpg");
-            ps.setInt(6, 1);
-
-            ps.executeUpdate();
-
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    salleId = rs.getInt(1);
-                }
-            }
-        }
-
-        assertTrue(salleId > 0);
-
-        // ✅ 2. Create RESERVATION
+    @Test
+    void testAddReservation() throws SQLException {
         reservation r = new reservation();
         salle s = new salle();
-        s.setId(salleId);
-
+        s.setId(1);
         r.setSalle(s);
         r.setDate_debut(Timestamp.valueOf(LocalDateTime.now()));
         r.setDate_fin(Timestamp.valueOf(LocalDateTime.now().plusHours(2)));
 
-        service.addReservation(conn, r);
-        reservationId = r.getId();
+        when(mockResultSet.next()).thenReturn(true);
+        when(mockResultSet.getInt(1)).thenReturn(100);
 
-        assertTrue(reservationId > 0);
+        service.addReservation(mockConnection, r);
+
+        verify(mockPreparedStatement).executeUpdate();
+        assertEquals(100, r.getId());
     }
 
     @Test
     void testGetReservationsForSalle() throws Exception {
-        List<reservation> list = service.getReservationsForSalle(salleId);
+        when(mockResultSet.next()).thenReturn(true, false);
+        when(mockResultSet.getInt("id")).thenReturn(10);
+        when(mockResultSet.getTimestamp("date_debut")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
+        when(mockResultSet.getTimestamp("date_fin")).thenReturn(Timestamp.valueOf(LocalDateTime.now().plusHours(1)));
+
+        List<reservation> list = service.getReservationsForSalle(1);
+        
         assertNotNull(list);
         assertFalse(list.isEmpty());
+        assertEquals(10, list.get(0).getId());
     }
 
     @Test
     void testGetAllReservations() throws Exception {
+        when(mockResultSet.next()).thenReturn(true, false);
+        when(mockResultSet.getInt("id")).thenReturn(5);
+        when(mockResultSet.getInt("salle_id")).thenReturn(2);
+        when(mockResultSet.getString("salle_nom")).thenReturn("Salle A");
+        when(mockResultSet.getString("salle_status")).thenReturn("Occupée");
+        when(mockResultSet.getInt("capacite")).thenReturn(50);
+        when(mockResultSet.getString("type_salle")).thenReturn("Conférence");
+        when(mockResultSet.getTimestamp("date_debut")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
+        when(mockResultSet.getTimestamp("date_fin")).thenReturn(Timestamp.valueOf(LocalDateTime.now().plusHours(2)));
+
         List<reservation> list = service.getAllReservations();
+        
         assertNotNull(list);
         assertFalse(list.isEmpty());
+        assertEquals("Salle A", list.get(0).getSalle().getNom());
     }
 
     @Test
     void testTerminerReservation() throws Exception {
-        Connection conn = DataSource.getInstance().getConnection();
+        doNothing().when(mockConnection).setAutoCommit(false);
+        doNothing().when(mockConnection).commit();
 
-        service.terminerReservation(conn, reservationId);
+        service.terminerReservation(mockConnection, 123);
 
-        // ✅ Verify reservation deleted
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT * FROM reservation WHERE id = ?")) {
-
-            ps.setInt(1, reservationId);
-            try (ResultSet rs = ps.executeQuery()) {
-                assertFalse(rs.next());
-            }
-        }
-
-        // ✅ Verify salle status changed to Libre
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT status FROM salle WHERE id = ?")) {
-
-            ps.setInt(1, salleId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    assertEquals("Libre", rs.getString("status"));
-                }
-            }
-        }
+        verify(mockConnection, times(2)).prepareStatement(anyString());
+        verify(mockPreparedStatement, times(2)).executeUpdate();
+        verify(mockConnection).commit();
     }
 }

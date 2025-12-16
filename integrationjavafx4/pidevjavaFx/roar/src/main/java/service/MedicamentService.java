@@ -12,11 +12,21 @@ import java.util.Map;
 
 public class MedicamentService implements IService<Medicament> {
 
-    /*@ spec_public non_null @*/
+    /*@ spec_public @*/
     private Connection cnx;
 
     public MedicamentService() {
-        cnx = DataSource.getInstance().getConnection();
+    }
+
+    public void setConnection(Connection cnx) {
+        this.cnx = cnx;
+    }
+
+    private Connection getConnection() {
+        if (this.cnx == null) {
+            this.cnx = DataSource.getInstance().getConnection();
+        }
+        return this.cnx;
     }
 
     /*@ 
@@ -34,7 +44,7 @@ public class MedicamentService implements IService<Medicament> {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 
-        try (PreparedStatement pst = cnx.prepareStatement(requete, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(requete, Statement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, medicament.getNom_medicament());
             pst.setString(2, medicament.getDescription_medicament());
             pst.setString(3, medicament.getType_medicament());
@@ -63,7 +73,7 @@ public class MedicamentService implements IService<Medicament> {
     @Override
     public void delete(Medicament medicament) {
         String requete = "DELETE FROM medicament WHERE id = ?";
-        try (PreparedStatement pst = cnx.prepareStatement(requete)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(requete)) {
             pst.setInt(1, medicament.getId());
             pst.executeUpdate();
         } catch (SQLException e) {
@@ -87,7 +97,7 @@ public class MedicamentService implements IService<Medicament> {
                 + "date_expiration = ? "
                 + "WHERE id = ?";
 
-        try (PreparedStatement pst = cnx.prepareStatement(requete)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(requete)) {
             pst.setString(1, medicament.getNom_medicament());
             pst.setString(2, medicament.getDescription_medicament());
             pst.setString(3, medicament.getType_medicament());
@@ -111,8 +121,7 @@ public class MedicamentService implements IService<Medicament> {
     public List<Medicament> readAll() {
         List<Medicament> list = new ArrayList<Medicament>();
         String requete = "SELECT * FROM medicament";
-        // Anche qui è meglio usare try-with-resources per Statement e ResultSet
-        try (Statement ste = cnx.createStatement();
+        try (Statement ste = getConnection().createStatement();
              ResultSet rs = ste.executeQuery(requete)) {
 
             while (rs.next()) {
@@ -140,7 +149,7 @@ public class MedicamentService implements IService<Medicament> {
     @Override
     public Medicament readById(int id) {
         String requete = "SELECT * FROM medicament WHERE id = ?";
-        try (PreparedStatement pst = cnx.prepareStatement(requete)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(requete)) {
             pst.setInt(1, id);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
@@ -169,7 +178,7 @@ public class MedicamentService implements IService<Medicament> {
         Map<String, Integer> typeCounts = new HashMap<String, Integer>();
         String query = "SELECT type_medicament, COUNT(*) AS count FROM medicament GROUP BY type_medicament";
 
-        try (Statement stmt = cnx.createStatement();
+        try (Statement stmt = getConnection().createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
@@ -196,7 +205,7 @@ public class MedicamentService implements IService<Medicament> {
         LocalDate today = LocalDate.now();
         LocalDate limitDate = today.plusDays(30);
 
-        try (PreparedStatement pst = cnx.prepareStatement(requete)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(requete)) {
             pst.setDate(1, Date.valueOf(today));
             pst.setDate(2, Date.valueOf(limitDate));
 

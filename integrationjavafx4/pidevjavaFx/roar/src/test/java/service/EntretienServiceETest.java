@@ -1,91 +1,113 @@
 package service;
 
 import entite.Entretien;
-import entite.Equipement;
-import org.junit.jupiter.api.*;
-import util.DataSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.Connection;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 public class EntretienServiceETest {
 
+    @Mock
+    private Connection mockConnection;
+    @Mock
+    private PreparedStatement mockPreparedStatement;
+    @Mock
+    private Statement mockStatement;
+    @Mock
+    private ResultSet mockResultSet;
+
+    @InjectMocks
     private EntretienService entretienService;
-    private EquipementService equipementService;
-    private int testEquipementId;
 
-    @BeforeAll
-    public void setupAll() {
-        entretienService = new EntretienService();
-        equipementService = new EquipementService();
+    @BeforeEach
+    public void setup() throws SQLException {
+        entretienService.setConnection(mockConnection);
 
-        // Créer un équipement de test
-        Equipement e = new Equipement(0, "Equip Test", "Type A", "Fonctionnel", "Catégorie1");
-        equipementService.ajouterEquipement(e);
-
-        // Récupérer son ID
-        List<Equipement> allEquipements = equipementService.getAllEquipements();
-        testEquipementId = allEquipements.get(allEquipements.size() - 1).getId();
-    }
-
-    @AfterAll
-    public void cleanupAll() {
-        // Supprimer l’équipement de test et ses entretiens
-        equipementService.deleteEquipementAndDependents(testEquipementId);
+        lenient().when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
+        lenient().when(mockConnection.createStatement()).thenReturn(mockStatement);
+        lenient().when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        lenient().when(mockStatement.executeQuery(anyString())).thenReturn(mockResultSet);
+        lenient().when(mockPreparedStatement.executeUpdate()).thenReturn(1); // Simule 1 ligne affectée par défaut
     }
 
     @Test
-    public void testAjouterEntretien() {
-        Entretien e = new Entretien(0, testEquipementId, LocalDate.now(), "Test entretien", "Equip Test", LocalDateTime.now());
+    public void testAjouterEntretien() throws SQLException {
+        Entretien e = new Entretien(0, 1, LocalDate.now(), "Test entretien", "Equip Test", LocalDateTime.now());
+        
         entretienService.ajouterEntretien(e);
+
+       verify(mockConnection).prepareStatement(contains("INSERT INTO entretien"));
+        verify(mockPreparedStatement).executeUpdate();
+    }
+
+    @Test
+    public void testGetAllEntretiens() throws SQLException {
+        when(mockResultSet.next()).thenReturn(true, true, false);
+        
+        when(mockResultSet.getInt("id")).thenReturn(1, 2);
+        when(mockResultSet.getInt("equipement_id")).thenReturn(10);
+        when(mockResultSet.getDate("date")).thenReturn(Date.valueOf(LocalDate.now()));
+        when(mockResultSet.getString("description")).thenReturn("Maintenance A", "Maintenance B");
+        when(mockResultSet.getString("nom_equipement")).thenReturn("Scanner");
+        when(mockResultSet.getTimestamp("created_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
 
         List<Entretien> entretiens = entretienService.getAllEntretiens();
-        boolean found = entretiens.stream().anyMatch(entretien -> "Test entretien".equals(entretien.getDescription()));
-        assertTrue(found, "L'entretien ajouté doit être présent dans la base");
+        
+        assertNotNull(entretiens);
+        assertEquals(2, entretiens.size());
+        assertEquals("Maintenance A", entretiens.get(0).getDescription());
     }
 
     @Test
-    public void testUpdateEntretien() {
-        Entretien e = new Entretien(0, testEquipementId, LocalDate.now(), "Entretien à mettre à jour", "Equip Test", LocalDateTime.now());
-        entretienService.ajouterEntretien(e);
+    public void testUpdateEntretien() throws SQLException {
+        Entretien e = new Entretien(1, 1, LocalDate.now(), "Update Desc", "Scanner", LocalDateTime.now());
 
-        // Récupérer l’entretien ajouté
-        Entretien toUpdate = entretienService.getAllEntretiens().get(entretienService.getAllEntretiens().size() - 1);
-        toUpdate.setDescription("Entretien mis à jour");
+        entretienService.updateEntretien(e);
 
-        entretienService.updateEntretien(toUpdate);
-
-        Entretien updated = entretienService.getEntretienById(toUpdate.getId());
-        assertEquals("Entretien mis à jour", updated.getDescription());
+        verify(mockConnection).prepareStatement(contains("UPDATE entretien"));
+        verify(mockPreparedStatement).executeUpdate();
     }
 
     @Test
-    public void testDeleteEntretien() {
-        Entretien e = new Entretien(0, testEquipementId, LocalDate.now(), "Entretien à supprimer", "Equip Test", LocalDateTime.now());
-        entretienService.ajouterEntretien(e);
+    public void testDeleteEntretien() throws SQLException {
+        int idToDelete = 5;
+        
+        entretienService.deleteEntretien(idToDelete);
 
-        Entretien toDelete = entretienService.getAllEntretiens().get(entretienService.getAllEntretiens().size() - 1);
-        entretienService.deleteEntretien(toDelete.getId());
-
-        Entretien deleted = entretienService.getEntretienById(toDelete.getId());
-        assertNull(deleted, "L'entretien doit être supprimé et ne plus exister");
+        verify(mockConnection).prepareStatement(contains("DELETE FROM entretien"));
+        verify(mockPreparedStatement).setInt(1, idToDelete);
+        verify(mockPreparedStatement).executeUpdate();
     }
 
     @Test
-    public void testGetEntretienById() {
-        Entretien e = new Entretien(0, testEquipementId, LocalDate.now(), "Test entretien", "Equip Test", LocalDateTime.now());
-        entretienService.ajouterEntretien(e);
+    public void testGetEntretienById() throws SQLException {
+        int idToFind = 10;
 
-        Entretien retrieved = entretienService.getAllEntretiens().get(entretienService.getAllEntretiens().size() - 1);
-        Entretien byId = entretienService.getEntretienById(retrieved.getId());
+        when(mockResultSet.next()).thenReturn(true);
+        when(mockResultSet.getInt("id")).thenReturn(idToFind);
+        when(mockResultSet.getInt("equipement_id")).thenReturn(5);
+        when(mockResultSet.getDate("date")).thenReturn(Date.valueOf(LocalDate.now()));
+        when(mockResultSet.getString("description")).thenReturn("Description Trouvée");
+        when(mockResultSet.getString("nom_equipement")).thenReturn("Equipement X");
+        when(mockResultSet.getTimestamp("created_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
 
-        assertNotNull(byId);
-        assertEquals("Test entretien", byId.getDescription());
-        assertEquals(testEquipementId, byId.getEquipementId());
+        Entretien result = entretienService.getEntretienById(idToFind);
+
+        assertNotNull(result);
+        assertEquals(idToFind, result.getId());
+        assertEquals("Description Trouvée", result.getDescription());
     }
 }

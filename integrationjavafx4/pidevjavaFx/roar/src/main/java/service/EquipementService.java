@@ -8,15 +8,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EquipementService {
-    private final Connection connection;
+    
+
+    private Connection connection;
 
     public EquipementService() {
-        connection = DataSource.getInstance().getConnection();
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
+
+    private Connection getConnection() {
+        if (this.connection == null) {
+            this.connection = DataSource.getInstance().getConnection();
+        }
+        return this.connection;
     }
 
     public void ajouterEquipement(Equipement e) {
         String sql = "INSERT INTO equipement (nom, type, statut, category) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {
             pst.setString(1, e.getNom());
             pst.setString(2, e.getType());
             pst.setString(3, e.getStatut());
@@ -31,7 +43,7 @@ public class EquipementService {
     public List<Equipement> getAllEquipements() {
         List<Equipement> result = new ArrayList<Equipement>();
         String sql = "SELECT * FROM equipement";
-        try (Statement stmt = connection.createStatement();
+        try (Statement stmt = getConnection().createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 Equipement e = new Equipement(
@@ -51,7 +63,7 @@ public class EquipementService {
 
     public Equipement getEquipementById(int id) {
         String sql = "SELECT * FROM equipement WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -72,7 +84,7 @@ public class EquipementService {
 
     public void updateEquipement(Equipement equipement) {
         String query = "UPDATE equipement SET nom=?, type=?, statut=?, category=? WHERE id=?";
-        try (PreparedStatement ps = connection.prepareStatement(query)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(query)) {
             ps.setString(1, equipement.getNom());
             ps.setString(2, equipement.getType());
             ps.setString(3, equipement.getStatut());
@@ -91,7 +103,7 @@ public class EquipementService {
 
     public void supprimerEquipement(int id) {
         String sql = "DELETE FROM equipement WHERE id=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             int rows = ps.executeUpdate();
             if (rows == 0) {
@@ -100,7 +112,7 @@ public class EquipementService {
                 System.out.println("✅ Équipement supprimé avec succès !");
             }
         } catch (SQLException ex) {
-            System.err.println("❌ Erreur lors de la suppression de l'équipement : " + ex.getMessage());
+            System.err.println("❌ Erreur lors la suppression de l'équipement : " + ex.getMessage());
         }
     }
 
@@ -109,14 +121,14 @@ public class EquipementService {
         String deleteEquipementSql = "DELETE FROM equipement WHERE id = ?";
 
         try {
-            connection.setAutoCommit(false);
+            getConnection().setAutoCommit(false);
 
-            try (PreparedStatement psEntretien = connection.prepareStatement(deleteEntretienSql)) {
+            try (PreparedStatement psEntretien = getConnection().prepareStatement(deleteEntretienSql)) {
                 psEntretien.setInt(1, equipementId);
                 psEntretien.executeUpdate();
             }
 
-            try (PreparedStatement psEquipement = connection.prepareStatement(deleteEquipementSql)) {
+            try (PreparedStatement psEquipement = getConnection().prepareStatement(deleteEquipementSql)) {
                 psEquipement.setInt(1, equipementId);
                 int rows = psEquipement.executeUpdate();
                 if (rows == 0) {
@@ -126,17 +138,17 @@ public class EquipementService {
                 }
             }
 
-            connection.commit();
+            getConnection().commit();
         } catch (SQLException ex) {
             try {
-                connection.rollback();
+                if (connection != null) getConnection().rollback();
             } catch (SQLException e) {
                 System.err.println("❌ Erreur rollback : " + e.getMessage());
             }
             System.err.println("❌ Erreur lors de la suppression : " + ex.getMessage());
         } finally {
             try {
-                connection.setAutoCommit(true);
+                if (connection != null) getConnection().setAutoCommit(true);
             } catch (SQLException e) {
                 System.err.println("❌ Erreur reset auto-commit : " + e.getMessage());
             }
@@ -146,7 +158,7 @@ public class EquipementService {
     public List<Equipement> getEquipementsByCategory(String category) {
         List<Equipement> equipements = new ArrayList<Equipement>();
         String sql = "SELECT * FROM equipement WHERE category = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, category);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -165,10 +177,11 @@ public class EquipementService {
         }
         return equipements;
     }
+
     public void mettreAJourStatut(Equipement equipement) {
         String sql = "UPDATE equipement SET statut = ? WHERE id = ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setString(1, equipement.getStatut());
             stmt.setInt(2, equipement.getId());
 
@@ -179,9 +192,10 @@ public class EquipementService {
             System.err.println("❌ Erreur SQL : " + e.getMessage());
         }
     }
+
     public void modifierEquipement(Equipement equipement) {
         String sql = "UPDATE equipement SET nom = ?, type = ?, statut = ?, category = ? WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {  // Utilise `connection` directement
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, equipement.getNom());
             pstmt.setString(2, equipement.getType());
             pstmt.setString(3, equipement.getStatut());
@@ -194,9 +208,4 @@ public class EquipementService {
             System.err.println("❌ Erreur lors de la mise à jour de l'équipement : " + e.getMessage());
         }
     }
-
-
-
-
-
 }

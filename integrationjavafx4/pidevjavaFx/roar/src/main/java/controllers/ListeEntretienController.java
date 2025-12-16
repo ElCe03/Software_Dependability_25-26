@@ -60,7 +60,18 @@ public class ListeEntretienController {
     @FXML
     private TableColumn<Entretien, Void> pdfColumn;
 
-    private final EntretienService entretienService = new EntretienService();
+    private EntretienService entretienService;
+
+    private EntretienService getEntretienService() {
+        if (this.entretienService == null) {
+            this.entretienService = new EntretienService();
+        }
+        return this.entretienService;
+    }
+
+    public void setEntretienService(EntretienService entretienService) {
+        this.entretienService = entretienService;
+    }
 
     @FXML
     public void initialize() {
@@ -75,7 +86,7 @@ public class ListeEntretienController {
     }
 
     private void loadEntretienData() {
-        entretienTable.getItems().setAll(entretienService.getAllEntretiens());
+        entretienTable.getItems().setAll(getEntretienService().getAllEntretiens());
     }
 
     private void addActionButtonsToTable() {
@@ -155,7 +166,7 @@ public class ListeEntretienController {
     }
 
     private void handleSupprimer(Entretien entretien) {
-        entretienService.deleteEntretien(entretien.getId());
+        getEntretienService().deleteEntretien(entretien.getId());
         entretienTable.getItems().remove(entretien);
         System.out.println("🗑 Entretien supprimé : " + entretien.getNomEquipement());
     }
@@ -198,7 +209,7 @@ public class ListeEntretienController {
                 }
             });
 
-            tempStage.show(); // Important: must show the stage
+            tempStage.show(); 
 
         } catch (Exception e) {
             showAlert("Erreur", "Erreur lors de la génération du PDF: " + e.getMessage());
@@ -228,4 +239,3 @@ public class ListeEntretienController {
         alert.showAndWait();
     }
 }
-

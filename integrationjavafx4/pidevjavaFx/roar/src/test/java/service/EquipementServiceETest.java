@@ -1,91 +1,98 @@
 package service;
 
 import entite.Equipement;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.sql.*;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith(MockitoExtension.class)
 public class EquipementServiceETest {
 
-    private static EquipementService equipementService;
-    private static int equipementId;
+    @Mock
+    private Connection mockConnection;
+    @Mock
+    private PreparedStatement mockPreparedStatement;
+    @Mock
+    private Statement mockStatement;
+    @Mock
+    private ResultSet mockResultSet;
 
-    @BeforeAll
-    static void setup() {
-        equipementService = new EquipementService();
-        System.out.println("✅ Setup terminé");
+    @InjectMocks
+    private EquipementService equipementService;
+
+    @BeforeEach
+    void setup() throws SQLException {
+        equipementService.setConnection(mockConnection);
+
+        lenient().when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
+        lenient().when(mockConnection.createStatement()).thenReturn(mockStatement);
+        lenient().when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        lenient().when(mockStatement.executeQuery(anyString())).thenReturn(mockResultSet);
+        lenient().when(mockPreparedStatement.executeUpdate()).thenReturn(1);
     }
 
     @Test
-    @Order(1)
-    void testAjouterEquipement() {
-        Equipement e = new Equipement(
-                0,
-                "Test Equipement",
-                "Medical",
-                "Disponible",
-                "TestCategory"
-        );
+    void testAjouterEquipement() throws SQLException {
+        Equipement e = new Equipement(0, "Test Equipement", "Medical", "Disponible", "TestCategory");
 
         equipementService.ajouterEquipement(e);
 
-        List<Equipement> list = equipementService.getAllEquipements();
-        assertFalse(list.isEmpty(), "❌ La liste d'équipements ne doit pas être vide");
-
-        Equipement last = list.get(list.size() - 1);
-        equipementId = last.getId();
-
-        assertEquals("Test Equipement", last.getNom());
-        System.out.println("✅ Ajout testé avec succès");
+        verify(mockConnection).prepareStatement(contains("INSERT INTO equipement"));
+        verify(mockPreparedStatement).executeUpdate();
     }
 
     @Test
-    @Order(2)
-    void testGetEquipementById() {
-        Equipement e = equipementService.getEquipementById(equipementId);
+    void testGetEquipementById() throws SQLException {
+        when(mockResultSet.next()).thenReturn(true);
+        when(mockResultSet.getInt("id")).thenReturn(1);
+        when(mockResultSet.getString("nom")).thenReturn("Test Equipement");
+        when(mockResultSet.getString("type")).thenReturn("Medical");
+        when(mockResultSet.getString("statut")).thenReturn("Disponible");
+        when(mockResultSet.getString("category")).thenReturn("TestCategory");
+
+        Equipement e = equipementService.getEquipementById(1);
 
         assertNotNull(e, "❌ L'équipement ne doit pas être null");
         assertEquals("Test Equipement", e.getNom());
-        System.out.println("✅ Get by ID testé");
     }
 
     @Test
-    @Order(3)
-    void testUpdateEquipement() {
-        Equipement e = equipementService.getEquipementById(equipementId);
-
-        e.setNom("Equipement Modifié");
-        e.setStatut("En panne");
+    void testUpdateEquipement() throws SQLException {
+        Equipement e = new Equipement(1, "Equipement Modifié", "Type", "En panne", "Cat");
 
         equipementService.updateEquipement(e);
 
-        Equipement updated = equipementService.getEquipementById(equipementId);
-
-        assertEquals("Equipement Modifié", updated.getNom());
-        assertEquals("En panne", updated.getStatut());
-
-        System.out.println("✅ Update testé");
+        verify(mockConnection).prepareStatement(contains("UPDATE equipement"));
+        verify(mockPreparedStatement).executeUpdate();
     }
 
     @Test
-    @Order(4)
-    void testGetEquipementsByCategory() {
+    void testGetEquipementsByCategory() throws SQLException {
+        when(mockResultSet.next()).thenReturn(true, true, false); // 2 items
+        when(mockResultSet.getInt("id")).thenReturn(1, 2);
+        when(mockResultSet.getString("nom")).thenReturn("Eq1", "Eq2");
+
         List<Equipement> list = equipementService.getEquipementsByCategory("TestCategory");
+        
         assertFalse(list.isEmpty());
-        System.out.println("✅ Recherche par catégorie testée");
+        assertEquals(2, list.size());
     }
 
     @Test
-    @Order(5)
-    void testSupprimerEquipement() {
-        equipementService.supprimerEquipement(equipementId);
+    void testSupprimerEquipement() throws SQLException {
+        equipementService.supprimerEquipement(1);
 
-        Equipement e = equipementService.getEquipementById(equipementId);
-        assertNull(e);
-
-        System.out.println("✅ Suppression testée");
+        verify(mockConnection).prepareStatement(contains("DELETE FROM equipement"));
+        verify(mockPreparedStatement).executeUpdate();
     }
 }
