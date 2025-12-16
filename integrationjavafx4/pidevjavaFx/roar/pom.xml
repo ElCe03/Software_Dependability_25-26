@@ -254,18 +254,10 @@
   <build>
     <finalName>CliniCare</finalName>
     <plugins>
-        
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.10</version>
-          <configuration>
-            <includes>
-                <include>service/**/*</include>
-                <include>entite/**/*</include>
-                <include>util/**/*</include>
-            </includes>
-          </configuration>
           <executions>
             <execution>
               <id>prepare-agent</id>
@@ -371,14 +363,12 @@
                     <param>service.*</param>
                     <param>entite.*</param>
                 </targetClasses>
-                
                 <targetTests>
                     <param>util.*</param>
                     <param>utiltests.*</param>
                     <param>service.*</param>
                     <param>entite.*</param>
                 </targetTests>
-                
                 <mutators>
                     <mutator>STRONGER</mutator>
                 </mutators>
