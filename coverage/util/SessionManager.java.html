@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SessionManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">util</a> &gt; <span class="el_source">SessionManager.java</span></div><h1>SessionManager.java</h1><pre class="source lang-java linenums">package util;
+
+import entite.User;
+
+import java.time.LocalDate;
+
+/**
+ * Utility class to manage user sessions
+ */
+<span class="nc" id="L10">public class SessionManager {</span>
+    
+    private static User currentUser;
+    
+    static {
+        // Initialize with a default user since we're removing login
+<span class="nc" id="L16">        initializeDefaultUser();</span>
+<span class="nc" id="L17">    }</span>
+    
+    /**
+     * Initialize a default user for testing without login
+     */
+    private static void initializeDefaultUser() {
+        // Create a default patient user
+<span class="nc" id="L24">        User defaultUser = new User();</span>
+<span class="nc" id="L25">        defaultUser.setId(1);</span>
+<span class="nc" id="L26">        defaultUser.setNom(&quot;Dupont&quot;);</span>
+<span class="nc" id="L27">        defaultUser.setPrenom(&quot;Jean&quot;);</span>
+<span class="nc" id="L28">        defaultUser.setEmail(&quot;jean.dupont@example.com&quot;);</span>
+<span class="nc" id="L29">        defaultUser.setTelephone(&quot;01 23 45 67 89&quot;);</span>
+<span class="nc" id="L30">        defaultUser.setType(&quot;patient&quot;);</span>
+<span class="nc" id="L31">        defaultUser.setAdresse(&quot;123 Avenue de la République, 75011 Paris&quot;);</span>
+<span class="nc" id="L32">        defaultUser.setDateNaissance(LocalDate.of(1980, 1, 15));</span>
+        
+        // Note: No need to create a dossier medicale here as we now create it on demand
+        // in the PatientDashboardController.createDemoData() method
+        
+<span class="nc" id="L37">        currentUser = defaultUser;</span>
+<span class="nc" id="L38">    }</span>
+    
+    /**
+     * Set the current logged-in user
+     * @param user The user to set as current
+     */
+    public static void login(User user) {
+<span class="nc" id="L45">        currentUser = user;</span>
+<span class="nc" id="L46">    }</span>
+    
+    /**
+     * Explicitly set the current user
+     * @param user The user to set as current
+     */
+    public static void setCurrentUser(User user) {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L54">            throw new IllegalArgumentException(&quot;Current user cannot be set to null&quot;);</span>
+        }
+<span class="nc" id="L56">        currentUser = user;</span>
+<span class="nc" id="L57">    }</span>
+    
+    /**
+     * Clear the current user session and set back to default user
+     */
+    public static void logout() {
+        // Instead of nulling the user, restore the default one
+<span class="nc" id="L64">        initializeDefaultUser();</span>
+<span class="nc" id="L65">    }</span>
+    
+    /**
+     * Get the current logged-in user
+     * @return The current user, never null
+     */
+    public static User getCurrentUser() {
+        // Always provide at least the default user
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (currentUser == null) {</span>
+<span class="nc" id="L74">            initializeDefaultUser();</span>
+        }
+<span class="nc" id="L76">        return currentUser;</span>
+    }
+    
+    /**
+     * Check if a user is currently logged in
+     * @return true if a user is logged in, false otherwise
+     */
+    public static boolean isLoggedIn() {
+<span class="nc" id="L84">        return true; // Always return true since we always have a default user</span>
+    }
+    
+    /**
+     * Check if the current user is a patient
+     * @return true if the current user is a patient, false otherwise
+     */
+    public static boolean isPatient() {
+<span class="nc" id="L92">        return &quot;patient&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
+    }
+    
+    /**
+     * Check if the current user is a doctor
+     * @return true if the current user is a doctor, false otherwise
+     */
+    public static boolean isDoctor() {
+<span class="nc" id="L100">        return &quot;medecin&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
+    }
+    
+    /**
+     * Check if the current user is an admin
+     * @return true if the current user is an admin, false otherwise
+     */
+    public static boolean isAdmin() {
+<span class="nc" id="L108">        return &quot;admin&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

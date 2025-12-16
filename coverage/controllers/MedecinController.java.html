@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedecinController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">MedecinController.java</span></div><h1>MedecinController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import entite.Medecin;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import service.UserService;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.regex.Pattern;
+
+<span class="nc" id="L17">public class MedecinController {</span>
+
+    @FXML private TextField specialiteField;
+    @FXML private TextField telephoneField;
+    @FXML private Label specialiteError;
+    @FXML private Label telephoneError;
+    @FXML private Button btnEnregistrer;
+
+    private Medecin medecin;
+<span class="nc" id="L26">    private final UserService userService = new UserService();</span>
+
+    // Expressions régulières pour la validation
+    private static final String SPECIALITE_REGEX = &quot;^[A-Za-zÀ-ÿ\\s-]+$&quot;;
+<span class="nc" id="L30">    private static final Pattern SPECIALITE_PATTERN = Pattern.compile(SPECIALITE_REGEX);</span>
+    private static final String TELEPHONE_REGEX = &quot;^\\+?[0-9]{10,13}$&quot;;
+<span class="nc" id="L32">    private static final Pattern TELEPHONE_PATTERN = Pattern.compile(TELEPHONE_REGEX);</span>
+
+    public void setUtilisateur(Medecin medecin) {
+<span class="nc" id="L35">        this.medecin = medecin;</span>
+<span class="nc" id="L36">    }</span>
+
+    @FXML
+    private void handleEnregistrer() {
+        try {
+            // Réinitialiser les messages d'erreur
+<span class="nc" id="L42">            resetErrorLabels();</span>
+
+            // Récupérer les entrées
+<span class="nc" id="L45">            String specialite = specialiteField.getText().trim();</span>
+<span class="nc" id="L46">            String telephone = telephoneField.getText().trim();</span>
+
+            // Valider les entrées
+<span class="nc" id="L49">            boolean isValid = true;</span>
+
+            // Validation de la spécialité
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            if (specialite.isEmpty()) {</span>
+<span class="nc" id="L53">                specialiteError.setText(&quot;La spécialité est requise.&quot;);</span>
+<span class="nc" id="L54">                specialiteError.setVisible(true);</span>
+<span class="nc" id="L55">                isValid = false;</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            } else if (!SPECIALITE_PATTERN.matcher(specialite).matches()) {</span>
+<span class="nc" id="L57">                specialiteError.setText(&quot;La spécialité ne doit contenir que des lettres et des espaces.&quot;);</span>
+<span class="nc" id="L58">                specialiteError.setVisible(true);</span>
+<span class="nc" id="L59">                isValid = false;</span>
+            }
+
+            // Validation du téléphone
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (telephone.isEmpty()) {</span>
+<span class="nc" id="L64">                telephoneError.setText(&quot;Le téléphone est requis.&quot;);</span>
+<span class="nc" id="L65">                telephoneError.setVisible(true);</span>
+<span class="nc" id="L66">                isValid = false;</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            } else if (!TELEPHONE_PATTERN.matcher(telephone).matches()) {</span>
+<span class="nc" id="L68">                telephoneError.setText(&quot;Format de téléphone invalide (ex. +212612345678).&quot;);</span>
+<span class="nc" id="L69">                telephoneError.setVisible(true);</span>
+<span class="nc" id="L70">                isValid = false;</span>
+            }
+
+            // Si une validation échoue, arrêter le traitement
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            if (!isValid) {</span>
+<span class="nc" id="L75">                return;</span>
+            }
+
+            // Mettre à jour les attributs spécifiques
+<span class="nc" id="L79">            medecin.setSpecialite(specialite);</span>
+<span class="nc" id="L80">            medecin.setTelephone(telephone);</span>
+
+            // Enregistrer dans la base (création)
+<span class="nc" id="L83">            userService.ajouterUtilisateur(medecin, &quot;medecin&quot;);</span>
+
+            // Afficher une confirmation
+<span class="nc" id="L86">            showAlert(Alert.AlertType.INFORMATION, &quot;Succès&quot;, &quot;Médecin créé avec succès !&quot;);</span>
+
+            // Redirection vers la liste des utilisateurs
+<span class="nc" id="L89">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ListeUtilisateurs.fxml&quot;));</span>
+<span class="nc" id="L90">            Parent root = loader.load();</span>
+<span class="nc" id="L91">            Stage stage = (Stage) btnEnregistrer.getScene().getWindow();</span>
+<span class="nc" id="L92">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L93">            stage.setTitle(&quot;Liste Utilisateurs&quot;);</span>
+<span class="nc" id="L94">            stage.show();</span>
+
+<span class="nc" id="L96">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L97">            showAlert(Alert.AlertType.WARNING, &quot;Champs manquants&quot;, e.getMessage());</span>
+<span class="nc" id="L98">        } catch (SQLException | JsonProcessingException e) {</span>
+<span class="nc" id="L99">            showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Erreur lors de la création du médecin : &quot; + e.getMessage());</span>
+<span class="nc" id="L100">        } catch (IOException e) {</span>
+<span class="nc" id="L101">            showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Erreur lors de la redirection : &quot; + e.getMessage());</span>
+<span class="nc" id="L102">        }</span>
+<span class="nc" id="L103">    }</span>
+
+    private void resetErrorLabels() {
+<span class="nc" id="L106">        specialiteError.setText(&quot;&quot;);</span>
+<span class="nc" id="L107">        specialiteError.setVisible(false);</span>
+<span class="nc" id="L108">        telephoneError.setText(&quot;&quot;);</span>
+<span class="nc" id="L109">        telephoneError.setVisible(false);</span>
+<span class="nc" id="L110">    }</span>
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+<span class="nc" id="L113">        Alert alert = new Alert(type);</span>
+<span class="nc" id="L114">        alert.setTitle(title);</span>
+<span class="nc" id="L115">        alert.setHeaderText(null);</span>
+<span class="nc" id="L116">        alert.setContentText(content);</span>
+<span class="nc" id="L117">        alert.showAndWait();</span>
+<span class="nc" id="L118">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

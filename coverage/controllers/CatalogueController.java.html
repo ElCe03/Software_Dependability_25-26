@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CatalogueController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">CatalogueController.java</span></div><h1>CatalogueController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Medicament;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+import java.net.URL;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
+
+<span class="nc" id="L28">public class CatalogueController implements Initializable {</span>
+
+    @FXML
+    private TilePane tilePane;
+    @FXML
+    private Button backButton;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Exemple de données en dur (à remplacer par une récupération depuis la base de données)
+<span class="nc" id="L38">        List&lt;Medicament&gt; medicaments = Arrays.asList(</span>
+<span class="nc" id="L39">                new Medicament(&quot;Paracétamol&quot;, &quot;Soulage douleurs et fièvre&quot;, &quot;Analgesique&quot;, 3.50, 50, LocalDate.now(), LocalDate.now().plusYears(1)),</span>
+<span class="nc" id="L40">                new Medicament(&quot;Ibuprofène&quot;, &quot;Anti-inflammatoire courant&quot;, &quot;Anti-inflammatoire&quot;, 5.00, 30, LocalDate.now(), LocalDate.now().plusYears(2)),</span>
+<span class="nc" id="L41">                new Medicament(&quot;Amoxicilline&quot;, &quot;Antibiotique à large spectre&quot;, &quot;Antibiotique&quot;, 8.75, 20, LocalDate.now(), LocalDate.now().plusYears(1)),</span>
+<span class="nc" id="L42">                new Medicament(&quot;Effiralgant&quot;, &quot;Pour soulager les douleurs modérées&quot;, &quot;Analgésique&quot;, 4.20, 40, LocalDate.now(), LocalDate.now().plusMonths(18)),</span>
+<span class="nc" id="L43">                new Medicament(&quot;Augmentin&quot;, &quot;Antibiotique puissant à large spectre&quot;, &quot;Antibiotique&quot;, 11.30, 25, LocalDate.now(), LocalDate.now().plusYears(2)),</span>
+<span class="nc" id="L44">                new Medicament(&quot;Smecta&quot;, &quot;Contre les diarrhées et douleurs digestives&quot;, &quot;Antidiarrhéique&quot;, 2.90, 60, LocalDate.now(), LocalDate.now().plusYears(1)),</span>
+<span class="nc" id="L45">                new Medicament(&quot;Avene&quot;, &quot;Crème hydratante et apaisante&quot;, &quot;Dermatologique&quot;, 15.00, 35, LocalDate.now(), LocalDate.now().plusMonths(8)),</span>
+<span class="nc" id="L46">                new Medicament(&quot;SVR&quot;, &quot;Soins dermatologiques spécialisés&quot;, &quot;Dermatologique&quot;, 17.50, 20, LocalDate.now(), LocalDate.now().plusMonths(10)),</span>
+<span class="nc" id="L47">                new Medicament(&quot;Tamizole&quot;, &quot;Traitement des ulcères gastriques&quot;, &quot;Anti-ulcéreux&quot;, 6.80, 22, LocalDate.now(), LocalDate.now().plusYears(1)),</span>
+<span class="nc" id="L48">                new Medicament(&quot;Tardyferon&quot;, &quot;Supplément en fer pour l’anémie&quot;, &quot;Complément&quot;, 4.50, 45, LocalDate.now(), LocalDate.now().plusYears(1)),</span>
+<span class="nc" id="L49">                new Medicament(&quot;Aspirine&quot;, &quot;Fluidifiant sanguin et antidouleur&quot;, &quot;Antiagrégant plaquettaire&quot;, 3.10, 55, LocalDate.now(), LocalDate.now().plusMonths(14))</span>
+        );
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        for (Medicament m : medicaments) {</span>
+<span class="nc" id="L53">            tilePane.getChildren().add(createMedicamentCard(m));</span>
+<span class="nc" id="L54">        }</span>
+<span class="nc" id="L55">    }</span>
+
+    private VBox createMedicamentCard(Medicament medicament) {
+        ImageView imageView;
+        try {
+<span class="nc" id="L60">            String imagePath = getImagePathForMedicament(medicament);</span>
+<span class="nc" id="L61">            URL imageUrl = getClass().getResource(imagePath);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (imageUrl != null) {</span>
+<span class="nc" id="L63">                imageView = new ImageView(new Image(imageUrl.toExternalForm()));</span>
+            } else {
+<span class="nc" id="L65">                System.err.println(&quot;Image not found for: &quot; + medicament.getNom_medicament());</span>
+<span class="nc" id="L66">                imageView = new ImageView(new Image(getClass().getResource(&quot;/img/default.png&quot;).toExternalForm()));</span>
+            }
+<span class="nc" id="L68">        } catch (Exception e) {</span>
+<span class="nc" id="L69">            imageView = new ImageView(new Image(getClass().getResource(&quot;/img/default.png&quot;).toExternalForm()));</span>
+<span class="nc" id="L70">        }</span>
+
+<span class="nc" id="L72">        imageView.setFitWidth(200);</span>
+<span class="nc" id="L73">        imageView.setFitHeight(200);</span>
+<span class="nc" id="L74">        imageView.setPreserveRatio(true);</span>
+<span class="nc" id="L75">        imageView.setSmooth(true);</span>
+<span class="nc" id="L76">        imageView.setEffect(new DropShadow(10, Color.GRAY));</span>
+
+<span class="nc" id="L78">        Label name = new Label(medicament.getNom_medicament());</span>
+<span class="nc" id="L79">        name.setStyle(&quot;-fx-font-size: 18px; -fx-font-weight: bold;&quot;);</span>
+
+<span class="nc" id="L81">        Text desc = new Text(medicament.getDescription_medicament());</span>
+<span class="nc" id="L82">        desc.setWrappingWidth(200);</span>
+<span class="nc" id="L83">        desc.setStyle(&quot;-fx-font-size: 13px;&quot;);</span>
+
+<span class="nc" id="L85">        Label prix = new Label(String.format(&quot;%.2f TND&quot;, medicament.getPrix_medicament()));</span>
+<span class="nc" id="L86">        prix.setTextFill(Color.DARKGREEN);</span>
+<span class="nc" id="L87">        prix.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 14px;&quot;);</span>
+
+<span class="nc" id="L89">        VBox card = new VBox(imageView, name, desc, prix);</span>
+<span class="nc" id="L90">        card.setSpacing(12);</span>
+<span class="nc" id="L91">        card.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L92">        card.setStyle(&quot;&quot;&quot;</span>
+        -fx-background-color: #ffffff;
+        -fx-border-radius: 12px;
+        -fx-background-radius: 12px;
+        -fx-padding: 15;
+        -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.1), 10, 0.1, 0, 5);
+        &quot;&quot;&quot;);
+
+<span class="nc" id="L100">        card.setPrefWidth(220);</span>
+<span class="nc" id="L101">        card.setPrefHeight(360);</span>
+
+<span class="nc" id="L103">        return card;</span>
+    }
+
+
+    // Méthode pour construire dynamiquement le chemin d'image à partir du nom
+    private String getImagePathForMedicament(Medicament medicament) {
+<span class="nc" id="L109">        String nom = medicament.getNom_medicament()</span>
+<span class="nc" id="L110">                .toLowerCase()</span>
+<span class="nc" id="L111">                .replace(&quot;é&quot;, &quot;e&quot;)</span>
+<span class="nc" id="L112">                .replace(&quot;è&quot;, &quot;e&quot;)</span>
+<span class="nc" id="L113">                .replace(&quot;à&quot;, &quot;a&quot;)</span>
+<span class="nc" id="L114">                .replace(&quot;ê&quot;, &quot;e&quot;)</span>
+<span class="nc" id="L115">                .replaceAll(&quot;[^a-z0-9]&quot;, &quot;&quot;); // Supprime accents et caractères spéciaux</span>
+
+<span class="nc" id="L117">        return &quot;/img/&quot; + nom + &quot;.png&quot;;</span>
+    }
+    @FXML
+    private void goToCommande() {
+        try {
+<span class="nc" id="L122">            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource(&quot;/commande.fxml&quot;));</span>
+<span class="nc" id="L123">            javafx.scene.Parent root = loader.load();</span>
+<span class="nc" id="L124">            tilePane.getScene().setRoot(root);  // Remplace la scène actuelle</span>
+<span class="nc" id="L125">        } catch (Exception e) {</span>
+<span class="nc" id="L126">            e.printStackTrace();</span>
+<span class="nc" id="L127">        }</span>
+<span class="nc" id="L128">    }</span>
+
+    @FXML
+    private void handleBackButtoncatalogue() {
+        try {
+<span class="nc" id="L133">            Stage stage = (Stage) backButton.getScene().getWindow();</span>
+<span class="nc" id="L134">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/front.fxml&quot;));</span>
+<span class="nc" id="L135">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L136">            stage.setScene(scene);</span>
+<span class="nc" id="L137">            stage.show();</span>
+<span class="nc" id="L138">        } catch (Exception e) {</span>
+<span class="nc" id="L139">            e.printStackTrace();</span>
+<span class="nc" id="L140">            showAlert(&quot;Error&quot;, &quot;Could not load the dashboard&quot;);</span>
+<span class="nc" id="L141">        }</span>
+<span class="nc" id="L142">    }</span>
+
+
+
+    private void showAlert(String title, String message) {
+<span class="nc" id="L147">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L148">        alert.setTitle(title);</span>
+<span class="nc" id="L149">        alert.setHeaderText(null);</span>
+<span class="nc" id="L150">        alert.setContentText(message);</span>
+<span class="nc" id="L151">        alert.showAndWait();</span>
+<span class="nc" id="L152">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

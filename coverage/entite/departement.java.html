@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>departement.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">departement.java</span></div><h1>departement.java</h1><pre class="source lang-java linenums">package entite;
+
+public class departement {
+
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private String nom;
+    /*@ spec_public nullable @*/ private String adresse;
+    /*@ spec_public nullable @*/ private String image;
+    /*@ spec_public @*/ private int nbr_etage;  // Attribut pour l'affichage seulement, non lié à la base de données
+
+    /*@ public invariant id &gt;= 0; @*/
+    /*@ public invariant nbr_etage &gt;= 0; @*/
+
+    /*@ 
+      @ ensures id == 0;
+      @ ensures nbr_etage == 0;
+      @*/
+    // Constructeurs
+<span class="fc" id="L19">    public departement() {</span>
+<span class="fc" id="L20">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="fc" id="L21">    }</span>
+
+    /*@ 
+      @ ensures this.id == 0;
+      @ ensures this.nom == nom;
+      @ ensures this.adresse == adresse;
+      @ ensures this.image == image;
+      @ ensures this.nbr_etage == 0;
+      @*/
+<span class="nc" id="L30">    public departement(String nom, String adresse, String image) {</span>
+<span class="nc" id="L31">        this.nom = nom;</span>
+<span class="nc" id="L32">        this.adresse = adresse;</span>
+<span class="nc" id="L33">        this.image = image;</span>
+<span class="nc" id="L34">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="nc" id="L35">    }</span>
+
+    /*@ 
+      @ requires id &gt;= 0;
+      @ 
+      @ ensures this.id == id;
+      @ ensures this.nom == nom;
+      @ ensures this.adresse == adresse;
+      @ ensures this.image == image;
+      @ ensures this.nbr_etage == 0;
+      @*/
+<span class="nc" id="L46">    public departement(int id, String nom, String adresse, String image) {</span>
+<span class="nc" id="L47">        this.id = id;</span>
+<span class="nc" id="L48">        this.nom = nom;</span>
+<span class="nc" id="L49">        this.adresse = adresse;</span>
+<span class="nc" id="L50">        this.image = image;</span>
+<span class="nc" id="L51">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="nc" id="L52">    }</span>
+
+    // Getters et setters
+
+    /*@ ensures \result == id; pure @*/
+<span class="nc" id="L57">    public int getId() { return id; }</span>
+    /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
+<span class="nc" id="L59">    public void setId(int id) { this.id = id; }</span>
+    /*@ pure @*/
+<span class="fc" id="L61">    public String getNom() { return nom; }</span>
+    /*@ assignable this.nom; @*/
+<span class="fc" id="L63">    public void setNom(String nom) { this.nom = nom; }</span>
+    /*@ pure @*/
+<span class="fc" id="L65">    public String getAdresse() { return adresse; }</span>
+    /*@ assignable this.adresse; @*/
+<span class="fc" id="L67">    public void setAdresse(String adresse) { this.adresse = adresse; }</span>
+    /*@ pure @*/
+<span class="nc" id="L69">    public String getImage() { return image; }</span>
+    /*@ assignable this.image; @*/
+<span class="nc" id="L71">    public void setImage(String image) { this.image = image; }</span>
+
+    // Getter et setter pour nbretage
+
+    /*@ ensures \result == nbr_etage; pure @*/
+<span class="nc" id="L76">    public int getNbr_etage() { return nbr_etage; }</span>
+    /*@ 
+      @ // Protezione dell'invariante: Rifiutiamo valori negativi
+      @ requires nbretage &gt;= 0;
+      @ assignable this.nbr_etage;
+      @ ensures this.nbr_etage == nbretage;
+      @*/
+<span class="nc" id="L83">    public void setNbr_etage(int nbretage) { this.nbr_etage = nbretage; }</span>
+
+    // Méthode pour augmenter le nombre d'étages
+
+    @Override
+    public String toString() {
+<span class="nc" id="L89">        return null;</span>
+    }
+
+    public void setNbr_Etage(int i) {
+<span class="nc" id="L93">    }</span>
+
+    // Méthode optionnelle pour diminuer le nombre d'étages
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

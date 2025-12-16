@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDFService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">PDFService.java</span></div><h1>PDFService.java</h1><pre class="source lang-java linenums">package service;
+
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import entite.Sejour;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import util.AlertUtil;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+<span class="nc" id="L24">public class PDFService {</span>
+    
+<span class="nc" id="L26">    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+    
+    public void generateSejourAnalysisPDF(List&lt;Sejour&gt; sejours, Stage stage) {
+<span class="nc" id="L29">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L30">        fileChooser.setTitle(&quot;Enregistrer l'analyse des séjours&quot;);</span>
+<span class="nc" id="L31">        fileChooser.getExtensionFilters().add(</span>
+            new FileChooser.ExtensionFilter(&quot;PDF Files&quot;, &quot;*.pdf&quot;)
+        );
+<span class="nc" id="L34">        fileChooser.setInitialFileName(&quot;analyse_sejours_&quot; + LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;yyyyMMdd_HHmmss&quot;)) + &quot;.pdf&quot;);</span>
+        
+<span class="nc" id="L36">        File file = fileChooser.showSaveDialog(stage);</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (file != null) {</span>
+            try {
+<span class="nc" id="L39">                PdfWriter writer = new PdfWriter(file);</span>
+<span class="nc" id="L40">                PdfDocument pdf = new PdfDocument(writer);</span>
+<span class="nc" id="L41">                Document document = new Document(pdf);</span>
+                
+                 // Add title
+<span class="nc" id="L44">                Paragraph title = new Paragraph(&quot;Analyse des Séjours&quot;);</span>
+<span class="nc" id="L45">                title.setTextAlignment(TextAlignment.CENTER);</span>
+<span class="nc" id="L46">                title.setFontSize(20);</span>
+<span class="nc" id="L47">                title.setBold();</span>
+<span class="nc" id="L48">                document.add(title);</span>
+
+                // Add date
+<span class="nc" id="L51">                Paragraph date = new Paragraph(&quot;Généré le: &quot; + LocalDateTime.now().format(DATE_FORMATTER));</span>
+<span class="nc" id="L52">                date.setTextAlignment(TextAlignment.CENTER);</span>
+<span class="nc" id="L53">                date.setFontSize(12);</span>
+<span class="nc" id="L54">                document.add(date);</span>
+
+                // Add space
+<span class="nc" id="L57">                document.add(new Paragraph(&quot;\n&quot;));</span>
+                
+                // Add summary statistics
+<span class="nc" id="L60">                addSummaryStatistics(document, sejours);</span>
+                
+                // Add detailed table
+<span class="nc" id="L63">                addDetailedTable(document, sejours);</span>
+                
+<span class="nc" id="L65">                document.close();</span>
+                
+                // Show success message
+<span class="nc" id="L68">                AlertUtil.showInformation(stage, &quot;Succès&quot;, &quot;Le PDF a été généré avec succès !&quot;);</span>
+<span class="nc" id="L69">            } catch (FileNotFoundException e) {</span>
+<span class="nc" id="L70">                AlertUtil.showError(stage, &quot;Erreur&quot;, &quot;Erreur lors de la génération du PDF: &quot; + e.getMessage());</span>
+<span class="nc" id="L71">            }</span>
+        }
+<span class="nc" id="L73">    }</span>
+    
+    private void addSummaryStatistics(Document document, List&lt;Sejour&gt; sejours) {
+        // Calculate statistics
+<span class="nc" id="L77">        double totalFrais = 0.0;</span>
+<span class="nc" id="L78">        double totalExtras = 0.0;</span>
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        for (Sejour s : sejours) {</span>
+<span class="nc" id="L81">            totalFrais += s.getFraisSejour();</span>
+<span class="nc" id="L82">            totalExtras += s.getPrixExtras();</span>
+<span class="nc" id="L83">        }</span>
+
+<span class="nc" id="L85">        double totalRevenue = totalFrais + totalExtras;</span>
+        
+        // Group by type
+<span class="nc" id="L88">        Map&lt;String, Long&gt; countByType = new HashMap&lt;String, Long&gt;();</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        for (Sejour s : sejours) {</span>
+<span class="nc" id="L90">            String type = s.getTypeSejour();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (countByType.containsKey(type)) {</span>
+<span class="nc" id="L92">                countByType.put(type, countByType.get(type) + 1L);</span>
+            } else {
+<span class="nc" id="L94">                countByType.put(type, 1L);</span>
+            }
+<span class="nc" id="L96">        }</span>
+        
+        // Group by payment status
+<span class="nc" id="L99">        Map&lt;String, Long&gt; countByPaymentStatus = new HashMap&lt;String, Long&gt;();</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        for (Sejour s : sejours) {</span>
+<span class="nc" id="L101">            String status = s.getStatutPaiement();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            if (countByPaymentStatus.containsKey(status)) {</span>
+<span class="nc" id="L103">                countByPaymentStatus.put(status, countByPaymentStatus.get(status) + 1L);</span>
+            } else {
+<span class="nc" id="L105">                countByPaymentStatus.put(status, 1L);</span>
+            }
+<span class="nc" id="L107">        }</span>
+        
+        // Create summary table
+<span class="nc" id="L110">        Table summaryTable = new Table(UnitValue.createPercentArray(2));</span>
+<span class="nc" id="L111">        summaryTable.useAllAvailableWidth();</span>
+
+<span class="nc" id="L113">        Cell headerCell = new Cell();</span>
+<span class="nc" id="L114">        headerCell.add(new Paragraph(&quot;Statistiques Générales&quot;));</span>
+<span class="nc" id="L115">        headerCell.setBold();</span>
+<span class="nc" id="L116">        summaryTable.addCell(headerCell);</span>
+        
+<span class="nc" id="L118">        summaryTable.addCell(new Cell().add(new Paragraph(&quot;&quot;)));</span>
+        
+<span class="nc" id="L120">        summaryTable.addCell(new Cell().add(new Paragraph(&quot;Nombre total de séjours&quot;)));</span>
+<span class="nc" id="L121">        summaryTable.addCell(new Cell().add(new Paragraph(String.valueOf(sejours.size()))));</span>
+        
+<span class="nc" id="L123">        summaryTable.addCell(new Cell().add(new Paragraph(&quot;Total des frais de séjour&quot;)));</span>
+<span class="nc" id="L124">        summaryTable.addCell(new Cell().add(new Paragraph(String.format(&quot;%.2f €&quot;, totalFrais))));</span>
+        
+<span class="nc" id="L126">        summaryTable.addCell(new Cell().add(new Paragraph(&quot;Total des extras&quot;)));</span>
+<span class="nc" id="L127">        summaryTable.addCell(new Cell().add(new Paragraph(String.format(&quot;%.2f €&quot;, totalExtras))));</span>
+        
+<span class="nc" id="L129">        summaryTable.addCell(new Cell().add(new Paragraph(&quot;Revenu total&quot;)));</span>
+<span class="nc" id="L130">        summaryTable.addCell(new Cell().add(new Paragraph(String.format(&quot;%.2f €&quot;, totalRevenue))));</span>
+        
+<span class="nc" id="L132">        document.add(summaryTable);</span>
+<span class="nc" id="L133">        document.add(new Paragraph(&quot;\n&quot;));</span>
+        
+        // Add type distribution
+<span class="nc" id="L136">        Table typeTable = new Table(UnitValue.createPercentArray(2));</span>
+<span class="nc" id="L137">        typeTable.useAllAvailableWidth();</span>
+
+<span class="nc" id="L139">        Cell typeHeader = new Cell();</span>
+<span class="nc" id="L140">        typeHeader.add(new Paragraph(&quot;Distribution par Type&quot;));</span>
+<span class="nc" id="L141">        typeHeader.setBold();</span>
+<span class="nc" id="L142">        typeTable.addCell(typeHeader);</span>
+
+<span class="nc" id="L144">        typeTable.addCell(new Cell().add(new Paragraph(&quot;&quot;)));</span>
+        
+        // Refactoring: Sostituito forEach((k,v) -&gt; ...) con ciclo entrySet
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        for (Map.Entry&lt;String, Long&gt; entry : countByType.entrySet()) {</span>
+<span class="nc" id="L148">            typeTable.addCell(new Cell().add(new Paragraph(entry.getKey())));</span>
+<span class="nc" id="L149">            typeTable.addCell(new Cell().add(new Paragraph(String.valueOf(entry.getValue()))));</span>
+<span class="nc" id="L150">        }</span>
+        
+<span class="nc" id="L152">        document.add(typeTable);</span>
+<span class="nc" id="L153">        document.add(new Paragraph(&quot;\n&quot;));</span>
+        
+        // Add payment status distribution
+<span class="nc" id="L156">        Table paymentTable = new Table(UnitValue.createPercentArray(2));</span>
+<span class="nc" id="L157">        paymentTable.useAllAvailableWidth();</span>
+
+<span class="nc" id="L159">        Cell paymentHeader = new Cell();</span>
+<span class="nc" id="L160">        paymentHeader.add(new Paragraph(&quot;Distribution par Statut de Paiement&quot;));</span>
+<span class="nc" id="L161">        paymentHeader.setBold();</span>
+<span class="nc" id="L162">        paymentTable.addCell(paymentHeader);</span>
+
+<span class="nc" id="L164">        paymentTable.addCell(new Cell().add(new Paragraph(&quot;&quot;)));</span>
+        
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        for (Map.Entry&lt;String, Long&gt; entry : countByPaymentStatus.entrySet()) {</span>
+<span class="nc" id="L167">            paymentTable.addCell(new Cell().add(new Paragraph(entry.getKey())));</span>
+<span class="nc" id="L168">            paymentTable.addCell(new Cell().add(new Paragraph(String.valueOf(entry.getValue()))));</span>
+<span class="nc" id="L169">        }</span>
+        
+<span class="nc" id="L171">        document.add(paymentTable);</span>
+<span class="nc" id="L172">        document.add(new Paragraph(&quot;\n&quot;));</span>
+<span class="nc" id="L173">    }</span>
+    
+    private void addDetailedTable(Document document, List&lt;Sejour&gt; sejours) {
+<span class="nc" id="L176">        Table table = new Table(UnitValue.createPercentArray(8));</span>
+<span class="nc" id="L177">        table.useAllAvailableWidth();</span>
+        
+        // Add headers
+<span class="nc" id="L180">        String[] headers = {&quot;ID&quot;, &quot;Date Entrée&quot;, &quot;Date Sortie&quot;, &quot;Type&quot;, &quot;Frais&quot;, &quot;Extras&quot;, &quot;Paiement&quot;, &quot;Statut&quot;};</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        for (String header : headers) {</span>
+<span class="nc" id="L182">            Cell c = new Cell();</span>
+<span class="nc" id="L183">            c.add(new Paragraph(header));</span>
+<span class="nc" id="L184">            c.setBold();</span>
+<span class="nc" id="L185">            table.addHeaderCell(c);</span>
+        }
+        
+        // Add data rows
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        for (Sejour sejour : sejours) {</span>
+<span class="nc" id="L190">            table.addCell(new Cell().add(new Paragraph(String.valueOf(sejour.getId()))));</span>
+            
+<span class="nc bnc" id="L192" title="All 2 branches missed.">            String dateEntree = sejour.getDateEntree() != null ? sejour.getDateEntree().format(DATE_FORMATTER) : &quot;&quot;;</span>
+<span class="nc" id="L193">            table.addCell(new Cell().add(new Paragraph(dateEntree)));</span>
+            
+<span class="nc bnc" id="L195" title="All 2 branches missed.">            String dateSortie = sejour.getDateSortie() != null ? sejour.getDateSortie().format(DATE_FORMATTER) : &quot;&quot;;</span>
+<span class="nc" id="L196">            table.addCell(new Cell().add(new Paragraph(dateSortie)));</span>
+            
+<span class="nc" id="L198">            table.addCell(new Cell().add(new Paragraph(sejour.getTypeSejour())));</span>
+<span class="nc" id="L199">            table.addCell(new Cell().add(new Paragraph(String.format(&quot;%.2f €&quot;, sejour.getFraisSejour()))));</span>
+<span class="nc" id="L200">            table.addCell(new Cell().add(new Paragraph(String.format(&quot;%.2f €&quot;, sejour.getPrixExtras()))));</span>
+<span class="nc" id="L201">            table.addCell(new Cell().add(new Paragraph(sejour.getMoyenPaiement())));</span>
+<span class="nc" id="L202">            table.addCell(new Cell().add(new Paragraph(sejour.getStatutPaiement())));</span>
+<span class="nc" id="L203">        }</span>
+        
+<span class="nc" id="L205">        document.add(table);</span>
+<span class="nc" id="L206">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

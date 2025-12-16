@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModifierUtilisateurController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ModifierUtilisateurController.java</span></div><h1>ModifierUtilisateurController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import entite.*;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import service.UserService;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
+<span class="nc" id="L16">public class ModifierUtilisateurController {</span>
+
+    @FXML private TextField nomField;
+    @FXML private TextField prenomField;
+    @FXML private TextField emailField;
+    @FXML private TextField passwordField;
+    @FXML private Label typeLabel;
+    @FXML private TextField specialiteField;
+    @FXML private TextField adresseField;
+    @FXML private TextField telephoneField;
+    @FXML private DatePicker dateNaissancePicker;
+    @FXML private Button btnEnregistrer;
+
+    private Users user;
+<span class="nc" id="L30">    private final UserService userService = new UserService();</span>
+
+    public void setUtilisateur(Users user) {
+<span class="nc" id="L33">        this.user = user;</span>
+
+        // Pré-remplir les champs communs
+<span class="nc" id="L36">        nomField.setText(user.getNom());</span>
+<span class="nc" id="L37">        prenomField.setText(user.getPrenom());</span>
+<span class="nc" id="L38">        emailField.setText(user.getEmail());</span>
+<span class="nc" id="L39">        passwordField.setText(user.getPassword());</span>
+<span class="nc" id="L40">        typeLabel.setText(&quot;Type: &quot; + user.getType());</span>
+
+        // Afficher les champs spécifiques selon le type
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        switch (user.getType().toLowerCase()) {</span>
+            case &quot;patient&quot;:
+<span class="nc" id="L45">                adresseField.setVisible(true);</span>
+<span class="nc" id="L46">                telephoneField.setVisible(true);</span>
+<span class="nc" id="L47">                dateNaissancePicker.setVisible(true);</span>
+<span class="nc" id="L48">                Patient patient = (Patient) user;</span>
+<span class="nc" id="L49">                adresseField.setText(patient.getAdresse());</span>
+<span class="nc" id="L50">                telephoneField.setText(patient.getTelephone());</span>
+<span class="nc" id="L51">                dateNaissancePicker.setValue(patient.getDateNaissance());</span>
+<span class="nc" id="L52">                break;</span>
+            case &quot;medecin&quot;:
+<span class="nc" id="L54">                specialiteField.setVisible(true);</span>
+<span class="nc" id="L55">                telephoneField.setVisible(true);</span>
+<span class="nc" id="L56">                Medecin medecin = (Medecin) user;</span>
+<span class="nc" id="L57">                specialiteField.setText(medecin.getSpecialite());</span>
+<span class="nc" id="L58">                telephoneField.setText(medecin.getTelephone());</span>
+<span class="nc" id="L59">                break;</span>
+            case &quot;pharmacien&quot;:
+            case &quot;staff&quot;:
+<span class="nc" id="L62">                telephoneField.setVisible(true);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">                if (user instanceof Pharmacien pharmacien) {</span>
+<span class="nc" id="L64">                    telephoneField.setText(pharmacien.getTelephone());</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                } else if (user instanceof Staff staff) {</span>
+<span class="nc" id="L66">                    telephoneField.setText(staff.getTelephone());</span>
+                }
+<span class="nc" id="L68">                break;</span>
+            case &quot;admin&quot;:
+                // Aucun champ spécifique pour admin
+                break;
+        }
+<span class="nc" id="L73">    }</span>
+
+    @FXML
+    private void handleEnregistrer() {
+        try {
+            // Mettre à jour les champs communs
+<span class="nc" id="L79">            user.setNom(nomField.getText());</span>
+<span class="nc" id="L80">            user.setPrenom(prenomField.getText());</span>
+<span class="nc" id="L81">            user.setEmail(emailField.getText());</span>
+<span class="nc" id="L82">            user.setPassword(passwordField.getText());</span>
+
+            // Validation des champs communs
+<span class="nc bnc" id="L85" title="All 4 branches missed.">            if (user.getEmail() == null || user.getEmail().isEmpty() ||</span>
+<span class="nc bnc" id="L86" title="All 4 branches missed.">                    user.getPassword() == null || user.getPassword().isEmpty() ||</span>
+<span class="nc bnc" id="L87" title="All 4 branches missed.">                    user.getNom() == null || user.getNom().isEmpty() ||</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">                    user.getPrenom() == null || user.getPrenom().isEmpty()) {</span>
+<span class="nc" id="L89">                throw new IllegalArgumentException(&quot;Tous les champs communs doivent être remplis !&quot;);</span>
+            }
+
+            // Mettre à jour les champs spécifiques
+<span class="nc bnc" id="L93" title="All 4 branches missed.">            switch (user.getType().toLowerCase()) {</span>
+                case &quot;patient&quot;:
+<span class="nc" id="L95">                    Patient patient = (Patient) user;</span>
+<span class="nc" id="L96">                    patient.setAdresse(adresseField.getText());</span>
+<span class="nc" id="L97">                    patient.setTelephone(telephoneField.getText());</span>
+<span class="nc" id="L98">                    patient.setDateNaissance(dateNaissancePicker.getValue());</span>
+
+                    // Validation des champs spécifiques
+<span class="nc bnc" id="L101" title="All 4 branches missed.">                    if (patient.getAdresse() == null || patient.getAdresse().isEmpty() ||</span>
+<span class="nc bnc" id="L102" title="All 4 branches missed.">                            patient.getTelephone() == null || patient.getTelephone().isEmpty() ||</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                            patient.getDateNaissance() == null) {</span>
+<span class="nc" id="L104">                        throw new IllegalArgumentException(&quot;L'adresse, le téléphone et la date de naissance doivent être remplis !&quot;);</span>
+                    }
+                    break;
+                case &quot;medecin&quot;:
+<span class="nc" id="L108">                    Medecin medecin = (Medecin) user;</span>
+<span class="nc" id="L109">                    medecin.setSpecialite(specialiteField.getText());</span>
+<span class="nc" id="L110">                    medecin.setTelephone(telephoneField.getText());</span>
+
+                    // Validation des champs spécifiques
+<span class="nc bnc" id="L113" title="All 4 branches missed.">                    if (medecin.getSpecialite() == null || medecin.getSpecialite().isEmpty() ||</span>
+<span class="nc bnc" id="L114" title="All 4 branches missed.">                            medecin.getTelephone() == null || medecin.getTelephone().isEmpty()) {</span>
+<span class="nc" id="L115">                        throw new IllegalArgumentException(&quot;La spécialité et le téléphone doivent être remplis !&quot;);</span>
+                    }
+                    break;
+                case &quot;pharmacien&quot;:
+                case &quot;staff&quot;:
+<span class="nc bnc" id="L120" title="All 2 branches missed.">                    if (user instanceof Pharmacien pharmacien) {</span>
+<span class="nc" id="L121">                        pharmacien.setTelephone(telephoneField.getText());</span>
+<span class="nc bnc" id="L122" title="All 4 branches missed.">                        if (pharmacien.getTelephone() == null || pharmacien.getTelephone().isEmpty()) {</span>
+<span class="nc" id="L123">                            throw new IllegalArgumentException(&quot;Le téléphone doit être rempli !&quot;);</span>
+                        }
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                    } else if (user instanceof Staff staff) {</span>
+<span class="nc" id="L126">                        staff.setTelephone(telephoneField.getText());</span>
+<span class="nc bnc" id="L127" title="All 4 branches missed.">                        if (staff.getTelephone() == null || staff.getTelephone().isEmpty()) {</span>
+<span class="nc" id="L128">                            throw new IllegalArgumentException(&quot;Le téléphone doit être rempli !&quot;);</span>
+                        }
+                    }
+<span class="nc" id="L131">                    break;</span>
+                case &quot;admin&quot;:
+                    // Aucun champ spécifique pour admin
+                    break;
+            }
+
+            // Mettre à jour dans la base
+<span class="nc" id="L138">            userService.updateUtilisateur(user);</span>
+
+<span class="nc" id="L140">            Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L141">            alert.setTitle(&quot;Succès&quot;);</span>
+<span class="nc" id="L142">            alert.setContentText(user.getType() + &quot; mis à jour avec succès !&quot;);</span>
+<span class="nc" id="L143">            alert.showAndWait();</span>
+
+            // Redirection vers la liste des utilisateurs
+<span class="nc" id="L146">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ListeUtilisateurs.fxml&quot;));</span>
+<span class="nc" id="L147">            Parent root = loader.load();</span>
+<span class="nc" id="L148">            Stage stage = (Stage) btnEnregistrer.getScene().getWindow();</span>
+<span class="nc" id="L149">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L150">            stage.setTitle(&quot;Liste Utilisateurs&quot;);</span>
+<span class="nc" id="L151">            stage.show();</span>
+
+<span class="nc" id="L153">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L154">            showAlert(Alert.AlertType.WARNING, &quot;Champs manquants&quot;, e.getMessage());</span>
+<span class="nc" id="L155">        } catch (SQLException e) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            if (e.getMessage().contains(&quot;Aucun utilisateur trouvé&quot;)) {</span>
+<span class="nc" id="L157">                showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Utilisateur non trouvé dans la base de données !&quot;);</span>
+            } else {
+<span class="nc" id="L159">                showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Erreur lors de la mise à jour de l'utilisateur : &quot; + e.getMessage());</span>
+            }
+<span class="nc" id="L161">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L162">            showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Erreur lors de la sérialisation des rôles : &quot; + e.getMessage());</span>
+<span class="nc" id="L163">        } catch (IOException e) {</span>
+<span class="nc" id="L164">            showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Erreur lors de la redirection : &quot; + e.getMessage());</span>
+<span class="nc" id="L165">        }</span>
+<span class="nc" id="L166">    }</span>
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+<span class="nc" id="L169">        Alert alert = new Alert(type);</span>
+<span class="nc" id="L170">        alert.setTitle(title);</span>
+<span class="nc" id="L171">        alert.setHeaderText(null);</span>
+<span class="nc" id="L172">        alert.setContentText(content);</span>
+<span class="nc" id="L173">        alert.show();</span>
+<span class="nc" id="L174">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FormulairePharmacien.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">form</a> &gt; <span class="el_source">FormulairePharmacien.java</span></div><h1>FormulairePharmacien.java</h1><pre class="source lang-java linenums">package form;
+
+import javax.swing.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import util.DataSource;
+
+<span class="nc" id="L9">public class FormulairePharmacien {</span>
+    
+    public static void afficherFormulaire(int userId) {
+<span class="nc" id="L12">        String telephone = JOptionPane.showInputDialog(&quot;Numéro de téléphone du pharmacien :&quot;);</span>
+
+<span class="nc" id="L14">        String req = &quot;UPDATE users SET telephone = ? WHERE id = ?&quot;;</span>
+
+<span class="nc" id="L16">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L17">             PreparedStatement pstmt = conn.prepareStatement(req)) {</span>
+
+<span class="nc" id="L19">            pstmt.setString(1, telephone);</span>
+<span class="nc" id="L20">            pstmt.setInt(2, userId);</span>
+
+<span class="nc" id="L22">            pstmt.executeUpdate();</span>
+<span class="nc" id="L23">            System.out.println(&quot;✅ Pharmacien mis à jour dans la table `users` !&quot;);</span>
+
+<span class="nc" id="L25">        } catch (SQLException e) {</span>
+<span class="nc" id="L26">            System.err.println(&quot;❌ Erreur SQL mise à jour pharmacien : &quot; + e.getMessage());</span>
+<span class="nc" id="L27">        } catch (Exception e) {</span>
+<span class="nc" id="L28">            System.err.println(&quot;❌ Erreur générique : &quot; + e.getMessage());</span>
+<span class="nc" id="L29">        }</span>
+<span class="nc" id="L30">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

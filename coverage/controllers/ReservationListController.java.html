@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReservationListController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ReservationListController.java</span></div><h1>ReservationListController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.reservation;
+import entite.salle;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
+import service.ReservationService;
+
+import java.io.IOException;
+import java.net.URL;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+<span class="nc" id="L26">public class ReservationListController {</span>
+
+    @FXML private TableView&lt;reservation&gt; reservationTable;
+    @FXML private TableColumn&lt;reservation, Integer&gt; idColumn;
+    @FXML private TableColumn&lt;reservation, String&gt; salleColumn;
+    @FXML private TableColumn&lt;reservation, Timestamp&gt; dateDebutColumn;
+    @FXML private TableColumn&lt;reservation, Timestamp&gt; dateFinColumn;
+    @FXML private TableColumn&lt;reservation, String&gt; statusColumn;
+    @FXML private TableColumn&lt;reservation, Void&gt; actionColumn;
+    @FXML private TextField searchField;
+
+<span class="nc" id="L37">    private final ObservableList&lt;reservation&gt; reservationData = FXCollections.observableArrayList();</span>
+<span class="nc" id="L38">    private final ReservationService reservationService = new ReservationService();</span>
+<span class="nc" id="L39">    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L43">        System.out.println(&quot;Initialisation de ReservationListController...&quot;);</span>
+<span class="nc" id="L44">        configureTableColumns();</span>
+<span class="nc" id="L45">        loadReservations();</span>
+<span class="nc" id="L46">        debugTableViewContent();</span>
+<span class="nc" id="L47">    }</span>
+
+    private void configureTableColumns() {
+<span class="nc" id="L50">        idColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;id&quot;));</span>
+
+<span class="nc" id="L52">        salleColumn.setCellValueFactory(cellData -&gt;</span>
+<span class="nc" id="L53">                new SimpleStringProperty(cellData.getValue().getSalle().getNom()));</span>
+
+<span class="nc" id="L55">        configureDateColumn(dateDebutColumn, &quot;date_debut&quot;);</span>
+<span class="nc" id="L56">        configureDateColumn(dateFinColumn, &quot;date_fin&quot;);</span>
+
+<span class="nc" id="L58">        statusColumn.setCellValueFactory(cellData -&gt;</span>
+<span class="nc" id="L59">                new SimpleStringProperty(cellData.getValue().getSalle().getStatus()));</span>
+
+<span class="nc" id="L61">        actionColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L62">            private final Button terminerBtn = new Button(&quot;Terminer&quot;);</span>
+
+            {
+<span class="nc" id="L65">                terminerBtn.getStyleClass().addAll(&quot;btn&quot;, &quot;btn-primary&quot;);</span>
+<span class="nc" id="L66">                terminerBtn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L67">                    reservation res = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L68">                    terminerReservation(res);</span>
+<span class="nc" id="L69">                });</span>
+<span class="nc" id="L70">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L74">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">                if (empty) {</span>
+<span class="nc" id="L76">                    setGraphic(null);</span>
+                } else {
+<span class="nc" id="L78">                    reservation res = getTableView().getItems().get(getIndex());</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                    terminerBtn.setDisable(!isReservationTerminable(res));</span>
+<span class="nc" id="L80">                    setGraphic(terminerBtn);</span>
+                }
+<span class="nc" id="L82">            }</span>
+        });
+
+<span class="nc" id="L85">        System.out.println(&quot;Colonnes configurées : &quot; + reservationTable.getColumns().size());</span>
+<span class="nc" id="L86">    }</span>
+
+    private boolean isReservationTerminable(reservation res) {
+<span class="nc" id="L89">        return res.getDate_fin().toLocalDateTime().isBefore(LocalDateTime.now());</span>
+    }
+
+    private void configureDateColumn(TableColumn&lt;reservation, Timestamp&gt; column, String propertyName) {
+<span class="nc" id="L93">        column.setCellValueFactory(new PropertyValueFactory&lt;&gt;(propertyName));</span>
+<span class="nc" id="L94">        column.setCellFactory(col -&gt; new TableCell&lt;&gt;() {</span>
+            @Override
+            protected void updateItem(Timestamp item, boolean empty) {
+<span class="nc" id="L97">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">                if (empty || item == null) {</span>
+<span class="nc" id="L99">                    setText(null);</span>
+                } else {
+<span class="nc" id="L101">                    setText(dateFormatter.format(item.toLocalDateTime()));</span>
+                }
+<span class="nc" id="L103">            }</span>
+        });
+<span class="nc" id="L105">    }</span>
+
+    private void loadReservations() {
+        try {
+<span class="nc" id="L109">            System.out.println(&quot;Chargement des réservations...&quot;);</span>
+<span class="nc" id="L110">            reservationData.clear();</span>
+
+            // Données factices pour tester
+<span class="nc" id="L113">            reservation testRes = new reservation();</span>
+<span class="nc" id="L114">            testRes.setId(1);</span>
+<span class="nc" id="L115">            testRes.setDate_debut(Timestamp.valueOf(LocalDateTime.now()));</span>
+<span class="nc" id="L116">            testRes.setDate_fin(Timestamp.valueOf(LocalDateTime.now().plusHours(2)));</span>
+<span class="nc" id="L117">            salle testSalle = new salle(1, &quot;Salle Test&quot;, &quot;Disponible&quot;);</span>
+<span class="nc" id="L118">            testRes.setSalle(testSalle);</span>
+<span class="nc" id="L119">            reservationData.add(testRes);</span>
+
+            // Charger les données réelles
+<span class="nc" id="L122">            reservationData.addAll(reservationService.getAllReservations());</span>
+<span class="nc" id="L123">            reservationTable.setItems(reservationData);</span>
+<span class="nc" id="L124">            System.out.println(&quot;Réservations chargées avec succès. Taille : &quot; + reservationData.size());</span>
+<span class="nc" id="L125">        } catch (SQLException e) {</span>
+<span class="nc" id="L126">            System.err.println(&quot;Erreur lors du chargement des réservations : &quot; + e.getMessage());</span>
+<span class="nc" id="L127">            e.printStackTrace();</span>
+<span class="nc" id="L128">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors du chargement: &quot; + e.getMessage());</span>
+<span class="nc" id="L129">        }</span>
+<span class="nc" id="L130">    }</span>
+
+    private void debugTableViewContent() {
+<span class="nc" id="L133">        System.out.println(&quot;Contenu de la TableView :&quot;);</span>
+<span class="nc" id="L134">        System.out.println(&quot;Nombre de réservations : &quot; + reservationData.size());</span>
+<span class="nc" id="L135">        reservationData.forEach(res -&gt;</span>
+<span class="nc" id="L136">                System.out.println(&quot;Réservation: ID=&quot; + res.getId() + &quot;, Salle=&quot; + res.getSalle().getNom() +</span>
+<span class="nc" id="L137">                        &quot;, Début=&quot; + res.getDate_debut() + &quot;, Fin=&quot; + res.getDate_fin()));</span>
+<span class="nc" id="L138">        System.out.println(&quot;Colonnes du TableView : &quot; + reservationTable.getColumns());</span>
+<span class="nc" id="L139">        System.out.println(&quot;TableView visible : &quot; + reservationTable.isVisible());</span>
+<span class="nc" id="L140">    }</span>
+
+    private void terminerReservation(reservation res) {
+        try {
+<span class="nc" id="L144">            reservationService.terminerReservation(res.getId());</span>
+<span class="nc" id="L145">            loadReservations();</span>
+<span class="nc" id="L146">            showAlert(&quot;Succès&quot;, &quot;Réservation terminée&quot;);</span>
+<span class="nc" id="L147">        } catch (SQLException e) {</span>
+<span class="nc" id="L148">            showAlert(&quot;Erreur&quot;, &quot;Échec de la mise à jour: &quot; + e.getMessage());</span>
+<span class="nc" id="L149">        }</span>
+<span class="nc" id="L150">    }</span>
+
+    @FXML
+    private void showDepartements(ActionEvent event) {
+<span class="nc" id="L154">        loadView(&quot;/departement.fxml&quot;, event);</span>
+<span class="nc" id="L155">    }</span>
+
+    @FXML
+    private void showEtages(ActionEvent event) {
+<span class="nc" id="L159">        loadView(&quot;/etage.fxml&quot;, event);</span>
+<span class="nc" id="L160">    }</span>
+
+    @FXML
+    private void showReservation(ActionEvent event) {
+        // Already on this view
+<span class="nc" id="L165">    }</span>
+
+    private void loadView(String fxmlPath, ActionEvent event) {
+        try {
+<span class="nc" id="L169">            URL url = getClass().getResource(fxmlPath);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            if (url == null) {</span>
+<span class="nc" id="L171">                throw new IOException(&quot;Fichier FXML introuvable: &quot; + fxmlPath);</span>
+            }
+
+<span class="nc" id="L174">            Parent root = FXMLLoader.load(url);</span>
+<span class="nc" id="L175">            Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L176">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L177">            scene.getStylesheets().add(getClass().getResource(&quot;/styles1.css&quot;).toExternalForm());</span>
+<span class="nc" id="L178">            stage.setScene(scene);</span>
+<span class="nc" id="L179">            stage.show();</span>
+<span class="nc" id="L180">        } catch (IOException e) {</span>
+<span class="nc" id="L181">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger la vue: &quot; + e.getMessage());</span>
+<span class="nc" id="L182">            e.printStackTrace();</span>
+<span class="nc" id="L183">        }</span>
+<span class="nc" id="L184">    }</span>
+
+    private void showAlert(String title, String message) {
+<span class="nc" id="L187">        Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L188">        alert.setTitle(title);</span>
+<span class="nc" id="L189">        alert.setHeaderText(null);</span>
+<span class="nc" id="L190">        alert.setContentText(message);</span>
+<span class="nc" id="L191">        alert.showAndWait();</span>
+<span class="nc" id="L192">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

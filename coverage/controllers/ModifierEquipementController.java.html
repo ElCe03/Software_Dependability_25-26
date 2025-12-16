@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModifierEquipementController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ModifierEquipementController.java</span></div><h1>ModifierEquipementController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Equipement;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import service.EquipementService;
+
+<span class="nc" id="L9">public class ModifierEquipementController {</span>
+
+    @FXML
+    private TextField nomField;
+
+    @FXML
+    private TextField typeField;
+
+    @FXML
+    private ComboBox&lt;String&gt; statutCombo;
+
+    @FXML
+    private TextField categorieField;
+
+    private Equipement equipement; // L'équipement à modifier
+<span class="nc" id="L24">    private final EquipementService equipementService = new EquipementService();</span>
+
+    private Runnable onEquipementModifie; // Callback pour rafraîchir la liste
+
+    /**
+     * Initialise les données de l'équipement à modifier
+     */
+    public void initData(Equipement equipement) {
+<span class="nc" id="L32">        this.equipement = equipement;</span>
+
+        // Remplissage des champs avec les données existantes
+<span class="nc" id="L35">        nomField.setText(equipement.getNom());</span>
+<span class="nc" id="L36">        typeField.setText(equipement.getType());</span>
+
+<span class="nc" id="L38">        statutCombo.getItems().addAll(&quot;Fonctionnel&quot;, &quot;En Panne&quot;, &quot;En Maintenance&quot;);</span>
+<span class="nc" id="L39">        statutCombo.setValue(equipement.getStatut());</span>
+
+<span class="nc" id="L41">        categorieField.setText(equipement.getCategory());</span>
+<span class="nc" id="L42">    }</span>
+
+    public void setOnEquipementModifie(Runnable onEquipementModifie) {
+<span class="nc" id="L45">        this.onEquipementModifie = onEquipementModifie;</span>
+<span class="nc" id="L46">    }</span>
+
+    /**
+     * Méthode appelée lors du clic sur le bouton &quot;Modifier&quot;
+     */
+    @FXML
+    private void modifierEquipementAction() {
+        // Récupération des valeurs saisies
+<span class="nc" id="L54">        String nom = nomField.getText().trim();</span>
+<span class="nc" id="L55">        String type = typeField.getText().trim();</span>
+<span class="nc" id="L56">        String statut = statutCombo.getValue();</span>
+<span class="nc" id="L57">        String categorie = categorieField.getText().trim();</span>
+
+        // Validation de la saisie
+<span class="nc bnc" id="L60" title="All 8 branches missed.">        if (nom.isEmpty() || type.isEmpty() || statut == null || categorie.isEmpty()) {</span>
+<span class="nc" id="L61">            showAlert(&quot;Erreur de saisie&quot;, &quot;Veuillez remplir tous les champs obligatoires.&quot;);</span>
+<span class="nc" id="L62">            return;</span>
+        }
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (nom.length() &lt; 3) {</span>
+<span class="nc" id="L66">            showAlert(&quot;Nom invalide&quot;, &quot;Le nom de l'équipement doit contenir au moins 3 caractères.&quot;);</span>
+<span class="nc" id="L67">            return;</span>
+        }
+
+        // Mise à jour de l'objet
+<span class="nc" id="L71">        equipement.setNom(nom);</span>
+<span class="nc" id="L72">        equipement.setType(type);</span>
+<span class="nc" id="L73">        equipement.setStatut(statut);</span>
+<span class="nc" id="L74">        equipement.setCategory(categorie);</span>
+
+        // Mise à jour dans la base via le service
+<span class="nc" id="L77">        equipementService.updateEquipement(equipement);</span>
+
+        // Callback pour rafraîchir la liste si défini
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (onEquipementModifie != null) {</span>
+<span class="nc" id="L81">            onEquipementModifie.run();</span>
+        }
+
+        // Fermeture de la fenêtre
+<span class="nc" id="L85">        Stage stage = (Stage) nomField.getScene().getWindow();</span>
+<span class="nc" id="L86">        stage.close();</span>
+<span class="nc" id="L87">    }</span>
+
+    /**
+     * Méthode utilitaire pour afficher une alerte
+     */
+    private void showAlert(String titre, String message) {
+<span class="nc" id="L93">        Alert alert = new Alert(Alert.AlertType.WARNING);</span>
+<span class="nc" id="L94">        alert.setTitle(titre);</span>
+<span class="nc" id="L95">        alert.setHeaderText(null);</span>
+<span class="nc" id="L96">        alert.setContentText(message);</span>
+<span class="nc" id="L97">        alert.showAndWait();</span>
+<span class="nc" id="L98">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

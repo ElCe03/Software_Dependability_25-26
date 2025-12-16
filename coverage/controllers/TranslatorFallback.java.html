@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TranslatorFallback.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">TranslatorFallback.java</span></div><h1>TranslatorFallback.java</h1><pre class="source lang-java linenums">package controllers;
+
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="nc" id="L6">public class TranslatorFallback {</span>
+<span class="nc" id="L7">    private static final Map&lt;String, Map&lt;String, String&gt;&gt; translations = new HashMap&lt;&gt;();</span>
+
+    static {
+        // English to French
+<span class="nc" id="L11">        Map&lt;String, String&gt; enToFr = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L12">        enToFr.put(&quot;Service Details - %s&quot;, &quot;Détails du service - %s&quot;);</span>
+<span class="nc" id="L13">        enToFr.put(&quot;Close&quot;, &quot;Fermer&quot;);</span>
+<span class="nc" id="L14">        enToFr.put(&quot;Duration:&quot;, &quot;Durée :&quot;);</span>
+<span class="nc" id="L15">        enToFr.put(&quot;%d minutes&quot;, &quot;%d minutes&quot;);</span>
+<span class="nc" id="L16">        enToFr.put(&quot;Description:&quot;, &quot;Description :&quot;);</span>
+<span class="nc" id="L17">        enToFr.put(&quot;See Service Details&quot;, &quot;Voir les détails du service&quot;);</span>
+<span class="nc" id="L18">        enToFr.put(&quot;⏱ %d minutes&quot;, &quot;⏱ %d minutes&quot;);</span>
+<span class="nc" id="L19">        enToFr.put(&quot;Navigation Error&quot;, &quot;Erreur de navigation&quot;);</span>
+<span class="nc" id="L20">        enToFr.put(&quot;Failed to load the front page.&quot;, &quot;Échec du chargement de la page d'accueil.&quot;);</span>
+<span class="nc" id="L21">        enToFr.put(&quot;Translation unavailable, using English.&quot;, &quot;Traduction indisponible, utilisation de l'anglais.&quot;);</span>
+<span class="nc" id="L22">        enToFr.put(&quot;Loading Error&quot;, &quot;Erreur de chargement&quot;);</span>
+<span class="nc" id="L23">        enToFr.put(&quot;Failed to load services in time.&quot;, &quot;Échec du chargement des services.&quot;);</span>
+<span class="nc" id="L24">        translations.put(&quot;fr&quot;, enToFr);</span>
+
+        // English to Spanish
+<span class="nc" id="L27">        Map&lt;String, String&gt; enToEs = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L28">        enToEs.put(&quot;Service Details - %s&quot;, &quot;Detalles del servicio - %s&quot;);</span>
+<span class="nc" id="L29">        enToEs.put(&quot;Close&quot;, &quot;Cerrar&quot;);</span>
+<span class="nc" id="L30">        enToEs.put(&quot;Duration:&quot;, &quot;Duración:&quot;);</span>
+<span class="nc" id="L31">        enToEs.put(&quot;%d minutes&quot;, &quot;%d minutos&quot;);</span>
+<span class="nc" id="L32">        enToEs.put(&quot;Description:&quot;, &quot;Descripción:&quot;);</span>
+<span class="nc" id="L33">        enToEs.put(&quot;See Service Details&quot;, &quot;Ver detalles del servicio&quot;);</span>
+<span class="nc" id="L34">        enToEs.put(&quot;⏱ %d minutes&quot;, &quot;⏱ %d minutos&quot;);</span>
+<span class="nc" id="L35">        enToEs.put(&quot;Navigation Error&quot;, &quot;Error de navegación&quot;);</span>
+<span class="nc" id="L36">        enToEs.put(&quot;Failed to load the front page.&quot;, &quot;No se pudo cargar la página principal.&quot;);</span>
+<span class="nc" id="L37">        enToEs.put(&quot;Translation unavailable, using English.&quot;, &quot;Traducción no disponible, usando inglés.&quot;);</span>
+<span class="nc" id="L38">        enToEs.put(&quot;Loading Error&quot;, &quot;Error de carga&quot;);</span>
+<span class="nc" id="L39">        enToEs.put(&quot;Failed to load services in time.&quot;, &quot;No se pudieron cargar los servicios a tiempo.&quot;);</span>
+<span class="nc" id="L40">        translations.put(&quot;es&quot;, enToEs);</span>
+
+        // English to German
+<span class="nc" id="L43">        Map&lt;String, String&gt; enToDe = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L44">        enToDe.put(&quot;Service Details - %s&quot;, &quot;Dienstleistungsdetails - %s&quot;);</span>
+<span class="nc" id="L45">        enToDe.put(&quot;Close&quot;, &quot;Schließen&quot;);</span>
+<span class="nc" id="L46">        enToDe.put(&quot;Duration:&quot;, &quot;Dauer:&quot;);</span>
+<span class="nc" id="L47">        enToDe.put(&quot;%d minutes&quot;, &quot;%d Minuten&quot;);</span>
+<span class="nc" id="L48">        enToDe.put(&quot;Description:&quot;, &quot;Beschreibung:&quot;);</span>
+<span class="nc" id="L49">        enToDe.put(&quot;See Service Details&quot;, &quot;Dienstleistungsdetails anzeigen&quot;);</span>
+<span class="nc" id="L50">        enToDe.put(&quot;⏱ %d minutes&quot;, &quot;⏱ %d Minuten&quot;);</span>
+<span class="nc" id="L51">        enToDe.put(&quot;Navigation Error&quot;, &quot;Navigationsfehler&quot;);</span>
+<span class="nc" id="L52">        enToDe.put(&quot;Failed to load the front page.&quot;, &quot;Die Startseite konnte nicht geladen werden.&quot;);</span>
+<span class="nc" id="L53">        enToDe.put(&quot;Translation unavailable, using English.&quot;, &quot;Übersetzung nicht verfügbar, Englisch wird verwendet.&quot;);</span>
+<span class="nc" id="L54">        enToDe.put(&quot;Loading Error&quot;, &quot;Ladefehler&quot;);</span>
+<span class="nc" id="L55">        enToDe.put(&quot;Failed to load services in time.&quot;, &quot;Dienste konnten nicht rechtzeitig geladen werden.&quot;);</span>
+<span class="nc" id="L56">        translations.put(&quot;de&quot;, enToDe);</span>
+
+        // English to Arabic
+<span class="nc" id="L59">        Map&lt;String, String&gt; enToAr = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L60">        enToAr.put(&quot;Service Details - %s&quot;, &quot;تفاصيل الخدمة - %s&quot;);</span>
+<span class="nc" id="L61">        enToAr.put(&quot;Close&quot;, &quot;إغلاق&quot;);</span>
+<span class="nc" id="L62">        enToAr.put(&quot;Duration:&quot;, &quot;المدة:&quot;);</span>
+<span class="nc" id="L63">        enToAr.put(&quot;%d minutes&quot;, &quot;%d دقيقة&quot;);</span>
+<span class="nc" id="L64">        enToAr.put(&quot;Description:&quot;, &quot;الوصف:&quot;);</span>
+<span class="nc" id="L65">        enToAr.put(&quot;See Service Details&quot;, &quot;عرض تفاصيل الخدمة&quot;);</span>
+<span class="nc" id="L66">        enToAr.put(&quot;⏱ %d minutes&quot;, &quot;⏱ %d دقيقة&quot;);</span>
+<span class="nc" id="L67">        enToAr.put(&quot;Navigation Error&quot;, &quot;خطأ في التنقل&quot;);</span>
+<span class="nc" id="L68">        enToAr.put(&quot;Failed to load the front page.&quot;, &quot;فشل تحميل الصفحة الرئيسية.&quot;);</span>
+<span class="nc" id="L69">        enToAr.put(&quot;Translation unavailable, using English.&quot;, &quot;الترجمة غير متوفرة، يتم استخدام الإنجليزية.&quot;);</span>
+<span class="nc" id="L70">        enToAr.put(&quot;Loading Error&quot;, &quot;خطأ في التحميل&quot;);</span>
+<span class="nc" id="L71">        enToAr.put(&quot;Failed to load services in time.&quot;, &quot;فشل تحميل الخدمات في الوقت المحدد.&quot;);</span>
+<span class="nc" id="L72">        translations.put(&quot;ar&quot;, enToAr);</span>
+<span class="nc" id="L73">    }</span>
+
+    public static String translate(String text, String targetLang) {
+<span class="nc bnc" id="L76" title="All 6 branches missed.">        if (text == null || targetLang == null || targetLang.equals(&quot;en&quot;)) {</span>
+<span class="nc" id="L77">            return text;</span>
+        }
+
+<span class="nc" id="L80">        Map&lt;String, String&gt; langTranslations = translations.get(targetLang);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (langTranslations != null) {</span>
+            // Check for exact matches first
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if (langTranslations.containsKey(text)) {</span>
+<span class="nc" id="L84">                return langTranslations.get(text);</span>
+            }
+
+            // Check for formatted strings
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            for (Map.Entry&lt;String, String&gt; entry : langTranslations.entrySet()) {</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                if (text.startsWith(entry.getKey().split(&quot;%&quot;)[0])) {</span>
+                    try {
+<span class="nc" id="L91">                        return String.format(entry.getValue(), text.split(&quot;%&quot;)[1].split(&quot; &quot;)[0]);</span>
+<span class="nc" id="L92">                    } catch (Exception e) {</span>
+<span class="nc" id="L93">                        return text;</span>
+                    }
+                }
+<span class="nc" id="L96">            }</span>
+        }
+<span class="nc" id="L98">        return text;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CommandeUpdateController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">CommandeUpdateController.java</span></div><h1>CommandeUpdateController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Commande;
+import entite.Medicament;
+import entite.MedicamentCommande;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import service.CommandeService;
+import service.MedicamentService;
+import test.MainFx;
+
+import java.time.LocalDate;
+
+<span class="nc" id="L16">public class CommandeUpdateController {</span>
+
+    @FXML private DatePicker dateCommandePicker;
+    @FXML private Spinner&lt;Integer&gt; quantiteSpinner;
+    @FXML private ComboBox&lt;Medicament&gt; medicamentComboBox;
+    @FXML private TextField quantiteMedicamentField;
+    @FXML private ListView&lt;String&gt; medicamentListView;
+    @FXML private Label totalPrixLabel;
+
+    @FXML private Label dateError;
+    @FXML private Label medicamentError;
+    @FXML private Label quantiteError;
+
+    private Commande commande;
+<span class="nc" id="L30">    private final ObservableList&lt;MedicamentCommande&gt; medicamentCommandes = FXCollections.observableArrayList();</span>
+<span class="nc" id="L31">    private final MedicamentService medicamentService = new MedicamentService();</span>
+<span class="nc" id="L32">    private final CommandeService commandeService = new CommandeService();</span>
+
+    @FXML
+    private void initialize() {
+<span class="nc" id="L36">        medicamentComboBox.setItems(FXCollections.observableArrayList(medicamentService.readAll()));</span>
+
+<span class="nc" id="L38">        medicamentComboBox.setCellFactory(lv -&gt; new ListCell&lt;&gt;() {</span>
+            @Override
+            protected void updateItem(Medicament medicament, boolean empty) {
+<span class="nc" id="L41">                super.updateItem(medicament, empty);</span>
+<span class="nc bnc" id="L42" title="All 4 branches missed.">                setText(empty || medicament == null ? null : medicament.getNom_medicament());</span>
+<span class="nc" id="L43">            }</span>
+        });
+
+<span class="nc" id="L46">        medicamentComboBox.setButtonCell(new ListCell&lt;&gt;() {</span>
+            @Override
+            protected void updateItem(Medicament medicament, boolean empty) {
+<span class="nc" id="L49">                super.updateItem(medicament, empty);</span>
+<span class="nc bnc" id="L50" title="All 4 branches missed.">                setText(empty || medicament == null ? null : medicament.getNom_medicament());</span>
+<span class="nc" id="L51">            }</span>
+        });
+
+<span class="nc" id="L54">        quantiteSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 1));</span>
+<span class="nc" id="L55">    }</span>
+
+    public void setCommande(Commande commande) {
+<span class="nc" id="L58">        this.commande = commande;</span>
+
+<span class="nc" id="L60">        dateCommandePicker.setValue(commande.getDate_commande());</span>
+<span class="nc" id="L61">        quantiteSpinner.getValueFactory().setValue(commande.getQuantite());</span>
+
+        // Ensure status is not null
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (commande.getStatus() == null) {</span>
+<span class="nc" id="L65">            commande.setStatus(&quot;pending&quot;);</span>
+        }
+
+<span class="nc" id="L68">        medicamentCommandes.setAll(commande.getMedicaments());</span>
+<span class="nc" id="L69">        medicamentListView.getItems().clear();</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (MedicamentCommande mc : medicamentCommandes) {</span>
+<span class="nc" id="L71">            medicamentListView.getItems().add(</span>
+<span class="nc" id="L72">                    mc.getMedicament().getNom_medicament() + &quot; x&quot; + mc.getQuantite()</span>
+            );
+<span class="nc" id="L74">        }</span>
+
+<span class="nc" id="L76">        updateTotalPrix();</span>
+<span class="nc" id="L77">    }</span>
+
+    @FXML
+    private void handleAddMedicamentToCommande() {
+<span class="nc" id="L81">        clearErrors();</span>
+
+<span class="nc" id="L83">        Medicament medicament = medicamentComboBox.getValue();</span>
+<span class="nc" id="L84">        int quantite = quantiteSpinner.getValue();</span>
+<span class="nc" id="L85">        boolean isValid = true;</span>
+
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (medicament == null) {</span>
+<span class="nc" id="L88">            medicamentError.setText(&quot;Médicament requis.&quot;);</span>
+<span class="nc" id="L89">            isValid = false;</span>
+        }
+
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (quantite &lt;= 0) {</span>
+<span class="nc" id="L93">            quantiteError.setText(&quot;Quantité invalide.&quot;);</span>
+<span class="nc" id="L94">            isValid = false;</span>
+<span class="nc bnc" id="L95" title="All 4 branches missed.">        } else if (medicament != null &amp;&amp; quantite &gt; medicament.getQuantite_stock()) {</span>
+<span class="nc" id="L96">            quantiteError.setText(&quot;Stock insuffisant (max: &quot; + medicament.getQuantite_stock() + &quot;).&quot;);</span>
+<span class="nc" id="L97">            isValid = false;</span>
+        }
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (!isValid) return;</span>
+
+<span class="nc" id="L102">        MedicamentCommande mc = new MedicamentCommande(commande, medicament, quantite);</span>
+<span class="nc" id="L103">        medicamentCommandes.add(mc);</span>
+<span class="nc" id="L104">        medicamentListView.getItems().add(medicament.getNom_medicament() + &quot; x&quot; + quantite);</span>
+
+<span class="nc" id="L106">        updateTotalPrix();</span>
+<span class="nc" id="L107">    }</span>
+
+    @FXML
+    private void handleUpdateCommande() {
+<span class="nc" id="L111">        clearErrors();</span>
+
+<span class="nc" id="L113">        LocalDate dateCommande = dateCommandePicker.getValue();</span>
+<span class="nc" id="L114">        boolean isValid = true;</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (dateCommande == null) {</span>
+<span class="nc" id="L117">            dateError.setText(&quot;Date requise.&quot;);</span>
+<span class="nc" id="L118">            isValid = false;</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        } else if (dateCommande.isBefore(LocalDate.now())) {</span>
+<span class="nc" id="L120">            dateError.setText(&quot;La date ne peut pas être dans le passé.&quot;);</span>
+<span class="nc" id="L121">            isValid = false;</span>
+        }
+
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (medicamentCommandes.isEmpty()) {</span>
+<span class="nc" id="L125">            showAlert(&quot;Erreur&quot;, &quot;Veuillez ajouter au moins un médicament.&quot;);</span>
+<span class="nc" id="L126">            return;</span>
+        }
+
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (!isValid) return;</span>
+
+<span class="nc" id="L131">        double totalPrix = calculateTotal();</span>
+
+<span class="nc" id="L133">        commande.setDate_commande(dateCommande);</span>
+<span class="nc" id="L134">        commande.setQuantite(medicamentCommandes.stream().mapToInt(MedicamentCommande::getQuantite).sum());</span>
+<span class="nc" id="L135">        commande.setTotal_prix(totalPrix);</span>
+<span class="nc" id="L136">        commande.getMedicaments().clear();</span>
+<span class="nc" id="L137">        commande.getMedicaments().addAll(medicamentCommandes);</span>
+
+        // Ensure status is set
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (commande.getStatus() == null) {</span>
+<span class="nc" id="L141">            commande.setStatus(&quot;pending&quot;);</span>
+        }
+
+<span class="nc" id="L144">        commandeService.update(commande);</span>
+
+<span class="nc" id="L146">        showAlert(&quot;Succès&quot;, &quot;Commande mise à jour avec succès !&quot;);</span>
+<span class="nc" id="L147">        MainFx.loadPage(&quot;commande_list.fxml&quot;);</span>
+<span class="nc" id="L148">    }</span>
+
+    private double calculateTotal() {
+<span class="nc" id="L151">        return medicamentCommandes.stream()</span>
+<span class="nc" id="L152">                .mapToDouble(mc -&gt; mc.getMedicament().getPrix_medicament() * mc.getQuantite())</span>
+<span class="nc" id="L153">                .sum();</span>
+    }
+
+    private void updateTotalPrix() {
+<span class="nc" id="L157">        totalPrixLabel.setText(String.format(&quot;%.2f DT&quot;, calculateTotal()));</span>
+<span class="nc" id="L158">    }</span>
+
+    private void showAlert(String titre, String message) {
+<span class="nc" id="L161">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L162">        alert.setTitle(titre);</span>
+<span class="nc" id="L163">        alert.setHeaderText(null);</span>
+<span class="nc" id="L164">        alert.setContentText(message);</span>
+<span class="nc" id="L165">        alert.showAndWait();</span>
+<span class="nc" id="L166">    }</span>
+
+    @FXML
+    private void handleClearCommande() {
+<span class="nc" id="L170">        dateCommandePicker.setValue(null);</span>
+<span class="nc" id="L171">        quantiteSpinner.getValueFactory().setValue(1);</span>
+<span class="nc" id="L172">        medicamentListView.getItems().clear();</span>
+<span class="nc" id="L173">        medicamentCommandes.clear();</span>
+<span class="nc" id="L174">        medicamentComboBox.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L175">        quantiteMedicamentField.clear();</span>
+<span class="nc" id="L176">        totalPrixLabel.setText(&quot;0.00 DT&quot;);</span>
+<span class="nc" id="L177">        clearErrors();</span>
+<span class="nc" id="L178">    }</span>
+
+    private void clearErrors() {
+<span class="nc" id="L181">        dateError.setText(&quot;&quot;);</span>
+<span class="nc" id="L182">        medicamentError.setText(&quot;&quot;);</span>
+<span class="nc" id="L183">        quantiteError.setText(&quot;&quot;);</span>
+<span class="nc" id="L184">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

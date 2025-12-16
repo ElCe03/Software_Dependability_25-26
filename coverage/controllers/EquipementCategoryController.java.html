@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EquipementCategoryController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">EquipementCategoryController.java</span></div><h1>EquipementCategoryController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Equipement;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import service.EquipementService;
+import javafx.scene.layout.VBox;
+
+
+import java.io.IOException;
+import java.util.List;
+
+<span class="nc" id="L20">public class EquipementCategoryController {</span>
+
+    @FXML
+    private Label categoryLabel;
+    @FXML
+    private TextField searchBar;
+    @FXML
+    private Button ajouterEquipementButton;
+    @FXML
+    private ListView&lt;Equipement&gt; equipementList;
+    @FXML
+    private Label noEquipementsLabel;
+    @FXML
+    private Label labelNomCategorie;
+
+    private ObservableList&lt;Equipement&gt; equipements;
+    private EquipementService equipementService;
+    private String currentCategory;
+
+    public void initialize() {
+<span class="nc" id="L40">        equipementService = new EquipementService();</span>
+<span class="nc" id="L41">        equipements = FXCollections.observableArrayList();</span>
+<span class="nc" id="L42">        equipementList.setItems(equipements);</span>
+<span class="nc" id="L43">        setCustomCellFactory();</span>
+<span class="nc" id="L44">    }</span>
+
+    public void setCategorie(String categoryName) {
+<span class="nc" id="L47">        labelNomCategorie.setText(categoryName);</span>
+<span class="nc" id="L48">        currentCategory = categoryName;</span>
+<span class="nc" id="L49">        categoryLabel.setText(&quot;Catégorie : &quot; + categoryName);</span>
+<span class="nc" id="L50">        chargerEquipementsParCategorie();</span>
+<span class="nc" id="L51">    }</span>
+
+    public void setCategoryTitle(String categoryName) {
+<span class="nc" id="L54">        currentCategory = categoryName;</span>
+<span class="nc" id="L55">        categoryLabel.setText(&quot;Catégorie : &quot; + categoryName);</span>
+<span class="nc" id="L56">        chargerEquipementsParCategorie();</span>
+<span class="nc" id="L57">    }</span>
+
+    private void chargerEquipementsParCategorie() {
+        try {
+<span class="nc bnc" id="L61" title="All 4 branches missed.">            if (currentCategory == null || currentCategory.isEmpty()) {</span>
+<span class="nc" id="L62">                System.err.println(&quot;❌ La catégorie n'est pas définie !&quot;);</span>
+<span class="nc" id="L63">                return;</span>
+            }
+
+<span class="nc" id="L66">            List&lt;Equipement&gt; equipementListFromDB = equipementService.getEquipementsByCategory(currentCategory);</span>
+<span class="nc" id="L67">            listEquipementsInVBox(equipementListFromDB);</span>
+
+<span class="nc" id="L69">        } catch (Exception e) {</span>
+<span class="nc" id="L70">            System.err.println(&quot;❌ Erreur lors du chargement des équipements : &quot; + e.getMessage());</span>
+<span class="nc" id="L71">        }</span>
+<span class="nc" id="L72">    }</span>
+
+    private void listEquipementsInVBox(List&lt;Equipement&gt; equipementsFromDB) {
+<span class="nc" id="L75">        this.equipements.clear();</span>
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (equipementsFromDB.isEmpty()) {</span>
+<span class="nc" id="L78">            noEquipementsLabel.setVisible(true);</span>
+        } else {
+<span class="nc" id="L80">            noEquipementsLabel.setVisible(false);</span>
+<span class="nc" id="L81">            this.equipements.addAll(equipementsFromDB);</span>
+        }
+<span class="nc" id="L83">    }</span>
+
+    @FXML
+    private void handleAjouterEquipement() {
+        try {
+<span class="nc" id="L88">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ajouter_equipement.fxml&quot;));</span>
+<span class="nc" id="L89">            Parent ajouterEquipementForm = loader.load();</span>
+
+<span class="nc" id="L91">            AjouterEquipementController controller = loader.getController();</span>
+<span class="nc" id="L92">            controller.setCategorie(currentCategory);</span>
+
+            // ➕ Ajout du callback pour rafraîchir la liste après ajout
+<span class="nc" id="L95">            controller.setOnEquipementAjoute(() -&gt; {</span>
+                // Recharger les équipements depuis la base
+<span class="nc" id="L97">                chargerEquipementsParCategorie();</span>
+<span class="nc" id="L98">            });</span>
+
+<span class="nc" id="L100">            Stage newStage = new Stage();</span>
+<span class="nc" id="L101">            newStage.setTitle(&quot;Ajouter un Équipement&quot;);</span>
+<span class="nc" id="L102">            newStage.setScene(new Scene(ajouterEquipementForm));</span>
+<span class="nc" id="L103">            newStage.show();</span>
+
+<span class="nc" id="L105">        } catch (IOException e) {</span>
+<span class="nc" id="L106">            e.printStackTrace();</span>
+<span class="nc" id="L107">        }</span>
+<span class="nc" id="L108">    }</span>
+
+
+    @FXML
+    private void filterEquipements() {
+<span class="nc" id="L113">        String searchTerm = searchBar.getText().toLowerCase();</span>
+<span class="nc" id="L114">        ObservableList&lt;Equipement&gt; filtered = FXCollections.observableArrayList();</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        for (Equipement eq : equipements) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            if (eq.getNom().toLowerCase().contains(searchTerm) ||</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                    eq.getType().toLowerCase().contains(searchTerm) ||</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">                    eq.getStatut().toLowerCase().contains(searchTerm)) {</span>
+<span class="nc" id="L120">                filtered.add(eq);</span>
+            }
+<span class="nc" id="L122">        }</span>
+
+<span class="nc" id="L124">        equipementList.setItems(filtered);</span>
+<span class="nc" id="L125">        noEquipementsLabel.setVisible(filtered.isEmpty());</span>
+<span class="nc" id="L126">    }</span>
+
+    private void setCustomCellFactory() {
+<span class="nc" id="L129">        equipementList.setCellFactory(listView -&gt; new ListCell&lt;Equipement&gt;() {</span>
+<span class="nc" id="L130">            private final HBox content = new HBox(20); // espace entre les éléments</span>
+<span class="nc" id="L131">            private final Label infosLabel = new Label();</span>
+
+<span class="nc" id="L133">            private final Button btnModifier = new Button(&quot;Modifier&quot;);</span>
+<span class="nc" id="L134">            private final Button btnSupprimer = new Button(&quot;Supprimer&quot;);</span>
+<span class="nc" id="L135">            private final Button btnEntretien = new Button(&quot;Entretien&quot;);</span>
+
+            {
+                // Style des infos : une seule ligne, en gras
+<span class="nc" id="L139">                infosLabel.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 14px;&quot;);</span>
+
+                // Espacement et centrage
+<span class="nc" id="L142">                content.setSpacing(20);</span>
+<span class="nc" id="L143">                content.getChildren().addAll(infosLabel, btnModifier, btnSupprimer, btnEntretien);</span>
+
+                // Style des boutons
+<span class="nc" id="L146">                btnModifier.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L147">                btnSupprimer.setStyle(&quot;-fx-background-color: #F44336; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L148">                btnEntretien.setStyle(&quot;-fx-background-color: #008CBA; -fx-text-fill: white;&quot;);</span>
+
+                // Actions des boutons
+<span class="nc" id="L151">                btnModifier.setOnAction(e -&gt; {</span>
+<span class="nc" id="L152">                    Equipement equipement = getItem();</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">                    if (equipement != null) {</span>
+<span class="nc" id="L154">                        handleModifierEquipement(equipement);</span>
+                    }
+<span class="nc" id="L156">                });</span>
+
+<span class="nc" id="L158">                btnSupprimer.setOnAction(e -&gt; {</span>
+<span class="nc" id="L159">                    Equipement equipement = getItem();</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                    if (equipement != null) {</span>
+<span class="nc" id="L161">                        handleSupprimerEquipement(equipement);</span>
+                    }
+<span class="nc" id="L163">                });</span>
+
+<span class="nc" id="L165">                btnEntretien.setOnAction(e -&gt; {</span>
+<span class="nc" id="L166">                    Equipement equipement = getItem();</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">                    if (equipement != null) {</span>
+<span class="nc" id="L168">                        ouvrirFormulaireEntretien(equipement);</span>
+                    }
+<span class="nc" id="L170">                });</span>
+<span class="nc" id="L171">            }</span>
+
+            @Override
+            protected void updateItem(Equipement equipement, boolean empty) {
+<span class="nc" id="L175">                super.updateItem(equipement, empty);</span>
+<span class="nc bnc" id="L176" title="All 4 branches missed.">                if (empty || equipement == null) {</span>
+<span class="nc" id="L177">                    setGraphic(null);</span>
+                } else {
+<span class="nc" id="L179">                    infosLabel.setText(&quot;Nom : &quot; + equipement.getNom() +</span>
+<span class="nc" id="L180">                            &quot;     Type : &quot; + equipement.getType() +</span>
+<span class="nc" id="L181">                            &quot;     Statut : &quot; + equipement.getStatut());</span>
+<span class="nc" id="L182">                    setGraphic(content);</span>
+                }
+<span class="nc" id="L184">            }</span>
+        });
+<span class="nc" id="L186">    }</span>
+
+
+
+
+
+    private void handleModifierEquipement(Equipement equipement) {
+        try {
+<span class="nc" id="L194">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ModifierEquipement.fxml&quot;));</span>
+<span class="nc" id="L195">            Parent root = loader.load();</span>
+
+<span class="nc" id="L197">            ModifierEquipementController controller = loader.getController();</span>
+<span class="nc" id="L198">            controller.initData(equipement);</span>
+
+            // 🔁 Rafraîchissement après modification
+<span class="nc" id="L201">            controller.setOnEquipementModifie(() -&gt; {</span>
+<span class="nc" id="L202">                chargerEquipementsParCategorie();</span>
+<span class="nc" id="L203">            });</span>
+
+<span class="nc" id="L205">            Stage stage = new Stage();</span>
+<span class="nc" id="L206">            stage.setTitle(&quot;Modifier Équipement&quot;);</span>
+<span class="nc" id="L207">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L208">            stage.show();</span>
+<span class="nc" id="L209">        } catch (IOException e) {</span>
+<span class="nc" id="L210">            System.err.println(&quot;❌ Erreur lors du chargement de la page de modification : &quot; + e.getMessage());</span>
+<span class="nc" id="L211">        }</span>
+<span class="nc" id="L212">    }</span>
+
+
+    private void handleSupprimerEquipement(Equipement equipement) {
+<span class="nc" id="L216">        equipementService.supprimerEquipement(equipement.getId());</span>
+<span class="nc" id="L217">        equipements.remove(equipement);</span>
+<span class="nc" id="L218">        System.out.println(&quot;🗑 Supprimé : &quot; + equipement.getNom());</span>
+<span class="nc" id="L219">    }</span>
+
+    private void ouvrirFormulaireEntretien(Equipement equipement) {
+        try {
+            // Ouvrir le formulaire d'entretien sans changer le statut de l'équipement tout de suite
+<span class="nc" id="L224">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ajouter_entretien.fxml&quot;));</span>
+<span class="nc" id="L225">            Parent root = loader.load();</span>
+
+<span class="nc" id="L227">            AjouterEntretienController controller = loader.getController();</span>
+<span class="nc" id="L228">            controller.setEquipement(equipement);</span>
+
+            // Ajouter un callback pour mettre à jour le statut après la création de l'entretien
+<span class="nc" id="L231">            controller.setOnEntretienAjoute(() -&gt; {</span>
+                // Après l'ajout de l'entretien, changer le statut de l'équipement à &quot;maintenance&quot;
+<span class="nc" id="L233">                equipement.setStatut(&quot;maintenance&quot;);</span>
+<span class="nc" id="L234">                equipementService.modifierEquipement(equipement); // mettre à jour le statut dans la base de données</span>
+
+                // Recharger les équipements pour voir la mise à jour immédiatement
+<span class="nc" id="L237">                chargerEquipementsParCategorie();</span>
+<span class="nc" id="L238">            });</span>
+
+<span class="nc" id="L240">            Stage stage = new Stage();</span>
+<span class="nc" id="L241">            stage.setTitle(&quot;Ajouter un entretien&quot;);</span>
+<span class="nc" id="L242">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L243">            stage.show();</span>
+
+<span class="nc" id="L245">        } catch (IOException e) {</span>
+<span class="nc" id="L246">            System.err.println(&quot;❌ Erreur ouverture formulaire entretien : &quot; + e.getMessage());</span>
+<span class="nc" id="L247">        }</span>
+<span class="nc" id="L248">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

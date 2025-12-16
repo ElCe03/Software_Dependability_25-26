@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModifierEntretienController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ModifierEntretienController.java</span></div><h1>ModifierEntretienController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Entretien;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import service.EntretienService;
+import javafx.stage.Stage;
+
+import java.time.LocalDate;
+
+<span class="fc" id="L11">public class ModifierEntretienController {</span>
+
+    @FXML
+    private TextField nomEquipementField;
+
+    @FXML
+    private DatePicker datePicker;
+
+    @FXML
+    private TextArea descriptionArea;
+
+    private Entretien entretien;
+
+    private EntretienService entretienService;
+
+    private Runnable onEntretienModifie; // ✅ Callback pour rafraîchir la liste
+
+    private EntretienService getEntretienService() {
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if (this.entretienService == null) {</span>
+<span class="nc" id="L30">            this.entretienService = new EntretienService();</span>
+        }
+<span class="nc" id="L32">        return this.entretienService;</span>
+    }
+
+    public void setEntretienService(EntretienService entretienService) {
+<span class="nc" id="L36">        this.entretienService = entretienService;</span>
+<span class="nc" id="L37">    }</span>
+
+    // Méthode pour initialiser les données de l'entretien à modifier
+    public void initData(Entretien entretien) {
+<span class="nc" id="L41">        this.entretien = entretien;</span>
+<span class="nc" id="L42">        nomEquipementField.setText(entretien.getNomEquipement());</span>
+<span class="nc" id="L43">        datePicker.setValue(entretien.getDate());</span>
+<span class="nc" id="L44">        descriptionArea.setText(entretien.getDescription());</span>
+<span class="nc" id="L45">    }</span>
+
+    // Setter pour le callback
+    public void setOnEntretienModifie(Runnable onEntretienModifie) {
+<span class="nc" id="L49">        this.onEntretienModifie = onEntretienModifie;</span>
+<span class="nc" id="L50">    }</span>
+
+    // Méthode pour mettre à jour l'entretien dans la base de données
+    @FXML
+    private void handleUpdate() {
+<span class="nc" id="L55">        String nom = nomEquipementField.getText().trim();</span>
+<span class="nc" id="L56">        String description = descriptionArea.getText().trim();</span>
+<span class="nc" id="L57">        LocalDate selectedDate = datePicker.getValue();</span>
+
+        // Validation des champs
+        try {
+<span class="nc" id="L61">            buildUpdatedEntretien(this.entretien, nom, description, selectedDate);</span>
+
+<span class="nc" id="L63">            getEntretienService().updateEntretien(this.entretien);</span>
+
+            // Rafraîchissement de la liste après mise à jour
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            if (onEntretienModifie != null) {</span>
+<span class="nc" id="L67">                onEntretienModifie.run();</span>
+            }
+
+<span class="nc" id="L70">            showAlert(&quot;Succès&quot;, &quot;L'entretien a été modifié avec succès.&quot;);</span>
+<span class="nc" id="L71">            ((Stage) nomEquipementField.getScene().getWindow()).close();</span>
+
+<span class="nc" id="L73">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L74">            showAlert(&quot;Erreur&quot;, e.getMessage());</span>
+<span class="nc" id="L75">        } catch (Exception e) {</span>
+<span class="nc" id="L76">            showAlert(&quot;Erreur&quot;, &quot;Une erreur est survenue lors de la mise à jour : &quot; + e.getMessage());</span>
+<span class="nc" id="L77">        }</span>
+<span class="nc" id="L78">    }</span>
+
+    // Méthode utilitaire pour afficher des alertes
+    private void showAlert(String title, String message) {
+<span class="nc" id="L82">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L83">        alert.setTitle(title);</span>
+<span class="nc" id="L84">        alert.setHeaderText(null);</span>
+<span class="nc" id="L85">        alert.setContentText(message);</span>
+<span class="nc" id="L86">        alert.showAndWait();</span>
+<span class="nc" id="L87">    }</span>
+
+    public Entretien buildUpdatedEntretien(
+            Entretien entretien,
+            String nom,
+            String description,
+            LocalDate selectedDate
+    ) {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (entretien == null) {</span>
+<span class="fc" id="L96">             throw new IllegalArgumentException(&quot;Champs manquants&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L99" title="2 of 6 branches missed.">        if (nom == null || nom.trim().isEmpty() ||</span>
+<span class="fc bfc" id="L100" title="All 4 branches covered.">                description == null || description.trim().isEmpty() ||</span>
+                selectedDate == null) {
+<span class="fc" id="L102">            throw new IllegalArgumentException(&quot;Champs manquants&quot;);</span>
+        }
+
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (selectedDate.isBefore(LocalDate.now())) {</span>
+<span class="fc" id="L106">            throw new IllegalArgumentException(&quot;Date invalide&quot;);</span>
+        }
+
+<span class="fc" id="L109">        entretien.setNomEquipement(nom.trim());</span>
+<span class="fc" id="L110">        entretien.setDescription(description.trim());</span>
+<span class="fc" id="L111">        entretien.setDate(selectedDate);</span>
+
+<span class="fc" id="L113">        return entretien;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

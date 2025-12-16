@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AlertUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">util</a> &gt; <span class="el_source">AlertUtil.java</span></div><h1>AlertUtil.java</h1><pre class="source lang-java linenums">package util;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.stage.Window;
+
+import java.util.Optional;
+
+/**
+ * Utility class for displaying alert messages
+ */
+<span class="nc" id="L13">public class AlertUtil {</span>
+    
+    /**
+     * Show an information alert
+     * @param owner the owner window
+     * @param title the title of the alert
+     * @param message the message to display
+     */
+    public static void showInformation(Window owner, String title, String message) {
+<span class="nc" id="L22">        Alert alert = new Alert(AlertType.INFORMATION);</span>
+<span class="nc" id="L23">        alert.setTitle(title);</span>
+<span class="nc" id="L24">        alert.setHeaderText(null);</span>
+<span class="nc" id="L25">        alert.setContentText(message);</span>
+<span class="nc" id="L26">        alert.initOwner(owner);</span>
+<span class="nc" id="L27">        alert.showAndWait();</span>
+<span class="nc" id="L28">    }</span>
+    
+    /**
+     * Show an error alert
+     * @param owner the owner window
+     * @param title the title of the alert
+     * @param message the message to display
+     */
+    public static void showError(Window owner, String title, String message) {
+<span class="nc" id="L37">        Alert alert = new Alert(AlertType.ERROR);</span>
+<span class="nc" id="L38">        alert.setTitle(title);</span>
+<span class="nc" id="L39">        alert.setHeaderText(null);</span>
+<span class="nc" id="L40">        alert.setContentText(message);</span>
+<span class="nc" id="L41">        alert.initOwner(owner);</span>
+<span class="nc" id="L42">        alert.showAndWait();</span>
+<span class="nc" id="L43">    }</span>
+    
+    /**
+     * Show a warning alert
+     * @param owner the owner window
+     * @param title the title of the alert
+     * @param message the message to display
+     */
+    public static void showWarning(Window owner, String title, String message) {
+<span class="nc" id="L52">        Alert alert = new Alert(AlertType.WARNING);</span>
+<span class="nc" id="L53">        alert.setTitle(title);</span>
+<span class="nc" id="L54">        alert.setHeaderText(null);</span>
+<span class="nc" id="L55">        alert.setContentText(message);</span>
+<span class="nc" id="L56">        alert.initOwner(owner);</span>
+<span class="nc" id="L57">        alert.showAndWait();</span>
+<span class="nc" id="L58">    }</span>
+    
+    /**
+     * Show a confirmation dialog
+     * @param owner the owner window
+     * @param title the title of the dialog
+     * @param message the message to display
+     * @return true if the user confirmed, false otherwise
+     */
+    public static boolean showConfirmation(Window owner, String title, String message) {
+<span class="nc" id="L68">        Alert alert = new Alert(AlertType.CONFIRMATION);</span>
+<span class="nc" id="L69">        alert.setTitle(title);</span>
+<span class="nc" id="L70">        alert.setHeaderText(null);</span>
+<span class="nc" id="L71">        alert.setContentText(message);</span>
+<span class="nc" id="L72">        alert.initOwner(owner);</span>
+        
+<span class="nc" id="L74">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
+<span class="nc bnc" id="L75" title="All 4 branches missed.">        return result.isPresent() &amp;&amp; result.get() == ButtonType.OK;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

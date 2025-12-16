@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SejourService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">SejourService.java</span></div><h1>SejourService.java</h1><pre class="source lang-java linenums">package service;
+
+import entite.DossierMedicale;
+import entite.Sejour;
+import util.DataSource;
+
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Service class for handling database operations for the Sejour entity
+ */
+public class SejourService {
+    private Connection connection;
+    private DossierMedicaleService dossierService;
+    
+<span class="nc" id="L19">    public SejourService() {</span>
+<span class="nc" id="L20">        connection = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L21">    }</span>
+    
+    public void setDossierService(DossierMedicaleService dossierService) {
+<span class="nc" id="L24">        this.dossierService = dossierService;</span>
+<span class="nc" id="L25">    }</span>
+    
+    /**
+     * Add a new stay to the database
+     * @param sejour the stay to add
+     * @return true if successful, false otherwise
+     */
+    public boolean ajouterSejour(Sejour sejour) {
+        // Validate that exit date is after entry date
+<span class="nc bnc" id="L34" title="All 4 branches missed.">        if (sejour.getDateSortie() != null &amp;&amp; sejour.getDateEntree() != null &amp;&amp;</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">                sejour.getDateSortie().isBefore(sejour.getDateEntree())) {</span>
+<span class="nc" id="L36">            System.err.println(&quot;Erreur: La date de sortie doit être après la date d'entrée&quot;);</span>
+<span class="nc" id="L37">            return false;</span>
+        }
+        
+        // Validate that costs are positive
+<span class="nc bnc" id="L41" title="All 4 branches missed.">        if (sejour.getFraisSejour() &lt; 0 || sejour.getPrixExtras() &lt; 0) {</span>
+<span class="nc" id="L42">            System.err.println(&quot;Erreur: Les frais doivent être positifs&quot;);</span>
+<span class="nc" id="L43">            return false;</span>
+        }
+        
+        // Validate that dossierMedicale is not null
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (sejour.getDossierMedicale() == null) {</span>
+<span class="nc" id="L48">            System.err.println(&quot;Erreur: Un dossier médical doit être associé au séjour&quot;);</span>
+<span class="nc" id="L49">            return false;</span>
+        }
+        
+        // Match exactly the columns in the database
+<span class="nc" id="L53">        String sql = &quot;INSERT INTO sejour (dossier_medicale_id, date_entree, date_sortie, type_sejour, &quot; +</span>
+                &quot;frais_sejour, moyen_paiement, statut_paiement, prix_extras) &quot; +
+                &quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;;
+                
+<span class="nc" id="L57">        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {</span>
+            // Ensure dateEntree is not null
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            if (sejour.getDateEntree() == null) {</span>
+<span class="nc" id="L60">                sejour.setDateEntree(LocalDateTime.now());</span>
+            }
+            
+            // Ensure date_sortie is not null (as required by the database)
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if (sejour.getDateSortie() == null) {</span>
+                // Set a default date_sortie to the same as date_entree plus 1 day
+<span class="nc" id="L66">                sejour.setDateSortie(sejour.getDateEntree().plusDays(1));</span>
+            }
+            
+            // Set parameters in the same order as in the SQL statement
+<span class="nc" id="L70">            pstmt.setInt(1, sejour.getDossierMedicale().getId());</span>
+<span class="nc" id="L71">            pstmt.setTimestamp(2, Timestamp.valueOf(sejour.getDateEntree()));</span>
+<span class="nc" id="L72">            pstmt.setTimestamp(3, Timestamp.valueOf(sejour.getDateSortie()));</span>
+            
+<span class="nc" id="L74">            String typeSejour = sejour.getTypeSejour();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (typeSejour == null) typeSejour = &quot;&quot;;</span>
+<span class="nc" id="L76">            pstmt.setString(4, typeSejour);</span>
+            
+<span class="nc" id="L78">            pstmt.setDouble(5, sejour.getFraisSejour());</span>
+            
+            // Ensure moyen_paiement is not null (as required by the database)
+<span class="nc" id="L81">            String moyenPaiement = sejour.getMoyenPaiement();</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (moyenPaiement == null) moyenPaiement = &quot;Non spécifié&quot;;</span>
+<span class="nc" id="L83">            pstmt.setString(6, moyenPaiement);</span>
+            
+            // Ensure statut_paiement is not null (as required by the database)
+<span class="nc" id="L86">            String statutPaiement = sejour.getStatutPaiement();</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            if (statutPaiement == null) statutPaiement = &quot;En attente&quot;;</span>
+<span class="nc" id="L88">            pstmt.setString(7, statutPaiement);</span>
+            
+            // prix_extras can be null in the database
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (sejour.getPrixExtras() &gt; 0) {</span>
+<span class="nc" id="L92">                pstmt.setDouble(8, sejour.getPrixExtras());</span>
+            } else {
+<span class="nc" id="L94">                pstmt.setNull(8, Types.DOUBLE);</span>
+            }
+            
+<span class="nc" id="L97">            System.out.println(&quot;Executing SQL: &quot; + sql);</span>
+            
+<span class="nc" id="L99">            int affectedRows = pstmt.executeUpdate();</span>
+            
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if (affectedRows &gt; 0) {</span>
+<span class="nc" id="L102">                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                    if (generatedKeys.next()) {</span>
+<span class="nc" id="L104">                        sejour.setId(generatedKeys.getInt(1));</span>
+<span class="nc" id="L105">                        return true;</span>
+                    }
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                }</span>
+            }
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L110">            System.err.println(&quot;Erreur lors de l'ajout d'un séjour: &quot; + e.getMessage());</span>
+<span class="nc" id="L111">            e.printStackTrace();</span>
+<span class="nc" id="L112">        }</span>
+        
+<span class="nc" id="L114">        return false;</span>
+    }
+    
+    /**
+     * Update an existing stay in the database
+     * @param sejour the stay to update
+     * @return true if successful, false otherwise
+     */
+    public boolean modifierSejour(Sejour sejour) {
+        // Validate that exit date is after entry date
+<span class="nc bnc" id="L124" title="All 4 branches missed.">        if (sejour.getDateSortie() != null &amp;&amp; sejour.getDateEntree() != null &amp;&amp;</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                sejour.getDateSortie().isBefore(sejour.getDateEntree())) {</span>
+<span class="nc" id="L126">            System.err.println(&quot;Erreur: La date de sortie doit être après la date d'entrée&quot;);</span>
+<span class="nc" id="L127">            return false;</span>
+        }
+        
+        // Validate that costs are positive
+<span class="nc bnc" id="L131" title="All 4 branches missed.">        if (sejour.getFraisSejour() &lt; 0 || sejour.getPrixExtras() &lt; 0) {</span>
+<span class="nc" id="L132">            System.err.println(&quot;Erreur: Les frais doivent être positifs&quot;);</span>
+<span class="nc" id="L133">            return false;</span>
+        }
+        
+        // Validate that dossierMedicale is not null
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (sejour.getDossierMedicale() == null) {</span>
+<span class="nc" id="L138">            System.err.println(&quot;Erreur: Un dossier médical doit être associé au séjour&quot;);</span>
+<span class="nc" id="L139">            return false;</span>
+        }
+        
+        // Ensure date_sortie is not null (as required by the database)
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (sejour.getDateSortie() == null) {</span>
+            // Set a default date_sortie to the same as date_entree plus 1 day
+<span class="nc" id="L145">            sejour.setDateSortie(sejour.getDateEntree().plusDays(1));</span>
+        }
+        
+        // Match exactly the columns in the database
+<span class="nc" id="L149">        String sql = &quot;UPDATE sejour SET dossier_medicale_id = ?, date_entree = ?, date_sortie = ?, &quot; +</span>
+                &quot;type_sejour = ?, frais_sejour = ?, moyen_paiement = ?, statut_paiement = ?, &quot; +
+                &quot;prix_extras = ? WHERE id = ?&quot;;
+                
+<span class="nc" id="L153">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L154">            pstmt.setInt(1, sejour.getDossierMedicale().getId());</span>
+<span class="nc" id="L155">            pstmt.setTimestamp(2, Timestamp.valueOf(sejour.getDateEntree()));</span>
+<span class="nc" id="L156">            pstmt.setTimestamp(3, Timestamp.valueOf(sejour.getDateSortie()));</span>
+            
+<span class="nc" id="L158">            String typeSejour = sejour.getTypeSejour();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">            if (typeSejour == null) typeSejour = &quot;&quot;;</span>
+<span class="nc" id="L160">            pstmt.setString(4, typeSejour);</span>
+            
+<span class="nc" id="L162">            pstmt.setDouble(5, sejour.getFraisSejour());</span>
+            
+             // Ensure moyen_paiement is not null (as required by the database)
+<span class="nc" id="L165">            String moyenPaiement = sejour.getMoyenPaiement();</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (moyenPaiement == null) moyenPaiement = &quot;Non spécifié&quot;;</span>
+<span class="nc" id="L167">            pstmt.setString(6, moyenPaiement);</span>
+            
+            // Ensure statut_paiement is not null (as required by the database)
+<span class="nc" id="L170">            String statutPaiement = sejour.getStatutPaiement();</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">            if (statutPaiement == null) statutPaiement = &quot;En attente&quot;;</span>
+<span class="nc" id="L172">            pstmt.setString(7, statutPaiement);</span>
+            
+            // prix_extras can be null in the database
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (sejour.getPrixExtras() &gt; 0) {</span>
+<span class="nc" id="L176">                pstmt.setDouble(8, sejour.getPrixExtras());</span>
+            } else {
+<span class="nc" id="L178">                pstmt.setNull(8, Types.DOUBLE);</span>
+            }
+            
+<span class="nc" id="L181">            pstmt.setInt(9, sejour.getId());</span>
+            
+<span class="nc" id="L183">            System.out.println(&quot;Executing SQL update: &quot; + sql);</span>
+            
+<span class="nc" id="L185">            int affectedRows = pstmt.executeUpdate();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            return affectedRows &gt; 0;</span>
+<span class="nc" id="L187">        } catch (SQLException e) {</span>
+<span class="nc" id="L188">            System.err.println(&quot;Erreur lors de la modification d'un séjour: &quot; + e.getMessage());</span>
+<span class="nc" id="L189">            e.printStackTrace();</span>
+        }
+        
+<span class="nc" id="L192">        return false;</span>
+    }
+    
+    /**
+     * Delete a stay from the database
+     * @param sejourId the ID of the stay to delete
+     * @return true if successful, false otherwise
+     */
+    public boolean supprimerSejour(int sejourId) {
+<span class="nc" id="L201">        String sql = &quot;DELETE FROM sejour WHERE id = ?&quot;;</span>
+        
+<span class="nc" id="L203">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L204">            pstmt.setInt(1, sejourId);</span>
+            
+<span class="nc" id="L206">            int affectedRows = pstmt.executeUpdate();</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            return affectedRows &gt; 0;</span>
+<span class="nc" id="L208">        } catch (SQLException e) {</span>
+<span class="nc" id="L209">            System.err.println(&quot;Erreur lors de la suppression d'un séjour: &quot; + e.getMessage());</span>
+<span class="nc" id="L210">            e.printStackTrace();</span>
+        }
+        
+<span class="nc" id="L213">        return false;</span>
+    }
+    
+    /**
+     * Get a stay by its ID
+     * @param sejourId the ID of the stay to retrieve
+     * @return the Sejour object if found, null otherwise
+     */
+    public Sejour recupererSejourParId(int sejourId) {
+<span class="nc" id="L222">        String sql = &quot;SELECT * FROM sejour WHERE id = ?&quot;;</span>
+        
+<span class="nc" id="L224">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L225">            pstmt.setInt(1, sejourId);</span>
+            
+<span class="nc" id="L227">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L229">                    return extractSejourFromResultSet(rs);</span>
+                }
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L233">            System.err.println(&quot;Erreur lors de la récupération d'un séjour: &quot; + e.getMessage());</span>
+<span class="nc" id="L234">            e.printStackTrace();</span>
+<span class="nc" id="L235">        }</span>
+        
+<span class="nc" id="L237">        return null;</span>
+    }
+    
+    /**
+     * Get all stays from the database
+     * @return a list of all stays
+     */
+    public List&lt;Sejour&gt; recupererTousSejours() {
+<span class="nc" id="L245">        List&lt;Sejour&gt; sejours = new ArrayList&lt;Sejour&gt;();</span>
+<span class="nc" id="L246">        String sql = &quot;SELECT * FROM sejour&quot;;</span>
+        
+<span class="nc" id="L248">        try (Statement stmt = connection.createStatement();</span>
+<span class="nc" id="L249">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+            
+<span class="nc bnc" id="L251" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L252">                Sejour sejour = extractSejourFromResultSet(rs);</span>
+<span class="nc" id="L253">                sejours.add(sejour);</span>
+<span class="nc" id="L254">            }</span>
+<span class="nc" id="L255">        } catch (SQLException e) {</span>
+<span class="nc" id="L256">            System.err.println(&quot;Erreur lors de la récupération des séjours: &quot; + e.getMessage());</span>
+<span class="nc" id="L257">            e.printStackTrace();</span>
+<span class="nc" id="L258">        }</span>
+        
+<span class="nc" id="L260">        return sejours;</span>
+    }
+    
+    /**
+     * Get all stays for a specific medical record
+     * @param dossierId the ID of the medical record
+     * @return a list of stays for the given medical record
+     */
+    public List&lt;Sejour&gt; recupererSejoursParDossier(int dossierId) {
+<span class="nc" id="L269">        List&lt;Sejour&gt; sejours = new ArrayList&lt;Sejour&gt;();</span>
+<span class="nc" id="L270">        String sql = &quot;SELECT * FROM sejour WHERE dossier_medicale_id = ?&quot;;</span>
+        
+<span class="nc" id="L272">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L273">            pstmt.setInt(1, dossierId);</span>
+            
+<span class="nc" id="L275">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L277">                    Sejour sejour = extractSejourFromResultSet(rs);</span>
+<span class="nc" id="L278">                    sejours.add(sejour);</span>
+<span class="nc" id="L279">                }</span>
+            }
+<span class="nc" id="L281">        } catch (SQLException e) {</span>
+<span class="nc" id="L282">            System.err.println(&quot;Erreur lors de la récupération des séjours par dossier: &quot; + e.getMessage());</span>
+<span class="nc" id="L283">            e.printStackTrace();</span>
+<span class="nc" id="L284">        }</span>
+        
+<span class="nc" id="L286">        return sejours;</span>
+    }
+    
+    /**
+     * Get all stays with a specific payment status
+     * @param statutPaiement the payment status to filter by
+     * @return a list of stays with the specified payment status
+     */
+    public List&lt;Sejour&gt; recupererSejoursParStatutPaiement(String statutPaiement) {
+<span class="nc" id="L295">        List&lt;Sejour&gt; sejours = new ArrayList&lt;Sejour&gt;();</span>
+<span class="nc" id="L296">        String sql = &quot;SELECT * FROM sejour WHERE statut_paiement = ?&quot;;</span>
+        
+<span class="nc" id="L298">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L299">            pstmt.setString(1, statutPaiement);</span>
+            
+<span class="nc" id="L301">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L303">                    Sejour sejour = extractSejourFromResultSet(rs);</span>
+<span class="nc" id="L304">                    sejours.add(sejour);</span>
+<span class="nc" id="L305">                }</span>
+            }
+<span class="nc" id="L307">        } catch (SQLException e) {</span>
+<span class="nc" id="L308">            System.err.println(&quot;Erreur lors de la récupération des séjours par statut de paiement: &quot; + e.getMessage());</span>
+<span class="nc" id="L309">            e.printStackTrace();</span>
+<span class="nc" id="L310">        }</span>
+        
+<span class="nc" id="L312">        return sejours;</span>
+    }
+    
+    /**
+     * Helper method to extract a Sejour object from a ResultSet
+     * @param rs the ResultSet containing stay data
+     * @return a Sejour object populated with data from the ResultSet
+     * @throws SQLException if there is an error accessing the ResultSet
+     */
+    private Sejour extractSejourFromResultSet(ResultSet rs) throws SQLException {
+<span class="nc" id="L322">        Sejour sejour = new Sejour();</span>
+<span class="nc" id="L323">        sejour.setId(rs.getInt(&quot;id&quot;));</span>
+        
+<span class="nc" id="L325">        Timestamp dateEntree = rs.getTimestamp(&quot;date_entree&quot;);</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        if (dateEntree != null) {</span>
+<span class="nc" id="L327">            sejour.setDateEntree(dateEntree.toLocalDateTime());</span>
+        } else {
+<span class="nc" id="L329">            sejour.setDateEntree(LocalDateTime.now());</span>
+        }
+        
+<span class="nc" id="L332">        Timestamp dateSortie = rs.getTimestamp(&quot;date_sortie&quot;);</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if (dateSortie != null) {</span>
+<span class="nc" id="L334">            sejour.setDateSortie(dateSortie.toLocalDateTime());</span>
+        }
+        
+<span class="nc" id="L337">        sejour.setTypeSejour(rs.getString(&quot;type_sejour&quot;));</span>
+<span class="nc" id="L338">        sejour.setFraisSejour(rs.getDouble(&quot;frais_sejour&quot;));</span>
+        
+<span class="nc" id="L340">        String moyenPaiement = rs.getString(&quot;moyen_paiement&quot;);</span>
+<span class="nc" id="L341">        sejour.setMoyenPaiement(moyenPaiement);</span>
+        
+<span class="nc" id="L343">        String statutPaiement = rs.getString(&quot;statut_paiement&quot;);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        if (statutPaiement == null) statutPaiement = &quot;En attente&quot;;</span>
+<span class="nc" id="L345">        sejour.setStatutPaiement(statutPaiement);</span>
+        
+<span class="nc" id="L347">        double prixExtras = rs.getDouble(&quot;prix_extras&quot;);</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">        if (!rs.wasNull()) {</span>
+<span class="nc" id="L349">            sejour.setPrixExtras(prixExtras);</span>
+        }
+        
+<span class="nc" id="L352">        int dossierMedicaleId = rs.getInt(&quot;dossier_medicale_id&quot;);</span>
+        
+        // Only set the ID of the dossier without loading the entire object to prevent circular references
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        if (dossierMedicaleId &gt; 0) {</span>
+<span class="nc" id="L356">            DossierMedicale dossier = new DossierMedicale();</span>
+<span class="nc" id="L357">            dossier.setId(dossierMedicaleId);</span>
+<span class="nc" id="L358">            sejour.setDossierMedicale(dossier);</span>
+        }
+        
+<span class="nc" id="L361">        return sejour;</span>
+    }
+    
+    /**
+     * Get statistics on patient stays
+     * @return a map containing various statistics
+     */
+    public java.util.Map&lt;String, Object&gt; getStatistiques() {
+<span class="nc" id="L369">        java.util.Map&lt;String, Object&gt; stats = new java.util.HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L370">        System.out.println(&quot;SejourService.getStatistiques() - Starting to fetch statistics&quot;);</span>
+        
+        // Count total sejours - make sure we count only valid records
+<span class="nc" id="L373">        String sqlTotal = &quot;SELECT COUNT(*) FROM sejour WHERE id IS NOT NULL&quot;;</span>
+<span class="nc" id="L374">        System.out.println(&quot;SQL Query for total sejours: &quot; + sqlTotal);</span>
+        
+        // Count sejours by type - handle NULL values
+<span class="nc" id="L377">        String sqlByType = &quot;SELECT COALESCE(type_sejour, 'Non défini') as type, COUNT(*) as count &quot; +</span>
+                         &quot;FROM sejour &quot; +
+                         &quot;GROUP BY COALESCE(type_sejour, 'Non défini')&quot;;
+<span class="nc" id="L380">        System.out.println(&quot;SQL Query for sejours by type: &quot; + sqlByType);</span>
+                          
+        // Count sejours by payment status - handle NULL values
+<span class="nc" id="L383">        String sqlByPaymentStatus = &quot;SELECT COALESCE(statut_paiement, 'En attente') as status, COUNT(*) as count &quot; +</span>
+                                &quot;FROM sejour &quot; +
+                                &quot;GROUP BY COALESCE(statut_paiement, 'En attente')&quot;;
+<span class="nc" id="L386">        System.out.println(&quot;SQL Query for sejours by payment status: &quot; + sqlByPaymentStatus);</span>
+        
+        // Count sejours started per month in current year - handle NULL dates
+<span class="nc" id="L389">        String sqlByMonth = &quot;SELECT MONTH(COALESCE(date_entree, CURRENT_DATE())) as month, COUNT(*) as count &quot; +</span>
+                         &quot;FROM sejour &quot; +
+                         &quot;WHERE YEAR(COALESCE(date_entree, CURRENT_DATE())) = YEAR(CURRENT_DATE()) &quot; +
+                         &quot;GROUP BY MONTH(COALESCE(date_entree, CURRENT_DATE())) &quot; +
+                         &quot;ORDER BY month&quot;;
+<span class="nc" id="L394">        System.out.println(&quot;SQL Query for sejours by month: &quot; + sqlByMonth);</span>
+        
+        // Calculate average stay duration in days - handle NULL dates
+<span class="nc" id="L397">        String sqlAvgDuration = &quot;SELECT AVG(CASE WHEN date_sortie IS NOT NULL THEN &quot; +</span>
+                            &quot;DATEDIFF(date_sortie, date_entree) &quot; +
+                            &quot;ELSE DATEDIFF(CURRENT_DATE(), date_entree) END) as avg_duration &quot; +
+                            &quot;FROM sejour &quot; +
+                            &quot;WHERE date_entree IS NOT NULL&quot;;
+<span class="nc" id="L402">        System.out.println(&quot;SQL Query for average duration: &quot; + sqlAvgDuration);</span>
+        
+        // Calculate total revenue - handle NULL values
+<span class="nc" id="L405">        String sqlTotalRevenue = &quot;SELECT SUM(COALESCE(frais_sejour, 0) + COALESCE(prix_extras, 0)) as total_revenue FROM sejour&quot;;</span>
+<span class="nc" id="L406">        System.out.println(&quot;SQL Query for total revenue: &quot; + sqlTotalRevenue);</span>
+        
+        // Calculate revenue by month - handle NULL values
+<span class="nc" id="L409">        String sqlRevenueByMonth = &quot;SELECT MONTH(COALESCE(date_entree, CURRENT_DATE())) as month, &quot; +</span>
+                                &quot;SUM(COALESCE(frais_sejour, 0) + COALESCE(prix_extras, 0)) as revenue &quot; +
+                                &quot;FROM sejour &quot; +
+                                &quot;WHERE YEAR(COALESCE(date_entree, CURRENT_DATE())) = YEAR(CURRENT_DATE()) &quot; +
+                                &quot;GROUP BY MONTH(COALESCE(date_entree, CURRENT_DATE())) &quot; +
+                                &quot;ORDER BY month&quot;;
+<span class="nc" id="L415">        System.out.println(&quot;SQL Query for revenue by month: &quot; + sqlRevenueByMonth);</span>
+                              
+<span class="nc" id="L417">        try (Statement stmt = connection.createStatement()) {</span>
+            // Get total count
+<span class="nc" id="L419">            try (ResultSet rs = stmt.executeQuery(sqlTotal)) {</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L421">                    int total = rs.getInt(1);</span>
+<span class="nc" id="L422">                    stats.put(&quot;totalSejours&quot;, total);</span>
+<span class="nc" id="L423">                    System.out.println(&quot;Found &quot; + total + &quot; total sejours&quot;);</span>
+                }
+<span class="nc" id="L425">            } catch (SQLException e) {</span>
+<span class="nc" id="L426">                System.err.println(&quot;Error executing total sejours query: &quot; + e.getMessage());</span>
+<span class="nc" id="L427">                e.printStackTrace();</span>
+<span class="nc" id="L428">            }</span>
+            
+            // Get counts by type
+<span class="nc" id="L431">            java.util.Map&lt;String, Integer&gt; statsByType = new java.util.HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L432">            try (ResultSet rs = stmt.executeQuery(sqlByType)) {</span>
+<span class="nc bnc" id="L433" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L434">                    String type = rs.getString(&quot;type&quot;);</span>
+<span class="nc" id="L435">                    int count = rs.getInt(&quot;count&quot;);</span>
+<span class="nc" id="L436">                    statsByType.put(type, count);</span>
+<span class="nc" id="L437">                    System.out.println(&quot;Found &quot; + count + &quot; sejours with type: &quot; + type);</span>
+<span class="nc" id="L438">                }</span>
+<span class="nc" id="L439">            } catch (SQLException e) {</span>
+<span class="nc" id="L440">                System.err.println(&quot;Error executing sejours by type query: &quot; + e.getMessage());</span>
+<span class="nc" id="L441">                e.printStackTrace();</span>
+<span class="nc" id="L442">            }</span>
+<span class="nc" id="L443">            stats.put(&quot;sejoursByType&quot;, (Object) statsByType);</span>
+            
+            // Get counts by payment status
+<span class="nc" id="L446">            java.util.Map&lt;String, Integer&gt; statsByPaymentStatus = new java.util.HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L447">            try (ResultSet rs = stmt.executeQuery(sqlByPaymentStatus)) {</span>
+<span class="nc bnc" id="L448" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L449">                    String status = rs.getString(&quot;status&quot;);</span>
+<span class="nc" id="L450">                    int count = rs.getInt(&quot;count&quot;);</span>
+<span class="nc" id="L451">                    statsByPaymentStatus.put(status, count);</span>
+<span class="nc" id="L452">                    System.out.println(&quot;Found &quot; + count + &quot; sejours with payment status: &quot; + status);</span>
+<span class="nc" id="L453">                }</span>
+<span class="nc" id="L454">            } catch (SQLException e) {</span>
+<span class="nc" id="L455">                System.err.println(&quot;Error executing sejours by payment status query: &quot; + e.getMessage());</span>
+<span class="nc" id="L456">                e.printStackTrace();</span>
+<span class="nc" id="L457">            }</span>
+<span class="nc" id="L458">            stats.put(&quot;sejoursByPaymentStatus&quot;, (Object) statsByPaymentStatus);</span>
+            
+            // Get counts by month
+<span class="nc" id="L461">            java.util.Map&lt;Integer, Integer&gt; statsByMonth = new java.util.HashMap&lt;Integer, Integer&gt;();</span>
+<span class="nc bnc" id="L462" title="All 2 branches missed.">            for (int i = 1; i &lt;= 12; i++) {</span>
+<span class="nc" id="L463">                statsByMonth.put(i, 0); // Initialize all months with 0</span>
+            }
+<span class="nc" id="L465">            try (ResultSet rs = stmt.executeQuery(sqlByMonth)) {</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L467">                    int month = rs.getInt(&quot;month&quot;);</span>
+<span class="nc" id="L468">                    int count = rs.getInt(&quot;count&quot;);</span>
+<span class="nc" id="L469">                    statsByMonth.put(month, count);</span>
+<span class="nc" id="L470">                    System.out.println(&quot;Found &quot; + count + &quot; sejours for month: &quot; + month);</span>
+<span class="nc" id="L471">                }</span>
+<span class="nc" id="L472">            } catch (SQLException e) {</span>
+<span class="nc" id="L473">                System.err.println(&quot;Error executing sejours by month query: &quot; + e.getMessage());</span>
+<span class="nc" id="L474">                e.printStackTrace();</span>
+<span class="nc" id="L475">            }</span>
+<span class="nc" id="L476">            stats.put(&quot;sejoursByMonth&quot;, (Object) statsByMonth);</span>
+            
+            // Get average duration
+<span class="nc" id="L479">            try (ResultSet rs = stmt.executeQuery(sqlAvgDuration)) {</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L481">                    Object avgDurationObj = rs.getObject(&quot;avg_duration&quot;);</span>
+                    double avgDurationValue;
+<span class="nc bnc" id="L483" title="All 2 branches missed.">                    if (avgDurationObj != null) {</span>
+<span class="nc" id="L484">                        avgDurationValue = rs.getDouble(&quot;avg_duration&quot;);</span>
+                    } else {
+<span class="nc" id="L486">                        avgDurationValue = 0.0;</span>
+                    }
+<span class="nc" id="L488">                    stats.put(&quot;averageDuration&quot;, avgDurationValue);</span>
+<span class="nc" id="L489">                    System.out.println(&quot;Average sejour duration: &quot; + avgDurationValue + &quot; days&quot;);</span>
+                }
+<span class="nc" id="L491">            } catch (SQLException e) {</span>
+<span class="nc" id="L492">                System.err.println(&quot;Error executing average duration query: &quot; + e.getMessage());</span>
+<span class="nc" id="L493">                e.printStackTrace();</span>
+<span class="nc" id="L494">            }</span>
+            
+            // Get total revenue
+<span class="nc" id="L497">            try (ResultSet rs = stmt.executeQuery(sqlTotalRevenue)) {</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L499">                    Object totalRevenueObj = rs.getObject(&quot;total_revenue&quot;);</span>
+                    double totalRevenueValue;
+<span class="nc bnc" id="L501" title="All 2 branches missed.">                    if (totalRevenueObj != null) {</span>
+<span class="nc" id="L502">                        totalRevenueValue = rs.getDouble(&quot;total_revenue&quot;);</span>
+                    } else {
+<span class="nc" id="L504">                        totalRevenueValue = 0.0;</span>
+                    }
+<span class="nc" id="L506">                    stats.put(&quot;totalRevenue&quot;, totalRevenueValue);</span>
+<span class="nc" id="L507">                    System.out.println(&quot;Total revenue: &quot; + totalRevenueValue);</span>
+                }
+<span class="nc" id="L509">            } catch (SQLException e) {</span>
+<span class="nc" id="L510">                System.err.println(&quot;Error executing total revenue query: &quot; + e.getMessage());</span>
+<span class="nc" id="L511">                e.printStackTrace();</span>
+<span class="nc" id="L512">            }</span>
+            
+            // Get revenue by month
+<span class="nc" id="L515">            java.util.Map&lt;Integer, Double&gt; revenueByMonth = new java.util.HashMap&lt;Integer, Double&gt;();</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">            for (int i = 1; i &lt;= 12; i++) {</span>
+<span class="nc" id="L517">                revenueByMonth.put(i, 0.0); // Initialize all months with 0</span>
+            }
+<span class="nc" id="L519">            try (ResultSet rs = stmt.executeQuery(sqlRevenueByMonth)) {</span>
+<span class="nc bnc" id="L520" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L521">                    int month = rs.getInt(&quot;month&quot;);</span>
+<span class="nc" id="L522">                    double revenue = rs.getDouble(&quot;revenue&quot;);</span>
+<span class="nc" id="L523">                    revenueByMonth.put(month, revenue);</span>
+<span class="nc" id="L524">                    System.out.println(&quot;Revenue for month &quot; + month + &quot;: &quot; + revenue);</span>
+<span class="nc" id="L525">                }</span>
+<span class="nc" id="L526">            } catch (SQLException e) {</span>
+<span class="nc" id="L527">                System.err.println(&quot;Error executing revenue by month query: &quot; + e.getMessage());</span>
+<span class="nc" id="L528">                e.printStackTrace();</span>
+<span class="nc" id="L529">            }</span>
+<span class="nc" id="L530">            stats.put(&quot;revenueByMonth&quot;, (Object) revenueByMonth);</span>
+            
+<span class="nc" id="L532">            System.out.println(&quot;SejourService.getStatistiques() completed successfully&quot;);</span>
+            
+<span class="nc" id="L534">        } catch (SQLException e) {</span>
+<span class="nc" id="L535">            System.err.println(&quot;Error in SejourService.getStatistiques(): &quot; + e.getMessage());</span>
+<span class="nc" id="L536">            e.printStackTrace();</span>
+<span class="nc" id="L537">        }</span>
+        
+<span class="nc" id="L539">        return stats;</span>
+    }
+
+    public List&lt;Sejour&gt; getAllSejours() {
+<span class="nc" id="L543">        List&lt;Sejour&gt; sejours = new ArrayList&lt;Sejour&gt;();</span>
+<span class="nc" id="L544">        String query = &quot;SELECT * FROM sejour&quot;;</span>
+        
+<span class="nc" id="L546">        try (PreparedStatement stmt = connection.prepareStatement(query);</span>
+<span class="nc" id="L547">             ResultSet rs = stmt.executeQuery()) {</span>
+            
+<span class="nc bnc" id="L549" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L550">                Sejour sejour = new Sejour();</span>
+<span class="nc" id="L551">                sejour.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="nc" id="L552">                sejour.setDateEntree(rs.getTimestamp(&quot;date_entree&quot;).toLocalDateTime());</span>
+                
+<span class="nc" id="L554">                Timestamp tsSortie = rs.getTimestamp(&quot;date_sortie&quot;);</span>
+<span class="nc bnc" id="L555" title="All 2 branches missed.">                if (tsSortie != null) {</span>
+<span class="nc" id="L556">                    sejour.setDateSortie(tsSortie.toLocalDateTime());</span>
+                } else {
+<span class="nc" id="L558">                    sejour.setDateSortie(null);</span>
+                }
+
+<span class="nc" id="L561">                sejour.setTypeSejour(rs.getString(&quot;type_sejour&quot;));</span>
+<span class="nc" id="L562">                sejour.setFraisSejour(rs.getDouble(&quot;frais_sejour&quot;));</span>
+<span class="nc" id="L563">                sejour.setPrixExtras(rs.getDouble(&quot;prix_extras&quot;));</span>
+<span class="nc" id="L564">                sejour.setMoyenPaiement(rs.getString(&quot;moyen_paiement&quot;));</span>
+<span class="nc" id="L565">                sejour.setStatutPaiement(rs.getString(&quot;statut_paiement&quot;));</span>
+<span class="nc" id="L566">                sejours.add(sejour);</span>
+<span class="nc" id="L567">            }</span>
+<span class="nc" id="L568">        } catch (SQLException e) {</span>
+<span class="nc" id="L569">            System.err.println(&quot;Error retrieving all stays: &quot; + e.getMessage());</span>
+<span class="nc" id="L570">            e.printStackTrace();</span>
+<span class="nc" id="L571">        }</span>
+        
+<span class="nc" id="L573">        return sejours;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

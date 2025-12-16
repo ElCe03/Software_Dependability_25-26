@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChatbotMedicamentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ChatbotMedicamentController.java</span></div><h1>ChatbotMedicamentController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import service.MedicamentService;
+import test.MainFx;
+
+import java.io.IOException;
+import java.text.Normalizer;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+<span class="nc" id="L31">public class ChatbotMedicamentController {</span>
+
+<span class="nc" id="L33">    private final MedicamentAPIService apiService = new MedicamentAPIService();</span>
+<span class="nc" id="L34">    private final MedicamentService medicamentService = new MedicamentService();</span>
+    private JSONArray lastSearchResults;
+<span class="nc" id="L36">    private boolean waitingForSelection = false;</span>
+
+    @FXML private ScrollPane chatScrollPane;
+    @FXML private VBox chatMessagesContainer;
+    @FXML private TextField userInputField;
+    @FXML private Button sendButton;
+    @FXML private ListView&lt;String&gt; suggestionsListView;
+
+<span class="nc" id="L44">    private ObservableList&lt;String&gt; searchHistory = FXCollections.observableArrayList();</span>
+<span class="nc" id="L45">    private static final Map&lt;String, String&gt; LOCAL_MEDICAMENT_INFO = new LinkedHashMap&lt;String, String&gt;() {{</span>
+<span class="nc" id="L46">        put(&quot;ibuprofen&quot;, createLocalInfo(&quot;Ibuprofen&quot;, &quot;Douleurs, inflammation&quot;, &quot;200-400 mg/4-6h&quot;));</span>
+<span class="nc" id="L47">        put(&quot;acetaminophen&quot;, createLocalInfo(&quot;Acetaminophen&quot;, &quot;Douleurs, fièvre&quot;, &quot;500-1000 mg/4-6h&quot;));</span>
+<span class="nc" id="L48">    }};</span>
+
+    @FXML
+    private void initialize() {
+<span class="nc" id="L52">        configureUIComponents();</span>
+<span class="nc" id="L53">        initializeChat();</span>
+<span class="nc" id="L54">    }</span>
+
+    private void configureUIComponents() {
+<span class="nc" id="L57">        chatScrollPane.vvalueProperty().bind(chatMessagesContainer.heightProperty());</span>
+<span class="nc" id="L58">        sendButton.setOnAction(e -&gt; handleUserMessage());</span>
+<span class="nc" id="L59">        userInputField.setOnAction(e -&gt; handleUserMessage());</span>
+
+<span class="nc" id="L61">        suggestionsListView.setItems(FXCollections.observableArrayList(LOCAL_MEDICAMENT_INFO.keySet()));</span>
+<span class="nc" id="L62">        suggestionsListView.getSelectionModel().selectedItemProperty().addListener(</span>
+<span class="nc" id="L63">                (obs, oldVal, newVal) -&gt; handleSuggestionSelection(newVal));</span>
+
+<span class="nc" id="L65">        userInputField.textProperty().addListener((obs, oldVal, newVal) -&gt;</span>
+<span class="nc" id="L66">                updateSuggestions(newVal.trim().toLowerCase()));</span>
+<span class="nc" id="L67">    }</span>
+
+    private void initializeChat() {
+<span class="nc" id="L70">        Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L71">            addBotMessage(&quot;Bonjour ! Je suis votre assistant médicament intelligent. 😊&quot;);</span>
+<span class="nc" id="L72">            addBotMessage(&quot;Exemples de requêtes :\n• Effets de l'ibuprofène\n• Dosage du paracétamol\n• Contre-indications de l'oméprazole&quot;);</span>
+<span class="nc" id="L73">        });</span>
+<span class="nc" id="L74">    }</span>
+
+    private void handleSuggestionSelection(String selectedMed) {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (selectedMed != null) {</span>
+<span class="nc" id="L78">            userInputField.setText(selectedMed);</span>
+<span class="nc" id="L79">            handleUserMessage();</span>
+        }
+<span class="nc" id="L81">    }</span>
+
+    private void updateSuggestions(String input) {
+<span class="nc" id="L84">        List&lt;String&gt; filtered = LOCAL_MEDICAMENT_INFO.keySet().stream()</span>
+<span class="nc" id="L85">                .filter(k -&gt; k.toLowerCase().contains(input.toLowerCase()))</span>
+<span class="nc" id="L86">                .limit(10)</span>
+<span class="nc" id="L87">                .toList();</span>
+<span class="nc" id="L88">        suggestionsListView.setItems(FXCollections.observableArrayList(filtered));</span>
+<span class="nc" id="L89">    }</span>
+
+    private void handleUserMessage() {
+<span class="nc" id="L92">        String message = userInputField.getText().trim();</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (message.isEmpty()) return;</span>
+
+<span class="nc" id="L95">        addUserMessage(message);</span>
+<span class="nc" id="L96">        userInputField.clear();</span>
+<span class="nc" id="L97">        processMessage(message);</span>
+<span class="nc" id="L98">    }</span>
+
+    private void processMessage(String message) {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (waitingForSelection) {</span>
+<span class="nc" id="L102">            handleMultipleChoiceSelection(message);</span>
+<span class="nc" id="L103">            return;</span>
+        }
+
+<span class="nc" id="L106">        updateSearchHistory(message);</span>
+<span class="nc" id="L107">        String medicamentName = extractMedicamentName(message);</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        searchMedicament(medicamentName != null ? medicamentName : message);</span>
+<span class="nc" id="L109">    }</span>
+
+    private void updateSearchHistory(String query) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (!searchHistory.contains(query)) {</span>
+<span class="nc" id="L113">            searchHistory.add(0, query);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">            if (searchHistory.size() &gt; 10) {</span>
+<span class="nc" id="L115">                searchHistory.remove(10);</span>
+            }
+        }
+<span class="nc" id="L118">    }</span>
+
+    private String extractMedicamentName(String message) {
+<span class="nc" id="L121">        Pattern pattern = Pattern.compile(</span>
+                &quot;(?i)(effets|dosage|contre-indications|utilisation|interactions)\\s+(de|du|des|d'|pour)\\s+([^\\d\\s]+)&quot;);
+<span class="nc" id="L123">        Matcher matcher = pattern.matcher(message);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        return matcher.find() ? normalizeTerm(matcher.group(3)) : null;</span>
+    }
+
+    private void searchMedicament(String medicamentName) {
+<span class="nc" id="L128">        addBotMessage(&quot;🔍 Recherche de '&quot; + medicamentName + &quot;'...&quot;);</span>
+
+<span class="nc" id="L130">        new Thread(() -&gt; {</span>
+            try {
+<span class="nc" id="L132">                String normalized = normalizeTerm(medicamentName);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                if (LOCAL_MEDICAMENT_INFO.containsKey(normalized)) {</span>
+<span class="nc" id="L134">                    Platform.runLater(() -&gt; addBotMessage(LOCAL_MEDICAMENT_INFO.get(normalized)));</span>
+<span class="nc" id="L135">                    return;</span>
+                }
+
+<span class="nc" id="L138">                String apiResponse = apiService.chercherMedicamentComplet(medicamentName);</span>
+<span class="nc" id="L139">                processAPIResponse(apiResponse, medicamentName);</span>
+<span class="nc" id="L140">            } catch (Exception e) {</span>
+<span class="nc" id="L141">                Platform.runLater(() -&gt;</span>
+<span class="nc" id="L142">                        addBotMessage(&quot;⚠️ Erreur de connexion. Vérifiez votre accès Internet.&quot;));</span>
+<span class="nc" id="L143">            }</span>
+<span class="nc" id="L144">        }).start();</span>
+<span class="nc" id="L145">    }</span>
+
+    private void processAPIResponse(String response, String medicamentName) {
+        try {
+<span class="nc" id="L149">            JSONObject json = new JSONObject(response);</span>
+
+            // Vérifier les erreurs de l'API FDA
+<span class="nc bnc" id="L152" title="All 2 branches missed.">            if (json.has(&quot;error&quot;)) {</span>
+<span class="nc" id="L153">                throw new IOException(&quot;Erreur FDA : &quot; + json.getString(&quot;error&quot;));</span>
+            }
+
+            // Vérifier la présence de résultats
+<span class="nc bnc" id="L157" title="All 4 branches missed.">            if (!json.has(&quot;results&quot;) || json.getJSONArray(&quot;results&quot;).length() == 0) {</span>
+<span class="nc" id="L158">                throw new JSONException(&quot;Aucun résultat trouvé&quot;);</span>
+            }
+
+<span class="nc" id="L161">            JSONArray results = json.getJSONArray(&quot;results&quot;);</span>
+<span class="nc" id="L162">            lastSearchResults = results;</span>
+
+<span class="nc" id="L164">            Platform.runLater(() -&gt; {</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">                if (results.length() &gt; 1) {</span>
+<span class="nc" id="L166">                    showMultipleResults(medicamentName);</span>
+                } else {
+<span class="nc" id="L168">                    displayMedicationInfo(results.getJSONObject(0));</span>
+                }
+<span class="nc" id="L170">            });</span>
+
+<span class="nc" id="L172">        } catch (JSONException e) {</span>
+            // Fallback local si échec du parsing JSON
+<span class="nc" id="L174">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L175">                String normalizedName = normalizeTerm(medicamentName);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                if (LOCAL_MEDICAMENT_INFO.containsKey(normalizedName)) {</span>
+<span class="nc" id="L177">                    addBotMessage(LOCAL_MEDICAMENT_INFO.get(normalizedName));</span>
+                } else {
+<span class="nc" id="L179">                    addBotMessage(&quot;⚠️ Aucune information disponible pour : &quot; + medicamentName);</span>
+                }
+<span class="nc" id="L181">            });</span>
+<span class="nc" id="L182">        } catch (IOException e) {</span>
+            // Gestion des erreurs réseau
+<span class="nc" id="L184">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L185">                addBotMessage(&quot;🔴 Erreur serveur : &quot; + e.getMessage());</span>
+<span class="nc" id="L186">                addBotMessage(&quot;Vérifiez l'orthographe ou essayez ultérieurement&quot;);</span>
+<span class="nc" id="L187">            });</span>
+<span class="nc" id="L188">        } catch (Exception e) {</span>
+            // Catch-all pour autres exceptions
+<span class="nc" id="L190">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L191">                addBotMessage(&quot;⚠️ Erreur inattendue : &quot; + e.getClass().getSimpleName());</span>
+<span class="nc" id="L192">            });</span>
+<span class="nc" id="L193">        }</span>
+<span class="nc" id="L194">    }</span>
+
+    private void handleNoResults(String medicamentName) {
+<span class="nc" id="L197">        addBotMessage(&quot;Aucune information trouvée pour : &quot; + medicamentName);</span>
+<span class="nc" id="L198">    }</span>
+
+    private void showMultipleResults(String medicamentName) {
+<span class="nc" id="L201">        StringBuilder sb = new StringBuilder(&quot;Plusieurs résultats trouvés :\n&quot;);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        for (int i = 0; i &lt; lastSearchResults.length(); i++) {</span>
+<span class="nc" id="L203">            JSONObject med = lastSearchResults.getJSONObject(i);</span>
+<span class="nc" id="L204">            sb.append(i + 1).append(&quot;. &quot;)</span>
+<span class="nc" id="L205">                    .append(extractBrandName(med))</span>
+<span class="nc" id="L206">                    .append(&quot;\n&quot;);</span>
+        }
+<span class="nc" id="L208">        sb.append(&quot;\nRépondez par le numéro correspondant (1-&quot;).append(lastSearchResults.length()).append(&quot;)&quot;);</span>
+<span class="nc" id="L209">        addBotMessage(sb.toString());</span>
+<span class="nc" id="L210">        waitingForSelection = true;</span>
+<span class="nc" id="L211">    }</span>
+
+    private String extractBrandName(JSONObject medData) {
+        try {
+<span class="nc" id="L215">            return medData.getJSONObject(&quot;openfda&quot;)</span>
+<span class="nc" id="L216">                    .getJSONArray(&quot;brand_name&quot;)</span>
+<span class="nc" id="L217">                    .getString(0);</span>
+<span class="nc" id="L218">        } catch (JSONException e) {</span>
+<span class="nc" id="L219">            return &quot;Nom commercial inconnu&quot;;</span>
+        }
+    }
+
+    private void handleMultipleChoiceSelection(String input) {
+        try {
+<span class="nc" id="L225">            int choice = Integer.parseInt(input.trim()) - 1;</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">            if (choice &gt;= 0 &amp;&amp; choice &lt; lastSearchResults.length()) {</span>
+<span class="nc" id="L227">                displayMedicationInfo(lastSearchResults.getJSONObject(choice));</span>
+            }
+<span class="nc" id="L229">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L230">            addBotMessage(&quot;Veuillez entrer un numéro valide.&quot;);</span>
+<span class="nc" id="L231">        }</span>
+<span class="nc" id="L232">        waitingForSelection = false;</span>
+<span class="nc" id="L233">    }</span>
+
+    private void displayMedicationInfo(JSONObject medData) {
+<span class="nc" id="L236">        StringBuilder info = new StringBuilder();</span>
+<span class="nc" id="L237">        info.append(extractField(medData, &quot;openfda.brand_name&quot;, &quot;Nom commercial&quot;));</span>
+<span class="nc" id="L238">        info.append(extractField(medData, &quot;description&quot;, &quot;Description&quot;));</span>
+<span class="nc" id="L239">        info.append(extractField(medData, &quot;indications_and_usage&quot;, &quot;Indications&quot;));</span>
+<span class="nc" id="L240">        info.append(extractField(medData, &quot;dosage_and_administration&quot;, &quot;Posologie&quot;));</span>
+<span class="nc" id="L241">        info.append(extractField(medData, &quot;warnings&quot;, &quot;Mises en garde&quot;));</span>
+
+<span class="nc" id="L243">        addBotMessage(info.toString());</span>
+<span class="nc" id="L244">    }</span>
+
+    private String extractField(JSONObject medData, String fieldPath, String displayName) {
+        try {
+<span class="nc" id="L248">            String[] parts = fieldPath.split(&quot;\\.&quot;);</span>
+<span class="nc" id="L249">            JSONObject current = medData;</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">            for (int i = 0; i &lt; parts.length - 1; i++) {</span>
+<span class="nc" id="L251">                current = current.getJSONObject(parts[i]);</span>
+            }
+<span class="nc" id="L253">            String value = current.getJSONArray(parts[parts.length-1]).getString(0);</span>
+<span class="nc" id="L254">            return String.format(&quot;• %s : \n%s\n\n&quot;, displayName, value);</span>
+<span class="nc" id="L255">        } catch (JSONException e) {</span>
+<span class="nc" id="L256">            return &quot;&quot;;</span>
+        }
+    }
+
+    private static String createLocalInfo(String nom, String usage, String dosage) {
+<span class="nc" id="L261">        return String.format(</span>
+                &quot;🏷 %s\n\n⚕️ Usage : %s\n💊 Posologie : %s\n\n(Info locale)&quot;,
+                nom, usage, dosage);
+    }
+
+    private String normalizeTerm(String term) {
+<span class="nc" id="L267">        return Normalizer.normalize(term, Normalizer.Form.NFD)</span>
+<span class="nc" id="L268">                .replaceAll(&quot;[^\\p{ASCII}]&quot;, &quot;&quot;)</span>
+<span class="nc" id="L269">                .toLowerCase()</span>
+<span class="nc" id="L270">                .replaceAll(&quot;[^a-z]&quot;, &quot;&quot;);</span>
+    }
+
+    private void addUserMessage(String message) {
+<span class="nc" id="L274">        addMessage(message, true, &quot;#DCF8C6&quot;);</span>
+<span class="nc" id="L275">    }</span>
+
+    private void addBotMessage(String message) {
+<span class="nc" id="L278">        addMessage(message, false, &quot;#FFFFFF&quot;);</span>
+<span class="nc" id="L279">    }</span>
+
+    private void addMessage(String text, boolean isUser, String color) {
+<span class="nc" id="L282">        HBox container = new HBox();</span>
+<span class="nc" id="L283">        container.setPadding(new Insets(5));</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        container.setAlignment(isUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L286">        TextFlow messageFlow = new TextFlow(new Text(text));</span>
+<span class="nc" id="L287">        messageFlow.setPadding(new Insets(10));</span>
+<span class="nc" id="L288">        messageFlow.setMaxWidth(chatScrollPane.getWidth() * 0.75);</span>
+<span class="nc" id="L289">        messageFlow.setStyle(&quot;-fx-background-color: &quot; + color + &quot;;&quot;</span>
+                + &quot;-fx-background-radius: 15;&quot;
+                + &quot;-fx-padding: 10;&quot;);
+
+<span class="nc" id="L293">        container.getChildren().add(messageFlow);</span>
+<span class="nc" id="L294">        Platform.runLater(() -&gt; chatMessagesContainer.getChildren().add(container));</span>
+<span class="nc" id="L295">    }</span>
+
+    @FXML
+    private void handleBackButton() {
+<span class="nc" id="L299">        MainFx.loadPage(&quot;medicament.fxml&quot;);</span>
+<span class="nc" id="L300">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

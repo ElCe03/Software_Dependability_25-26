@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatisticsDialogController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">StatisticsDialogController.java</span></div><h1>StatisticsDialogController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
+import entite.departement;
+import entite.etage;
+import entite.salle;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.fxml.FXML;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.chart.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import service.DepartemntService;
+import service.EtageService;
+import service.SalleService;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class StatisticsDialogController {
+
+    @FXML private VBox barChartPlaceholder;
+    @FXML private VBox pieChartPlaceholder;
+    @FXML private Button exportPdfBtn;
+
+    private BarChart&lt;String, Number&gt; barChart;
+    private PieChart pieChart;
+
+    // Initialize services directly
+<span class="nc" id="L40">    private final DepartemntService departementService = new DepartemntService();</span>
+<span class="nc" id="L41">    private final EtageService etageService = new EtageService();</span>
+<span class="nc" id="L42">    private final SalleService salleService = new SalleService();</span>
+
+<span class="nc" id="L44">    public StatisticsDialogController() {</span>
+        // Dependencies are initialized directly
+<span class="nc" id="L46">    }</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L50">        createBarChart();</span>
+<span class="nc" id="L51">        createPieChart();</span>
+<span class="nc" id="L52">    }</span>
+
+    private void createBarChart() {
+<span class="nc" id="L55">        CategoryAxis xAxis = new CategoryAxis();</span>
+<span class="nc" id="L56">        xAxis.setLabel(&quot;Départements&quot;);</span>
+<span class="nc" id="L57">        NumberAxis yAxis = new NumberAxis();</span>
+<span class="nc" id="L58">        yAxis.setLabel(&quot;Nombre d'Étages&quot;);</span>
+
+<span class="nc" id="L60">        barChart = new BarChart&lt;&gt;(xAxis, yAxis);</span>
+<span class="nc" id="L61">        barChart.setTitle(&quot;Nombre d'Étages par Département&quot;);</span>
+
+<span class="nc" id="L63">        XYChart.Series&lt;String, Number&gt; series = new XYChart.Series&lt;&gt;();</span>
+<span class="nc" id="L64">        series.setName(&quot;Étages&quot;);</span>
+
+        try {
+<span class="nc" id="L67">            List&lt;departement&gt; departements = departementService.getAllDepartements();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (departements != null) {</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">                for (departement d : departements) {</span>
+<span class="nc" id="L70">                    series.getData().add(new XYChart.Data&lt;&gt;(d.getNom(), d.getNbr_etage()));</span>
+<span class="nc" id="L71">                }</span>
+            }
+<span class="nc" id="L73">        } catch (Exception e) {</span>
+<span class="nc" id="L74">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors du chargement des données: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L75">        }</span>
+
+<span class="nc" id="L77">        barChart.getData().add(series);</span>
+<span class="nc" id="L78">        barChartPlaceholder.getChildren().add(barChart);</span>
+<span class="nc" id="L79">    }</span>
+
+    private void createPieChart() {
+<span class="nc" id="L82">        pieChart = new PieChart();</span>
+<span class="nc" id="L83">        pieChart.setTitle(&quot;Nombre de Salles par Étage&quot;);</span>
+
+        try {
+<span class="nc" id="L86">            List&lt;etage&gt; etages = etageService.getAllEtages();</span>
+<span class="nc" id="L87">            List&lt;salle&gt; salles = salleService.getAll();</span>
+
+<span class="nc" id="L89">            Map&lt;Integer, Long&gt; sallesPerEtage = salles.stream()</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                    .filter(s -&gt; s.getEtage() != null)</span>
+<span class="nc" id="L91">                    .collect(Collectors.groupingBy(</span>
+<span class="nc" id="L92">                            s -&gt; s.getEtage().getNumero(),</span>
+<span class="nc" id="L93">                            Collectors.counting()</span>
+                    ));
+
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            for (etage e : etages) {</span>
+<span class="nc" id="L97">                long count = sallesPerEtage.getOrDefault(e.getNumero(), 0L);</span>
+<span class="nc" id="L98">                pieChart.getData().add(new PieChart.Data(&quot;Étage &quot; + e.getNumero(), count));</span>
+<span class="nc" id="L99">            }</span>
+<span class="nc" id="L100">        } catch (Exception e) {</span>
+<span class="nc" id="L101">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors du chargement des données: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L102">        }</span>
+
+<span class="nc" id="L104">        pieChartPlaceholder.getChildren().add(pieChart);</span>
+<span class="nc" id="L105">    }</span>
+
+    @FXML
+    private void handleExportPDF() {
+<span class="nc" id="L109">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L110">        fileChooser.setTitle(&quot;Exporter en PDF&quot;);</span>
+<span class="nc" id="L111">        fileChooser.getExtensionFilters().add(</span>
+                new FileChooser.ExtensionFilter(&quot;Fichiers PDF&quot;, &quot;*.pdf&quot;)
+        );
+
+<span class="nc" id="L115">        File file = fileChooser.showSaveDialog(exportPdfBtn.getScene().getWindow());</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (file == null) return;</span>
+
+        try {
+<span class="nc" id="L119">            Document document = new Document();</span>
+<span class="nc" id="L120">            PdfWriter.getInstance(document, new FileOutputStream(file));</span>
+<span class="nc" id="L121">            document.open();</span>
+
+<span class="nc" id="L123">            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);</span>
+<span class="nc" id="L124">            Paragraph title = new Paragraph(&quot;Statistiques des Départements&quot;, titleFont);</span>
+<span class="nc" id="L125">            title.setAlignment(Element.ALIGN_CENTER);</span>
+<span class="nc" id="L126">            document.add(title);</span>
+<span class="nc" id="L127">            document.add(Chunk.NEWLINE);</span>
+
+<span class="nc" id="L129">            addChartToDocument(document, barChart, &quot;Nombre d'étages par département&quot;);</span>
+<span class="nc" id="L130">            document.add(Chunk.NEWLINE);</span>
+<span class="nc" id="L131">            addChartToDocument(document, pieChart, &quot;Nombre de salles par étage&quot;);</span>
+
+<span class="nc" id="L133">            document.close();</span>
+<span class="nc" id="L134">            showAlert(&quot;Succès&quot;, &quot;PDF exporté avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L135">        } catch (Exception e) {</span>
+<span class="nc" id="L136">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'export: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L137">        }</span>
+<span class="nc" id="L138">    }</span>
+
+    private void addChartToDocument(Document document, Chart chart, String title) throws Exception {
+<span class="nc" id="L141">        Font font = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);</span>
+<span class="nc" id="L142">        Paragraph paragraph = new Paragraph(title, font);</span>
+<span class="nc" id="L143">        document.add(paragraph);</span>
+
+<span class="nc" id="L145">        WritableImage image = chart.snapshot(new SnapshotParameters(), null);</span>
+<span class="nc" id="L146">        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);</span>
+
+<span class="nc" id="L148">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L149">        ImageIO.write(bufferedImage, &quot;png&quot;, baos);</span>
+<span class="nc" id="L150">        com.itextpdf.text.Image pdfImage = com.itextpdf.text.Image.getInstance(baos.toByteArray());</span>
+
+<span class="nc" id="L152">        float documentWidth = document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin();</span>
+<span class="nc" id="L153">        pdfImage.scaleToFit(documentWidth, 300);</span>
+
+<span class="nc" id="L155">        document.add(pdfImage);</span>
+<span class="nc" id="L156">    }</span>
+
+    private void showAlert(String title, String message, Alert.AlertType alertType) {
+<span class="nc" id="L159">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L160">        alert.setTitle(title);</span>
+<span class="nc" id="L161">        alert.setHeaderText(null);</span>
+<span class="nc" id="L162">        alert.setContentText(message);</span>
+<span class="nc" id="L163">        alert.showAndWait();</span>
+<span class="nc" id="L164">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

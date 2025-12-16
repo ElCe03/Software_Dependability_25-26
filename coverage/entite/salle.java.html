@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>salle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">salle.java</span></div><h1>salle.java</h1><pre class="source lang-java linenums">package entite;
+
+public class salle {
+
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private String nom;
+    /*@ spec_public @*/ private int capacite;
+    /*@ spec_public nullable @*/ private String type_salle;
+    /*@ spec_public nullable @*/ private String status;
+    /*@ spec_public nullable @*/ private etage etage;
+    /*@ spec_public nullable @*/ private String image;
+    /*@ spec_public @*/ private int priorite;
+
+    /*@ public invariant id &gt;= 0; @*/
+    /*@ public invariant capacite &gt;= 0; @*/
+    /*@ public invariant priorite &gt;= 0; @*/
+
+    /*@ 
+      @ ensures id == 0;
+      @ ensures capacite == 0;
+      @ ensures priorite == 0;
+      @*/
+<span class="fc" id="L23">    public salle() {}</span>
+
+    /*@ 
+      @ requires capacite &gt;= 0;
+      @ 
+      @ ensures this.id == id;
+      @ ensures this.nom == nom;
+      @ ensures this.capacite == capacite;
+      @ ensures this.status == status;
+      @*/
+<span class="nc" id="L33">    public salle(int id, String nom, int capacite,  String status) {</span>
+<span class="nc" id="L34">        this.id = id;</span>
+<span class="nc" id="L35">        this.nom = nom;</span>
+<span class="nc" id="L36">        this.capacite = capacite;</span>
+<span class="nc" id="L37">        this.status = status;</span>
+
+<span class="nc" id="L39">    }</span>
+
+    /*@ 
+      @ ensures this.id == id;
+      @ ensures this.nom == nom;
+      @ ensures this.status == status;
+      @ ensures this.capacite == 0;
+      @*/
+<span class="nc" id="L47">    public salle(int id,String nom,String status) {</span>
+<span class="nc" id="L48">        this.id = id;</span>
+<span class="nc" id="L49">        this.nom = nom;</span>
+<span class="nc" id="L50">        this.status = status;</span>
+<span class="nc" id="L51">    }</span>
+
+    /*@ 
+      @ requires capacite &gt;= 0;
+      @ requires priorite &gt;= 0;
+      @ 
+      @ ensures this.nom == nom;
+      @ ensures this.capacite == capacite;
+      @ ensures this.type_salle == type_salle;
+      @ ensures this.image == image;
+      @ ensures this.status == status;
+      @ ensures this.priorite == priorite;
+      @*/
+<span class="nc" id="L64">    public salle( String nom, int capacite, String type_salle, String image,String status  ,int priorite) {</span>
+<span class="nc" id="L65">        this.nom = nom;</span>
+<span class="nc" id="L66">        this.capacite = capacite;</span>
+<span class="nc" id="L67">        this.type_salle = type_salle;</span>
+<span class="nc" id="L68">        this.image = image;</span>
+<span class="nc" id="L69">        this.status = status;</span>
+<span class="nc" id="L70">        this.priorite = priorite;</span>
+
+<span class="nc" id="L72">    }</span>
+
+    // Getters et setters
+
+    /*@ ensures \result == id; pure @*/
+<span class="fc" id="L77">    public int getId() { return id; }</span>
+    /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
+<span class="fc" id="L79">    public void setId(int id) { this.id = id; }</span>
+
+    /*@ pure @*/
+<span class="fc" id="L82">    public String getNom() { return nom; }</span>
+    /*@ assignable this.nom; @*/
+<span class="fc" id="L84">    public void setNom(String nom) { this.nom = nom; }</span>
+
+    /*@ ensures \result == capacite; pure @*/
+<span class="fc" id="L87">    public int getCapacite() { return capacite; }</span>
+    /*@ 
+      @ requires capacite &gt;= 0; 
+      @ assignable this.capacite; 
+      @ ensures this.capacite == capacite; 
+      @*/
+<span class="fc" id="L93">    public void setCapacite(int capacite) { this.capacite = capacite; }</span>
+
+<span class="fc" id="L95">    public String getType_salle() { return type_salle; }</span>
+<span class="fc" id="L96">    public void setType_salle(String type_salle) { this.type_salle = type_salle; }</span>
+
+<span class="fc" id="L98">    public String getStatus() { return status; }</span>
+<span class="fc" id="L99">    public void setStatus(String status) { this.status = status; }</span>
+
+<span class="fc" id="L101">    public etage getEtage() { return etage; }</span>
+<span class="fc" id="L102">    public void setEtage(etage etage) { this.etage = etage; }</span>
+
+<span class="fc" id="L104">    public String getImage() { return image; }</span>
+<span class="fc" id="L105">    public void setImage(String image) { this.image = image; }</span>
+
+    /*@ ensures \result == priorite; pure @*/
+<span class="fc" id="L108">    public int getPriorite() { return priorite; }</span>
+    /*@ 
+      @ requires priorite &gt;= 0; 
+      @ assignable this.priorite; 
+      @ ensures this.priorite == priorite; 
+      @*/
+<span class="fc" id="L114">    public void setPriorite(int priorite) { this.priorite = priorite; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EquipementService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">EquipementService.java</span></div><h1>EquipementService.java</h1><pre class="source lang-java linenums">package service;
+
+import entite.Equipement;
+import util.DataSource;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EquipementService {
+    
+
+    private Connection connection;
+
+<span class="fc" id="L15">    public EquipementService() {</span>
+<span class="fc" id="L16">    }</span>
+
+    public void setConnection(Connection connection) {
+<span class="fc" id="L19">        this.connection = connection;</span>
+<span class="fc" id="L20">    }</span>
+
+    private Connection getConnection() {
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        if (this.connection == null) {</span>
+<span class="nc" id="L24">            this.connection = DataSource.getInstance().getConnection();</span>
+        }
+<span class="fc" id="L26">        return this.connection;</span>
+    }
+
+    public void ajouterEquipement(Equipement e) {
+<span class="fc" id="L30">        String sql = &quot;INSERT INTO equipement (nom, type, statut, category) VALUES (?, ?, ?, ?)&quot;;</span>
+<span class="fc" id="L31">        try (PreparedStatement pst = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L32">            pst.setString(1, e.getNom());</span>
+<span class="fc" id="L33">            pst.setString(2, e.getType());</span>
+<span class="fc" id="L34">            pst.setString(3, e.getStatut());</span>
+<span class="fc" id="L35">            pst.setString(4, e.getCategory());</span>
+<span class="fc" id="L36">            pst.executeUpdate();</span>
+<span class="fc" id="L37">            System.out.println(&quot;✅ Équipement ajouté avec succès !&quot;);</span>
+<span class="nc" id="L38">        } catch (SQLException ex) {</span>
+<span class="nc" id="L39">            System.err.println(&quot;❌ Erreur lors de l'ajout de l'équipement : &quot; + ex.getMessage());</span>
+<span class="fc" id="L40">        }</span>
+<span class="fc" id="L41">    }</span>
+
+    public List&lt;Equipement&gt; getAllEquipements() {
+<span class="nc" id="L44">        List&lt;Equipement&gt; result = new ArrayList&lt;Equipement&gt;();</span>
+<span class="nc" id="L45">        String sql = &quot;SELECT * FROM equipement&quot;;</span>
+<span class="nc" id="L46">        try (Statement stmt = getConnection().createStatement();</span>
+<span class="nc" id="L47">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L49">                Equipement e = new Equipement(</span>
+<span class="nc" id="L50">                        rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L51">                        rs.getString(&quot;nom&quot;),</span>
+<span class="nc" id="L52">                        rs.getString(&quot;type&quot;),</span>
+<span class="nc" id="L53">                        rs.getString(&quot;statut&quot;),</span>
+<span class="nc" id="L54">                        rs.getString(&quot;category&quot;)</span>
+                );
+<span class="nc" id="L56">                result.add(e);</span>
+<span class="nc" id="L57">            }</span>
+<span class="nc" id="L58">        } catch (SQLException ex) {</span>
+<span class="nc" id="L59">            System.err.println(&quot;❌ Erreur lors de la récupération des équipements : &quot; + ex.getMessage());</span>
+<span class="nc" id="L60">        }</span>
+<span class="nc" id="L61">        return result;</span>
+    }
+
+    public Equipement getEquipementById(int id) {
+<span class="fc" id="L65">        String sql = &quot;SELECT * FROM equipement WHERE id = ?&quot;;</span>
+<span class="fc" id="L66">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L67">            ps.setInt(1, id);</span>
+<span class="fc" id="L68">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L70">                    return new Equipement(</span>
+<span class="fc" id="L71">                            rs.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L72">                            rs.getString(&quot;nom&quot;),</span>
+<span class="fc" id="L73">                            rs.getString(&quot;type&quot;),</span>
+<span class="fc" id="L74">                            rs.getString(&quot;statut&quot;),</span>
+<span class="fc" id="L75">                            rs.getString(&quot;category&quot;)</span>
+                    );
+                }
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">            }</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        } catch (SQLException ex) {</span>
+<span class="nc" id="L80">            System.err.println(&quot;❌ Erreur lors de la récupération de l'équipement par ID : &quot; + ex.getMessage());</span>
+<span class="nc" id="L81">        }</span>
+<span class="nc" id="L82">        return null;</span>
+    }
+
+    public void updateEquipement(Equipement equipement) {
+<span class="fc" id="L86">        String query = &quot;UPDATE equipement SET nom=?, type=?, statut=?, category=? WHERE id=?&quot;;</span>
+<span class="fc" id="L87">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
+<span class="fc" id="L88">            ps.setString(1, equipement.getNom());</span>
+<span class="fc" id="L89">            ps.setString(2, equipement.getType());</span>
+<span class="fc" id="L90">            ps.setString(3, equipement.getStatut());</span>
+<span class="fc" id="L91">            ps.setString(4, equipement.getCategory());</span>
+<span class="fc" id="L92">            ps.setInt(5, equipement.getId());</span>
+<span class="fc" id="L93">            int rows = ps.executeUpdate();</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">            if (rows == 0) {</span>
+<span class="nc" id="L95">                System.err.println(&quot;❌ Aucune ligne affectée - échec de la mise à jour&quot;);</span>
+            } else {
+<span class="fc" id="L97">                System.out.println(&quot;✅ L'équipement a été mis à jour avec succès !&quot;);</span>
+            }
+<span class="nc" id="L99">        } catch (SQLException e) {</span>
+<span class="nc" id="L100">            System.err.println(&quot;❌ Erreur lors de la mise à jour de l'équipement : &quot; + e.getMessage());</span>
+<span class="fc" id="L101">        }</span>
+<span class="fc" id="L102">    }</span>
+
+    public void supprimerEquipement(int id) {
+<span class="fc" id="L105">        String sql = &quot;DELETE FROM equipement WHERE id=?&quot;;</span>
+<span class="fc" id="L106">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L107">            ps.setInt(1, id);</span>
+<span class="fc" id="L108">            int rows = ps.executeUpdate();</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">            if (rows == 0) {</span>
+<span class="nc" id="L110">                System.err.println(&quot;❌ Aucune ligne supprimée - ID introuvable : &quot; + id);</span>
+            } else {
+<span class="fc" id="L112">                System.out.println(&quot;✅ Équipement supprimé avec succès !&quot;);</span>
+            }
+<span class="nc" id="L114">        } catch (SQLException ex) {</span>
+<span class="nc" id="L115">            System.err.println(&quot;❌ Erreur lors la suppression de l'équipement : &quot; + ex.getMessage());</span>
+<span class="fc" id="L116">        }</span>
+<span class="fc" id="L117">    }</span>
+
+    public void deleteEquipementAndDependents(int equipementId) {
+<span class="nc" id="L120">        String deleteEntretienSql = &quot;DELETE FROM entretien WHERE equipement_id = ?&quot;;</span>
+<span class="nc" id="L121">        String deleteEquipementSql = &quot;DELETE FROM equipement WHERE id = ?&quot;;</span>
+
+        try {
+<span class="nc" id="L124">            getConnection().setAutoCommit(false);</span>
+
+<span class="nc" id="L126">            try (PreparedStatement psEntretien = getConnection().prepareStatement(deleteEntretienSql)) {</span>
+<span class="nc" id="L127">                psEntretien.setInt(1, equipementId);</span>
+<span class="nc" id="L128">                psEntretien.executeUpdate();</span>
+            }
+
+<span class="nc" id="L131">            try (PreparedStatement psEquipement = getConnection().prepareStatement(deleteEquipementSql)) {</span>
+<span class="nc" id="L132">                psEquipement.setInt(1, equipementId);</span>
+<span class="nc" id="L133">                int rows = psEquipement.executeUpdate();</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                if (rows == 0) {</span>
+<span class="nc" id="L135">                    System.out.println(&quot;❌ Aucun équipement trouvé avec l'ID &quot; + equipementId);</span>
+                } else {
+<span class="nc" id="L137">                    System.out.println(&quot;✅ Équipement et ses entretiens supprimés !&quot;);</span>
+                }
+            }
+
+<span class="nc" id="L141">            getConnection().commit();</span>
+<span class="nc" id="L142">        } catch (SQLException ex) {</span>
+            try {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                if (connection != null) getConnection().rollback();</span>
+<span class="nc" id="L145">            } catch (SQLException e) {</span>
+<span class="nc" id="L146">                System.err.println(&quot;❌ Erreur rollback : &quot; + e.getMessage());</span>
+<span class="nc" id="L147">            }</span>
+<span class="nc" id="L148">            System.err.println(&quot;❌ Erreur lors de la suppression : &quot; + ex.getMessage());</span>
+        } finally {
+            try {
+<span class="nc bnc" id="L151" title="All 2 branches missed.">                if (connection != null) getConnection().setAutoCommit(true);</span>
+<span class="nc" id="L152">            } catch (SQLException e) {</span>
+<span class="nc" id="L153">                System.err.println(&quot;❌ Erreur reset auto-commit : &quot; + e.getMessage());</span>
+<span class="nc" id="L154">            }</span>
+        }
+<span class="nc" id="L156">    }</span>
+
+    public List&lt;Equipement&gt; getEquipementsByCategory(String category) {
+<span class="fc" id="L159">        List&lt;Equipement&gt; equipements = new ArrayList&lt;Equipement&gt;();</span>
+<span class="fc" id="L160">        String sql = &quot;SELECT * FROM equipement WHERE category = ?&quot;;</span>
+<span class="fc" id="L161">        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {</span>
+<span class="fc" id="L162">            ps.setString(1, category);</span>
+<span class="fc" id="L163">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">                while (rs.next()) {</span>
+<span class="fc" id="L165">                    Equipement e = new Equipement(</span>
+<span class="fc" id="L166">                            rs.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L167">                            rs.getString(&quot;nom&quot;),</span>
+<span class="fc" id="L168">                            rs.getString(&quot;type&quot;),</span>
+<span class="fc" id="L169">                            rs.getString(&quot;statut&quot;),</span>
+<span class="fc" id="L170">                            rs.getString(&quot;category&quot;)</span>
+                    );
+<span class="fc" id="L172">                    equipements.add(e);</span>
+<span class="fc" id="L173">                }</span>
+            }
+<span class="nc" id="L175">        } catch (SQLException ex) {</span>
+<span class="nc" id="L176">            System.err.println(&quot;❌ Erreur lors de la récupération par catégorie : &quot; + ex.getMessage());</span>
+<span class="fc" id="L177">        }</span>
+<span class="fc" id="L178">        return equipements;</span>
+    }
+
+    public void mettreAJourStatut(Equipement equipement) {
+<span class="nc" id="L182">        String sql = &quot;UPDATE equipement SET statut = ? WHERE id = ?&quot;;</span>
+
+<span class="nc" id="L184">        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L185">            stmt.setString(1, equipement.getStatut());</span>
+<span class="nc" id="L186">            stmt.setInt(2, equipement.getId());</span>
+
+<span class="nc" id="L188">            stmt.executeUpdate();</span>
+
+<span class="nc" id="L190">            System.out.println(&quot;✅ Statut mis à jour en '&quot; + equipement.getStatut() + &quot;'&quot;);</span>
+<span class="nc" id="L191">        } catch (SQLException e) {</span>
+<span class="nc" id="L192">            System.err.println(&quot;❌ Erreur SQL : &quot; + e.getMessage());</span>
+<span class="nc" id="L193">        }</span>
+<span class="nc" id="L194">    }</span>
+
+    public void modifierEquipement(Equipement equipement) {
+<span class="nc" id="L197">        String sql = &quot;UPDATE equipement SET nom = ?, type = ?, statut = ?, category = ? WHERE id = ?&quot;;</span>
+<span class="nc" id="L198">        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {</span>
+<span class="nc" id="L199">            pstmt.setString(1, equipement.getNom());</span>
+<span class="nc" id="L200">            pstmt.setString(2, equipement.getType());</span>
+<span class="nc" id="L201">            pstmt.setString(3, equipement.getStatut());</span>
+<span class="nc" id="L202">            pstmt.setString(4, equipement.getCategory());</span>
+<span class="nc" id="L203">            pstmt.setInt(5, equipement.getId());</span>
+
+<span class="nc" id="L205">            pstmt.executeUpdate();</span>
+<span class="nc" id="L206">            System.out.println(&quot;✅ L'équipement a été mis à jour avec succès !&quot;);</span>
+<span class="nc" id="L207">        } catch (SQLException e) {</span>
+<span class="nc" id="L208">            System.err.println(&quot;❌ Erreur lors de la mise à jour de l'équipement : &quot; + e.getMessage());</span>
+<span class="nc" id="L209">        }</span>
+<span class="nc" id="L210">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

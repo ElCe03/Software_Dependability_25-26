@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceListController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ServiceListController.java</span></div><h1>ServiceListController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Service;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import service.serviceservice;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import javafx.event.ActionEvent;
+import javafx.scene.Node;
+import java.io.IOException;
+
+<span class="nc" id="L30">public class ServiceListController {</span>
+    @FXML private VBox galleryContainer;
+    @FXML private FlowPane servicesFlowPane;
+    @FXML private TextField searchField;
+    @FXML private Button refreshBtn;
+    @FXML private Button backBtn;
+    @FXML private ComboBox&lt;String&gt; languageComboBox;
+    @FXML private ProgressIndicator loadingIndicator;
+    @FXML private Label translationWarningLabel;
+
+<span class="nc" id="L40">    private serviceservice serviceService = new serviceservice();</span>
+<span class="nc" id="L41">    private String currentLanguage = &quot;en&quot;;</span>
+<span class="nc" id="L42">    private boolean translationFailed = false;</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L46">        applyStyles();</span>
+<span class="nc" id="L47">        setupLanguageSelector();</span>
+<span class="nc" id="L48">        loadServices();</span>
+<span class="nc" id="L49">        setupSearch();</span>
+<span class="nc" id="L50">        setupBackButton();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (loadingIndicator != null) {</span>
+<span class="nc" id="L52">            loadingIndicator.setVisible(false);</span>
+        }
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (translationWarningLabel != null) {</span>
+<span class="nc" id="L55">            translationWarningLabel.setVisible(false);</span>
+        }
+<span class="nc" id="L57">    }</span>
+
+    private void setupLanguageSelector() {
+<span class="nc" id="L60">        languageComboBox.getItems().addAll(&quot;English&quot;, &quot;French&quot;, &quot;Spanish&quot;, &quot;German&quot;, &quot;Arabic&quot;);</span>
+<span class="nc" id="L61">        languageComboBox.setValue(&quot;English&quot;);</span>
+
+<span class="nc" id="L63">        languageComboBox.setOnAction(e -&gt; {</span>
+<span class="nc" id="L64">            String selected = languageComboBox.getValue();</span>
+<span class="nc bnc" id="L65" title="All 6 branches missed.">            switch (selected) {</span>
+<span class="nc" id="L66">                case &quot;English&quot;: currentLanguage = &quot;en&quot;; break;</span>
+<span class="nc" id="L67">                case &quot;French&quot;: currentLanguage = &quot;fr&quot;; break;</span>
+<span class="nc" id="L68">                case &quot;Spanish&quot;: currentLanguage = &quot;es&quot;; break;</span>
+<span class="nc" id="L69">                case &quot;German&quot;: currentLanguage = &quot;de&quot;; break;</span>
+<span class="nc" id="L70">                case &quot;Arabic&quot;: currentLanguage = &quot;ar&quot;; break;</span>
+            }
+<span class="nc" id="L72">            translationFailed = false;</span>
+<span class="nc" id="L73">            Translator.resetFailures();</span>
+<span class="nc" id="L74">            loadServices();</span>
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        languageComboBox.setStyle(</span>
+                &quot;-fx-background-color: white; &quot; +
+                        &quot;-fx-border-color: #e2e8f0; &quot; +
+                        &quot;-fx-border-radius: 20; &quot; +
+                        &quot;-fx-background-radius: 20; &quot; +
+                        &quot;-fx-padding: 5 15;&quot;
+        );
+<span class="nc" id="L84">    }</span>
+
+    private void applyStyles() {
+<span class="nc" id="L87">        galleryContainer.setStyle(&quot;-fx-background-color: #f8fafc;&quot;);</span>
+
+<span class="nc" id="L89">        searchField.setStyle(</span>
+                &quot;-fx-pref-width: 300px; &quot; +
+                        &quot;-fx-pref-height: 40px; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-background-radius: 20; &quot; +
+                        &quot;-fx-border-radius: 20; &quot; +
+                        &quot;-fx-border-color: #e2e8f0; &quot; +
+                        &quot;-fx-padding: 5 15;&quot;
+        );
+
+<span class="nc" id="L99">        refreshBtn.setStyle(</span>
+                &quot;-fx-background-color: #3b82f6; &quot; +
+                        &quot;-fx-text-fill: white; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-padding: 8 20; &quot; +
+                        &quot;-fx-background-radius: 20;&quot;
+        );
+
+<span class="nc" id="L108">        backBtn.setStyle(</span>
+                &quot;-fx-background-color: #94a3b8; &quot; +
+                        &quot;-fx-text-fill: white; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-padding: 8 20; &quot; +
+                        &quot;-fx-background-radius: 20;&quot;
+        );
+
+<span class="nc" id="L117">        backBtn.setOnMouseEntered(e -&gt; backBtn.setStyle(</span>
+                &quot;-fx-background-color: #64748b; &quot; +
+                        &quot;-fx-text-fill: white; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-padding: 8 20; &quot; +
+                        &quot;-fx-background-radius: 20;&quot;
+        ));
+<span class="nc" id="L125">        backBtn.setOnMouseExited(e -&gt; backBtn.setStyle(</span>
+                &quot;-fx-background-color: #94a3b8; &quot; +
+                        &quot;-fx-text-fill: white; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-padding: 8 20; &quot; +
+                        &quot;-fx-background-radius: 20;&quot;
+        ));
+<span class="nc" id="L133">    }</span>
+
+    private CompletableFuture&lt;String&gt; translateText(String text) {
+<span class="nc bnc" id="L136" title="All 6 branches missed.">        if (text == null || text.isEmpty() || &quot;en&quot;.equals(currentLanguage)) {</span>
+<span class="nc" id="L137">            return CompletableFuture.completedFuture(text);</span>
+        }
+
+        // First try the fallback
+<span class="nc" id="L141">        String fallback = TranslatorFallback.translate(text, currentLanguage);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (!fallback.equals(text)) {</span>
+<span class="nc" id="L143">            return CompletableFuture.completedFuture(fallback);</span>
+        }
+
+        // Only use API for dynamic text
+<span class="nc" id="L147">        return Translator.translateAsync(text, &quot;en&quot;, currentLanguage)</span>
+<span class="nc" id="L148">                .orTimeout(2, TimeUnit.SECONDS)</span>
+<span class="nc" id="L149">                .exceptionally(throwable -&gt; {</span>
+<span class="nc" id="L150">                    translationFailed = true;</span>
+<span class="nc" id="L151">                    return text; // Return original if translation fails</span>
+                });
+    }
+
+    private void setupBackButton() {
+<span class="nc" id="L156">        backBtn.setOnAction(e -&gt; {</span>
+            try {
+<span class="nc" id="L158">                Parent root = FXMLLoader.load(getClass().getResource(&quot;/front.fxml&quot;));</span>
+<span class="nc" id="L159">                Stage stage = (Stage) backBtn.getScene().getWindow();</span>
+<span class="nc" id="L160">                stage.setScene(new Scene(root));</span>
+<span class="nc" id="L161">                stage.show();</span>
+<span class="nc" id="L162">            } catch (Exception ex) {</span>
+<span class="nc" id="L163">                ex.printStackTrace();</span>
+<span class="nc" id="L164">                showAlert(&quot;Navigation Error&quot;, &quot;Failed to load the front page.&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L165">            }</span>
+<span class="nc" id="L166">        });</span>
+<span class="nc" id="L167">    }</span>
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+<span class="nc" id="L170">        Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L171">            Alert alert = new Alert(type);</span>
+<span class="nc" id="L172">            alert.setTitle(title);</span>
+<span class="nc" id="L173">            alert.setHeaderText(null);</span>
+<span class="nc" id="L174">            alert.setContentText(message);</span>
+<span class="nc" id="L175">            alert.showAndWait();</span>
+<span class="nc" id="L176">        });</span>
+<span class="nc" id="L177">    }</span>
+
+    private ImageView createLogoView(double size) {
+        try {
+<span class="nc" id="L181">            Image logoImage = new Image(getClass().getResourceAsStream(&quot;/img/logo.png&quot;));</span>
+<span class="nc" id="L182">            ImageView logoView = new ImageView(logoImage);</span>
+<span class="nc" id="L183">            logoView.setFitHeight(size);</span>
+<span class="nc" id="L184">            logoView.setFitWidth(size);</span>
+<span class="nc" id="L185">            logoView.setPreserveRatio(true);</span>
+<span class="nc" id="L186">            logoView.setSmooth(true);</span>
+<span class="nc" id="L187">            logoView.setCache(true);</span>
+<span class="nc" id="L188">            return logoView;</span>
+<span class="nc" id="L189">        } catch (Exception e) {</span>
+<span class="nc" id="L190">            return null;</span>
+        }
+    }
+
+    private StackPane createLogoPlaceholder(Service service, double size) {
+<span class="nc" id="L195">        StackPane placeholder = new StackPane();</span>
+<span class="nc" id="L196">        placeholder.setMinSize(size, size);</span>
+<span class="nc" id="L197">        placeholder.setStyle(&quot;-fx-background-color: #3b82f6; -fx-background-radius: &quot; + (size/2) + &quot;;&quot;);</span>
+
+<span class="nc" id="L199">        Text initial = new Text(service.getName().substring(0, 1).toUpperCase());</span>
+<span class="nc" id="L200">        initial.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, size/2));</span>
+<span class="nc" id="L201">        initial.setFill(Color.WHITE);</span>
+<span class="nc" id="L202">        placeholder.getChildren().add(initial);</span>
+<span class="nc" id="L203">        return placeholder;</span>
+    }
+
+    private StackPane createImagePlaceholder(Service service, double width, double height) {
+<span class="nc" id="L207">        StackPane placeholder = new StackPane();</span>
+<span class="nc" id="L208">        placeholder.setMinSize(width, height);</span>
+<span class="nc" id="L209">        placeholder.setStyle(&quot;-fx-background-color: #e2e8f0; -fx-background-radius: 8;&quot;);</span>
+
+<span class="nc" id="L211">        Text initial = new Text(service.getName().substring(0, 1).toUpperCase());</span>
+<span class="nc" id="L212">        initial.setFont(Font.font(&quot;Arial&quot;, FontWeight.BOLD, Math.min(width, height)/2));</span>
+<span class="nc" id="L213">        initial.setFill(Color.web(&quot;#94a3b8&quot;));</span>
+<span class="nc" id="L214">        placeholder.getChildren().add(initial);</span>
+<span class="nc" id="L215">        return placeholder;</span>
+    }
+
+    private void loadServices() {
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (loadingIndicator != null) {</span>
+<span class="nc" id="L220">            loadingIndicator.setVisible(true);</span>
+        }
+
+<span class="nc" id="L223">        translationFailed = false;</span>
+<span class="nc" id="L224">        Translator.resetFailures();</span>
+
+<span class="nc" id="L226">        servicesFlowPane.getChildren().clear();</span>
+<span class="nc" id="L227">        List&lt;Service&gt; services = serviceService.getAllServices();</span>
+
+<span class="nc" id="L229">        servicesFlowPane.setHgap(25);</span>
+<span class="nc" id="L230">        servicesFlowPane.setVgap(25);</span>
+<span class="nc" id="L231">        servicesFlowPane.setPadding(new Insets(20));</span>
+<span class="nc" id="L232">        servicesFlowPane.setPrefWrapLength(1000);</span>
+
+<span class="nc" id="L234">        List&lt;CompletableFuture&lt;Void&gt;&gt; futures = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        for (Service service : services) {</span>
+<span class="nc" id="L236">            CompletableFuture&lt;Void&gt; future = createServiceCardAsync(service)</span>
+<span class="nc" id="L237">                    .thenAcceptAsync(card -&gt; servicesFlowPane.getChildren().add(card), Platform::runLater);</span>
+<span class="nc" id="L238">            futures.add(future);</span>
+<span class="nc" id="L239">        }</span>
+
+<span class="nc" id="L241">        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))</span>
+<span class="nc" id="L242">                .orTimeout(10, TimeUnit.SECONDS)</span>
+<span class="nc" id="L243">                .whenComplete((result, throwable) -&gt; Platform.runLater(() -&gt; {</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">                    if (loadingIndicator != null) {</span>
+<span class="nc" id="L245">                        loadingIndicator.setVisible(false);</span>
+                    }
+<span class="nc bnc" id="L247" title="All 2 branches missed.">                    if (translationWarningLabel != null) {</span>
+<span class="nc" id="L248">                        translationWarningLabel.setVisible(translationFailed);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                        if (translationFailed) {</span>
+<span class="nc" id="L250">                            translationWarningLabel.setText(</span>
+<span class="nc" id="L251">                                    TranslatorFallback.translate(</span>
+                                            &quot;Translation unavailable, using English.&quot;,
+                                            currentLanguage
+                                    )
+                            );
+                        }
+                    }
+<span class="nc bnc" id="L258" title="All 2 branches missed.">                    if (throwable != null) {</span>
+<span class="nc" id="L259">                        showAlert(</span>
+                                &quot;Loading Error&quot;,
+                                &quot;Failed to load services in time.&quot;,
+                                Alert.AlertType.WARNING
+                        );
+                    }
+<span class="nc" id="L265">                }));</span>
+<span class="nc" id="L266">    }</span>
+
+    private CompletableFuture&lt;VBox&gt; createServiceCardAsync(Service service) {
+<span class="nc" id="L269">        VBox card = new VBox();</span>
+<span class="nc" id="L270">        card.setAlignment(Pos.TOP_CENTER);</span>
+<span class="nc" id="L271">        card.setSpacing(15);</span>
+<span class="nc" id="L272">        card.setPadding(new Insets(20));</span>
+<span class="nc" id="L273">        card.setMinWidth(300);</span>
+<span class="nc" id="L274">        card.setMaxWidth(300);</span>
+<span class="nc" id="L275">        card.setStyle(</span>
+                &quot;-fx-background-color: white; &quot; +
+                        &quot;-fx-background-radius: 12; &quot; +
+                        &quot;-fx-border-radius: 12; &quot; +
+                        &quot;-fx-border-color: #e2e8f0; &quot; +
+                        &quot;-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 2);&quot; +
+                        &quot;-fx-cursor: hand;&quot;
+        );
+
+<span class="nc" id="L284">        card.setOnMouseEntered(e -&gt; card.setStyle(</span>
+                &quot;-fx-background-color: #f9fafb; &quot; +
+                        &quot;-fx-border-color: #3b82f6; &quot; +
+                        &quot;-fx-effect: dropshadow(three-pass-box, rgba(59,130,246,0.15), 12, 0, 0, 4);&quot;
+        ));
+<span class="nc" id="L289">        card.setOnMouseExited(e -&gt; card.setStyle(</span>
+                &quot;-fx-background-color: white; &quot; +
+                        &quot;-fx-border-color: #e2e8f0; &quot; +
+                        &quot;-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 2);&quot;
+        ));
+
+<span class="nc" id="L295">        HBox headerBox = new HBox(12);</span>
+<span class="nc" id="L296">        headerBox.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L298">        ImageView logoView = createLogoView(40);</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (logoView != null) {</span>
+<span class="nc" id="L300">            headerBox.getChildren().add(logoView);</span>
+        } else {
+<span class="nc" id="L302">            headerBox.getChildren().add(createLogoPlaceholder(service, 40));</span>
+        }
+
+<span class="nc" id="L305">        CompletableFuture&lt;String&gt; nameFuture = translateText(service.getName());</span>
+<span class="nc" id="L306">        CompletableFuture&lt;String&gt; descFuture = translateText(service.getDescription());</span>
+<span class="nc" id="L307">        CompletableFuture&lt;String&gt; buttonTextFuture = translateText(&quot;See Service Details&quot;);</span>
+<span class="nc" id="L308">        CompletableFuture&lt;String&gt; durationTextFuture = translateText(&quot;⏱ %d minutes&quot;);</span>
+
+<span class="nc" id="L310">        return CompletableFuture.allOf(nameFuture, descFuture, buttonTextFuture, durationTextFuture)</span>
+<span class="nc" id="L311">                .thenApplyAsync(v -&gt; {</span>
+                    try {
+<span class="nc" id="L313">                        String translatedName = nameFuture.get();</span>
+<span class="nc" id="L314">                        Label titleLabel = new Label(translatedName);</span>
+<span class="nc" id="L315">                        titleLabel.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.BOLD, 18));</span>
+<span class="nc" id="L316">                        titleLabel.setTextFill(Color.web(&quot;#1e293b&quot;));</span>
+<span class="nc" id="L317">                        titleLabel.setWrapText(true);</span>
+<span class="nc" id="L318">                        titleLabel.setMaxWidth(220);</span>
+<span class="nc" id="L319">                        headerBox.getChildren().add(titleLabel);</span>
+<span class="nc" id="L320">                        card.getChildren().add(headerBox);</span>
+
+<span class="nc" id="L322">                        StackPane imageContainer = new StackPane();</span>
+<span class="nc" id="L323">                        imageContainer.setStyle(&quot;-fx-background-color: #f1f5f9; -fx-background-radius: 8;&quot;);</span>
+
+                        try {
+<span class="nc" id="L326">                            ImageView imageView = new ImageView(new Image(getClass().getResourceAsStream(&quot;/img/logo.png&quot;)));</span>
+<span class="nc" id="L327">                            imageView.setFitWidth(260);</span>
+<span class="nc" id="L328">                            imageView.setFitHeight(160);</span>
+<span class="nc" id="L329">                            imageView.setPreserveRatio(true);</span>
+<span class="nc" id="L330">                            imageView.setSmooth(true);</span>
+<span class="nc" id="L331">                            imageView.setCache(true);</span>
+<span class="nc" id="L332">                            imageContainer.getChildren().add(imageView);</span>
+<span class="nc" id="L333">                        } catch (Exception e) {</span>
+<span class="nc" id="L334">                            imageContainer.getChildren().add(createImagePlaceholder(service, 260, 160));</span>
+<span class="nc" id="L335">                        }</span>
+<span class="nc" id="L336">                        card.getChildren().add(imageContainer);</span>
+
+<span class="nc" id="L338">                        HBox durationBox = new HBox(5);</span>
+<span class="nc" id="L339">                        durationBox.setAlignment(Pos.CENTER_LEFT);</span>
+<span class="nc" id="L340">                        String durationText = String.format(durationTextFuture.get(), service.getDuration());</span>
+<span class="nc" id="L341">                        Label durationLabel = new Label(durationText);</span>
+<span class="nc" id="L342">                        durationLabel.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.NORMAL, 14));</span>
+<span class="nc" id="L343">                        durationLabel.setTextFill(Color.web(&quot;#64748b&quot;));</span>
+<span class="nc" id="L344">                        durationBox.getChildren().add(durationLabel);</span>
+<span class="nc" id="L345">                        card.getChildren().add(durationBox);</span>
+
+<span class="nc" id="L347">                        String translatedDesc = descFuture.get();</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">                        String shortDesc = translatedDesc.length() &gt; 100 ?</span>
+<span class="nc" id="L349">                                translatedDesc.substring(0, 100) + &quot;...&quot; : translatedDesc;</span>
+<span class="nc" id="L350">                        Label descLabel = new Label(shortDesc);</span>
+<span class="nc" id="L351">                        descLabel.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.NORMAL, 13));</span>
+<span class="nc" id="L352">                        descLabel.setTextFill(Color.web(&quot;#475569&quot;));</span>
+<span class="nc" id="L353">                        descLabel.setWrapText(true);</span>
+<span class="nc" id="L354">                        card.getChildren().add(descLabel);</span>
+
+<span class="nc" id="L356">                        String buttonText = buttonTextFuture.get();</span>
+<span class="nc" id="L357">                        Button detailsBtn = new Button(buttonText);</span>
+<span class="nc" id="L358">                        detailsBtn.setStyle(</span>
+                                &quot;-fx-background-color: #3b82f6; &quot; +
+                                        &quot;-fx-text-fill: white; &quot; +
+                                        &quot;-fx-font-weight: bold; &quot; +
+                                        &quot;-fx-font-size: 13px; &quot; +
+                                        &quot;-fx-padding: 8 15; &quot; +
+                                        &quot;-fx-background-radius: 20;&quot;
+                        );
+
+<span class="nc" id="L367">                        detailsBtn.setOnMouseEntered(e -&gt; detailsBtn.setStyle(</span>
+                                &quot;-fx-background-color: #2563eb; &quot; +
+                                        &quot;-fx-text-fill: white; &quot; +
+                                        &quot;-fx-font-weight: bold; &quot; +
+                                        &quot;-fx-font-size: 13px; &quot; +
+                                        &quot;-fx-padding: 8 15; &quot; +
+                                        &quot;-fx-background-radius: 20;&quot;
+                        ));
+<span class="nc" id="L375">                        detailsBtn.setOnMouseExited(e -&gt; detailsBtn.setStyle(</span>
+                                &quot;-fx-background-color: #3b82f6; &quot; +
+                                        &quot;-fx-text-fill: white; &quot; +
+                                        &quot;-fx-font-weight: bold; &quot; +
+                                        &quot;-fx-font-size: 13px; &quot; +
+                                        &quot;-fx-padding: 8 15; &quot; +
+                                        &quot;-fx-background-radius: 20;&quot;
+                        ));
+
+<span class="nc" id="L384">                        detailsBtn.setOnAction(e -&gt; showServiceDetails(service));</span>
+<span class="nc" id="L385">                        card.getChildren().add(detailsBtn);</span>
+
+<span class="nc" id="L387">                        return card;</span>
+<span class="nc" id="L388">                    } catch (Exception e) {</span>
+<span class="nc" id="L389">                        System.err.println(&quot;Error creating service card: &quot; + e.getMessage());</span>
+<span class="nc" id="L390">                        return card;</span>
+                    }
+                }, Platform::runLater);
+    }
+
+    private void showServiceDetails(Service service) {
+<span class="nc" id="L396">        Dialog&lt;Void&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L397">        dialog.initOwner(servicesFlowPane.getScene().getWindow());</span>
+
+<span class="nc" id="L399">        CompletableFuture&lt;String&gt; dialogTitleFuture = translateText(&quot;Service Details - %s&quot;)</span>
+<span class="nc" id="L400">                .thenApply(t -&gt; String.format(t, service.getName()));</span>
+
+<span class="nc" id="L402">        CompletableFuture&lt;String&gt; closeButtonTextFuture = translateText(&quot;Close&quot;);</span>
+<span class="nc" id="L403">        CompletableFuture&lt;String&gt; durationTitleFuture = translateText(&quot;Duration:&quot;);</span>
+<span class="nc" id="L404">        CompletableFuture&lt;String&gt; durationValueFuture = translateText(&quot;%d minutes&quot;)</span>
+<span class="nc" id="L405">                .thenApply(t -&gt; String.format(t, service.getDuration()));</span>
+<span class="nc" id="L406">        CompletableFuture&lt;String&gt; descTitleFuture = translateText(&quot;Description:&quot;);</span>
+<span class="nc" id="L407">        CompletableFuture&lt;String&gt; descValueFuture = translateText(service.getDescription());</span>
+
+<span class="nc" id="L409">        CompletableFuture.allOf(</span>
+                dialogTitleFuture, closeButtonTextFuture,
+                durationTitleFuture, durationValueFuture,
+                descTitleFuture, descValueFuture
+<span class="nc" id="L413">        ).thenAcceptAsync(v -&gt; {</span>
+            try {
+<span class="nc" id="L415">                dialog.setTitle(dialogTitleFuture.get());</span>
+
+<span class="nc" id="L417">                ButtonType closeButtonType = new ButtonType(closeButtonTextFuture.get(),</span>
+                        ButtonBar.ButtonData.CANCEL_CLOSE);
+<span class="nc" id="L419">                dialog.getDialogPane().getButtonTypes().add(closeButtonType);</span>
+
+<span class="nc" id="L421">                DialogPane dialogPane = dialog.getDialogPane();</span>
+<span class="nc" id="L422">                dialogPane.setStyle(</span>
+                        &quot;-fx-background-color: white; &quot; +
+                                &quot;-fx-border-color: #e2e8f0; &quot; +
+                                &quot;-fx-border-width: 1px; &quot; +
+                                &quot;-fx-border-radius: 12; &quot; +
+                                &quot;-fx-background-radius: 12; &quot; +
+                                &quot;-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 0);&quot;
+                );
+<span class="nc" id="L430">                dialogPane.setMinWidth(600);</span>
+
+<span class="nc" id="L432">                VBox content = new VBox(20);</span>
+<span class="nc" id="L433">                content.setPadding(new Insets(25));</span>
+<span class="nc" id="L434">                content.setAlignment(Pos.TOP_CENTER);</span>
+
+<span class="nc" id="L436">                HBox headerBox = new HBox(15);</span>
+<span class="nc" id="L437">                headerBox.setAlignment(Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L439">                ImageView logoView = createLogoView(50);</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">                if (logoView != null) {</span>
+<span class="nc" id="L441">                    headerBox.getChildren().add(logoView);</span>
+                } else {
+<span class="nc" id="L443">                    headerBox.getChildren().add(createLogoPlaceholder(service, 50));</span>
+                }
+
+<span class="nc" id="L446">                Label titleLabel = new Label(service.getName());</span>
+<span class="nc" id="L447">                titleLabel.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.BOLD, 24));</span>
+<span class="nc" id="L448">                titleLabel.setTextFill(Color.web(&quot;#1e293b&quot;));</span>
+<span class="nc" id="L449">                headerBox.getChildren().add(titleLabel);</span>
+<span class="nc" id="L450">                content.getChildren().add(headerBox);</span>
+
+<span class="nc" id="L452">                StackPane imageContainer = new StackPane();</span>
+<span class="nc" id="L453">                imageContainer.setStyle(&quot;-fx-background-color: #f1f5f9; -fx-background-radius: 10;&quot;);</span>
+
+                try {
+<span class="nc" id="L456">                    ImageView imageView = new ImageView(new Image(getClass().getResourceAsStream(&quot;/img/blog1.jpg&quot;)));</span>
+<span class="nc" id="L457">                    imageView.setFitWidth(500);</span>
+<span class="nc" id="L458">                    imageView.setFitHeight(280);</span>
+<span class="nc" id="L459">                    imageView.setPreserveRatio(true);</span>
+<span class="nc" id="L460">                    imageView.setSmooth(true);</span>
+<span class="nc" id="L461">                    imageView.setCache(true);</span>
+<span class="nc" id="L462">                    imageContainer.getChildren().add(imageView);</span>
+<span class="nc" id="L463">                } catch (Exception e) {</span>
+<span class="nc" id="L464">                    imageContainer.getChildren().add(createImagePlaceholder(service, 500, 280));</span>
+<span class="nc" id="L465">                }</span>
+<span class="nc" id="L466">                content.getChildren().add(imageContainer);</span>
+
+<span class="nc" id="L468">                GridPane detailsGrid = new GridPane();</span>
+<span class="nc" id="L469">                detailsGrid.setHgap(20);</span>
+<span class="nc" id="L470">                detailsGrid.setVgap(15);</span>
+<span class="nc" id="L471">                detailsGrid.setPadding(new Insets(20, 0, 0, 0));</span>
+
+<span class="nc" id="L473">                Label durationTitle = new Label(durationTitleFuture.get());</span>
+<span class="nc" id="L474">                durationTitle.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.BOLD, 16));</span>
+<span class="nc" id="L475">                durationTitle.setTextFill(Color.web(&quot;#475569&quot;));</span>
+
+<span class="nc" id="L477">                Label durationValue = new Label(durationValueFuture.get());</span>
+<span class="nc" id="L478">                durationValue.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.NORMAL, 16));</span>
+<span class="nc" id="L479">                durationValue.setTextFill(Color.web(&quot;#334155&quot;));</span>
+
+<span class="nc" id="L481">                detailsGrid.addRow(0, durationTitle, durationValue);</span>
+
+<span class="nc" id="L483">                Label descTitle = new Label(descTitleFuture.get());</span>
+<span class="nc" id="L484">                descTitle.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.BOLD, 16));</span>
+<span class="nc" id="L485">                descTitle.setTextFill(Color.web(&quot;#475569&quot;));</span>
+
+<span class="nc" id="L487">                Label descValue = new Label(descValueFuture.get());</span>
+<span class="nc" id="L488">                descValue.setFont(Font.font(&quot;Segoe UI&quot;, FontWeight.NORMAL, 15));</span>
+<span class="nc" id="L489">                descValue.setTextFill(Color.web(&quot;#334155&quot;));</span>
+<span class="nc" id="L490">                descValue.setWrapText(true);</span>
+<span class="nc" id="L491">                descValue.setMaxWidth(450);</span>
+
+<span class="nc" id="L493">                detailsGrid.addRow(1, descTitle, descValue);</span>
+<span class="nc" id="L494">                content.getChildren().add(detailsGrid);</span>
+
+<span class="nc" id="L496">                dialogPane.setContent(content);</span>
+<span class="nc" id="L497">                dialog.showAndWait();</span>
+<span class="nc" id="L498">            } catch (Exception e) {</span>
+<span class="nc" id="L499">                System.err.println(&quot;Error showing service details: &quot; + e.getMessage());</span>
+<span class="nc" id="L500">            }</span>
+<span class="nc" id="L501">        }, Platform::runLater);</span>
+<span class="nc" id="L502">    }</span>
+
+    private void setupSearch() {
+<span class="nc" id="L505">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
+<span class="nc" id="L506">            servicesFlowPane.getChildren().clear();</span>
+<span class="nc" id="L507">            List&lt;Service&gt; services = serviceService.getAllServices();</span>
+
+<span class="nc" id="L509">            List&lt;CompletableFuture&lt;Void&gt;&gt; futures = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">            for (Service service : services) {</span>
+<span class="nc bnc" id="L511" title="All 4 branches missed.">                if (newValue == null || newValue.isEmpty() ||</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">                        service.getName().toLowerCase().contains(newValue.toLowerCase()) ||</span>
+<span class="nc bnc" id="L513" title="All 2 branches missed.">                        service.getDescription().toLowerCase().contains(newValue.toLowerCase())) {</span>
+<span class="nc" id="L514">                    CompletableFuture&lt;Void&gt; future = createServiceCardAsync(service)</span>
+<span class="nc" id="L515">                            .thenAcceptAsync(card -&gt; servicesFlowPane.getChildren().add(card), Platform::runLater);</span>
+<span class="nc" id="L516">                    futures.add(future);</span>
+                }
+<span class="nc" id="L518">            }</span>
+
+<span class="nc" id="L520">            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));</span>
+<span class="nc" id="L521">        });</span>
+<span class="nc" id="L522">    }</span>
+
+    @FXML
+    private void handleRefresh() {
+<span class="nc" id="L526">        loadServices();</span>
+<span class="nc" id="L527">    }</span>
+
+
+
+    @FXML
+    private void goToPreScreen(ActionEvent event) {
+        try {
+            // Load the pre.fxml file
+<span class="nc" id="L535">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/pre.fxml&quot;));</span>
+
+            // Get the current stage
+<span class="nc" id="L538">            Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();</span>
+
+            // Create new scene
+<span class="nc" id="L541">            Scene scene = new Scene(root);</span>
+
+            // Set the new scene
+<span class="nc" id="L544">            stage.setScene(scene);</span>
+<span class="nc" id="L545">            stage.show();</span>
+
+<span class="nc" id="L547">        } catch (IOException e) {</span>
+<span class="nc" id="L548">            System.err.println(&quot;Error loading pre.fxml: &quot; + e.getMessage());</span>
+<span class="nc" id="L549">            e.printStackTrace();</span>
+
+            // Show error alert
+<span class="nc" id="L552">            Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L553">            alert.setTitle(&quot;Navigation Error&quot;);</span>
+<span class="nc" id="L554">            alert.setHeaderText(null);</span>
+<span class="nc" id="L555">            alert.setContentText(&quot;Could not load the previous screen.&quot;);</span>
+<span class="nc" id="L556">            alert.showAndWait();</span>
+<span class="nc" id="L557">        }</span>
+<span class="nc" id="L558">    }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

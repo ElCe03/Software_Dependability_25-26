@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicalCalendarController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">MedicalCalendarController.java</span></div><h1>MedicalCalendarController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Appointment;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import util.AppointmentPersistence;
+
+import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.*;
+
+<span class="nc" id="L25">public class MedicalCalendarController implements Initializable {</span>
+
+    @FXML
+    private VBox calendarContainer;
+
+    private ObservableList&lt;Appointment&gt; appointments;
+    private List&lt;String&gt; appointmentGroups;
+    private YearMonth currentYearMonth;
+    private GridPane calendarGrid;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+<span class="nc" id="L37">        setupCalendar();</span>
+<span class="nc" id="L38">    }</span>
+
+    private void setupCalendar() {
+<span class="nc" id="L41">        appointments = FXCollections.observableArrayList();</span>
+<span class="nc" id="L42">        appointmentGroups = Arrays.asList(&quot;Hospitalisation&quot;, &quot;Consultation&quot;, &quot;Urgence&quot;, &quot;Chirurgie&quot;, &quot;Observation&quot;);</span>
+<span class="nc" id="L43">        currentYearMonth = YearMonth.now();</span>
+
+<span class="nc" id="L45">        VBox mainContainer = new VBox(10);</span>
+<span class="nc" id="L46">        mainContainer.setPadding(new Insets(10));</span>
+<span class="nc" id="L47">        mainContainer.setStyle(&quot;-fx-background-color: #f5f5f5;&quot;);</span>
+
+<span class="nc" id="L49">        HBox navigationBar = new HBox(10);</span>
+<span class="nc" id="L50">        navigationBar.setAlignment(javafx.geometry.Pos.CENTER);</span>
+<span class="nc" id="L51">        navigationBar.setStyle(&quot;-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 5;&quot;);</span>
+
+<span class="nc" id="L53">        Button prevYearButton = new Button(&quot;&lt;&lt;&quot;);</span>
+<span class="nc" id="L54">        Button prevMonthButton = new Button(&quot;&lt;&quot;);</span>
+<span class="nc" id="L55">        Label monthYearLabel = new Label();</span>
+<span class="nc" id="L56">        Button nextMonthButton = new Button(&quot;&gt;&quot;);</span>
+<span class="nc" id="L57">        Button nextYearButton = new Button(&quot;&gt;&gt;&quot;);</span>
+
+<span class="nc" id="L59">        String navButtonStyle = &quot;-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; &quot; +</span>
+                              &quot;-fx-min-width: 40px; -fx-min-height: 40px; -fx-padding: 5px; &quot; +
+                              &quot;-fx-background-radius: 5px; -fx-cursor: hand;&quot;;
+<span class="nc" id="L62">        prevYearButton.setStyle(navButtonStyle);</span>
+<span class="nc" id="L63">        prevMonthButton.setStyle(navButtonStyle);</span>
+<span class="nc" id="L64">        nextMonthButton.setStyle(navButtonStyle);</span>
+<span class="nc" id="L65">        nextYearButton.setStyle(navButtonStyle);</span>
+
+<span class="nc" id="L67">        monthYearLabel.setStyle(&quot;-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333333;&quot;);</span>
+
+<span class="nc" id="L69">        updateMonthYearLabel(monthYearLabel);</span>
+
+<span class="nc" id="L71">        prevYearButton.setOnAction(e -&gt; {</span>
+<span class="nc" id="L72">            currentYearMonth = currentYearMonth.minusYears(1);</span>
+<span class="nc" id="L73">            updateMonthYearLabel(monthYearLabel);</span>
+<span class="nc" id="L74">            updateCalendar();</span>
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        prevMonthButton.setOnAction(e -&gt; {</span>
+<span class="nc" id="L78">            currentYearMonth = currentYearMonth.minusMonths(1);</span>
+<span class="nc" id="L79">            updateMonthYearLabel(monthYearLabel);</span>
+<span class="nc" id="L80">            updateCalendar();</span>
+<span class="nc" id="L81">        });</span>
+
+<span class="nc" id="L83">        nextMonthButton.setOnAction(e -&gt; {</span>
+<span class="nc" id="L84">            currentYearMonth = currentYearMonth.plusMonths(1);</span>
+<span class="nc" id="L85">            updateMonthYearLabel(monthYearLabel);</span>
+<span class="nc" id="L86">            updateCalendar();</span>
+<span class="nc" id="L87">        });</span>
+
+<span class="nc" id="L89">        nextYearButton.setOnAction(e -&gt; {</span>
+<span class="nc" id="L90">            currentYearMonth = currentYearMonth.plusYears(1);</span>
+<span class="nc" id="L91">            updateMonthYearLabel(monthYearLabel);</span>
+<span class="nc" id="L92">            updateCalendar();</span>
+<span class="nc" id="L93">        });</span>
+
+<span class="nc" id="L95">        navigationBar.getChildren().addAll(prevYearButton, prevMonthButton, monthYearLabel, nextMonthButton, nextYearButton);</span>
+
+<span class="nc" id="L97">        calendarGrid = new GridPane();</span>
+<span class="nc" id="L98">        calendarGrid.setHgap(5);</span>
+<span class="nc" id="L99">        calendarGrid.setVgap(5);</span>
+<span class="nc" id="L100">        calendarGrid.setPadding(new Insets(5));</span>
+<span class="nc" id="L101">        calendarGrid.setStyle(&quot;-fx-background-color: white; -fx-background-radius: 5; -fx-padding: 5;&quot;);</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        for (int i = 0; i &lt; 7; i++) {</span>
+<span class="nc" id="L104">            ColumnConstraints column = new ColumnConstraints();</span>
+<span class="nc" id="L105">            column.setHgrow(Priority.ALWAYS);</span>
+<span class="nc" id="L106">            column.setFillWidth(true);</span>
+<span class="nc" id="L107">            calendarGrid.getColumnConstraints().add(column);</span>
+        }
+
+<span class="nc" id="L110">        HBox buttonBox = new HBox(10);</span>
+<span class="nc" id="L111">        buttonBox.setPadding(new Insets(10));</span>
+<span class="nc" id="L112">        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);</span>
+<span class="nc" id="L113">        buttonBox.setStyle(&quot;-fx-background-color: white; -fx-background-radius: 5;&quot;);</span>
+        
+<span class="nc" id="L115">        Button addButton = new Button(&quot;Ajouter un rendez-vous&quot;);</span>
+<span class="nc" id="L116">        Button listButton = new Button(&quot;Liste des rendez-vous&quot;);</span>
+        
+<span class="nc" id="L118">        String actionButtonStyle = &quot;-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; &quot; +</span>
+                                 &quot;-fx-padding: 8px 15px; -fx-background-radius: 5px; -fx-cursor: hand;&quot;;
+<span class="nc" id="L120">        addButton.setStyle(actionButtonStyle);</span>
+<span class="nc" id="L121">        listButton.setStyle(actionButtonStyle);</span>
+        
+<span class="nc" id="L123">        addButton.setOnAction(e -&gt; showAddAppointmentDialog());</span>
+<span class="nc" id="L124">        listButton.setOnAction(e -&gt; showAppointmentList());</span>
+        
+<span class="nc" id="L126">        buttonBox.getChildren().addAll(addButton, listButton);</span>
+
+<span class="nc" id="L128">        mainContainer.getChildren().addAll(navigationBar, calendarGrid, buttonBox);</span>
+
+<span class="nc" id="L130">        calendarContainer.getChildren().clear();</span>
+<span class="nc" id="L131">        calendarContainer.getChildren().add(mainContainer);</span>
+
+<span class="nc" id="L133">        loadSavedAppointments();</span>
+<span class="nc" id="L134">        updateCalendar();</span>
+<span class="nc" id="L135">    }</span>
+
+    private void updateMonthYearLabel(Label label) {
+<span class="nc" id="L138">        String month = currentYearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.FRENCH);</span>
+<span class="nc" id="L139">        int year = currentYearMonth.getYear();</span>
+<span class="nc" id="L140">        label.setText(month + &quot; &quot; + year);</span>
+<span class="nc" id="L141">    }</span>
+
+    private void updateCalendar() {
+<span class="nc" id="L144">        calendarGrid.getChildren().clear();</span>
+
+<span class="nc" id="L146">        String[] days = {&quot;Lun&quot;, &quot;Mar&quot;, &quot;Mer&quot;, &quot;Jeu&quot;, &quot;Ven&quot;, &quot;Sam&quot;, &quot;Dim&quot;};</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        for (int i = 0; i &lt; days.length; i++) {</span>
+<span class="nc" id="L148">            Label dayLabel = new Label(days[i]);</span>
+<span class="nc" id="L149">            dayLabel.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 12px; -fx-background-color: #e3f2fd; &quot; +</span>
+                            &quot;-fx-padding: 5px; -fx-alignment: center; -fx-background-radius: 3px;&quot;);
+<span class="nc" id="L151">            dayLabel.setMaxWidth(Double.MAX_VALUE);</span>
+<span class="nc" id="L152">            dayLabel.setAlignment(javafx.geometry.Pos.CENTER);</span>
+<span class="nc" id="L153">            calendarGrid.add(dayLabel, i, 0);</span>
+        }
+
+<span class="nc" id="L156">        LocalDate firstOfMonth = currentYearMonth.atDay(1);</span>
+<span class="nc" id="L157">        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue();</span>
+<span class="nc" id="L158">        int daysInMonth = currentYearMonth.lengthOfMonth();</span>
+<span class="nc" id="L159">        int weeks = (int) Math.ceil((dayOfWeek + daysInMonth) / 7.0);</span>
+
+<span class="nc" id="L161">        int day = 1;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        for (int week = 1; week &lt;= weeks; week++) {</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">            for (int dayOfWeekIndex = 1; dayOfWeekIndex &lt;= 7; dayOfWeekIndex++) {</span>
+<span class="nc bnc" id="L164" title="All 6 branches missed.">                if ((week == 1 &amp;&amp; dayOfWeekIndex &lt; dayOfWeek) || day &gt; daysInMonth) {</span>
+<span class="nc" id="L165">                    Pane emptyCell = new Pane();</span>
+<span class="nc" id="L166">                    emptyCell.setStyle(&quot;-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-background-color: #fafafa;&quot;);</span>
+<span class="nc" id="L167">                    emptyCell.setMinSize(120, 50);</span>
+<span class="nc" id="L168">                    calendarGrid.add(emptyCell, dayOfWeekIndex - 1, week);</span>
+<span class="nc" id="L169">                } else {</span>
+<span class="nc" id="L170">                    VBox dayCell = new VBox(2);</span>
+<span class="nc" id="L171">                    dayCell.setStyle(&quot;-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-padding: 2px; &quot; +</span>
+                                   &quot;-fx-background-color: white;&quot;);
+<span class="nc" id="L173">                    dayCell.setMinSize(120, 50);</span>
+
+<span class="nc" id="L175">                    Label dayNumber = new Label(String.valueOf(day));</span>
+<span class="nc" id="L176">                    dayNumber.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 2px;&quot;);</span>
+<span class="nc" id="L177">                    dayNumber.setMaxWidth(Double.MAX_VALUE);</span>
+<span class="nc" id="L178">                    dayNumber.setAlignment(javafx.geometry.Pos.CENTER);</span>
+
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                    if (currentYearMonth.atDay(day).equals(LocalDate.now())) {</span>
+<span class="nc" id="L181">                        dayNumber.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 2px; &quot; +</span>
+                                         &quot;-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 3px;&quot;);
+                    }
+
+<span class="nc" id="L185">                    LocalDate currentDate = currentYearMonth.atDay(day);</span>
+<span class="nc" id="L186">                    List&lt;Appointment&gt; dayAppointments = getAppointmentsForDate(currentDate);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                    for (Appointment appointment : dayAppointments) {</span>
+<span class="nc" id="L188">                        HBox appointmentBox = new HBox(2);</span>
+<span class="nc" id="L189">                        appointmentBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);</span>
+                        
+<span class="nc" id="L191">                        Label appointmentLabel = new Label(appointment.getTitle());</span>
+<span class="nc" id="L192">                        appointmentLabel.setStyle(&quot;-fx-background-color: &quot; + getColorForGroup(appointment.getGroup()) + </span>
+                                               &quot;; -fx-text-fill: white; -fx-padding: 2px; -fx-background-radius: 2px; &quot; +
+                                               &quot;-fx-font-size: 10px;&quot;);
+                        
+<span class="nc" id="L196">                        Button editButton = new Button(&quot;✎&quot;);</span>
+<span class="nc" id="L197">                        editButton.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 10px; &quot; +</span>
+                                          &quot;-fx-min-width: 15px; -fx-min-height: 15px; -fx-padding: 2px; &quot; +
+                                          &quot;-fx-background-radius: 2px; -fx-cursor: hand;&quot;);
+<span class="nc" id="L200">                        editButton.setOnAction(e -&gt; showEditAppointmentDialog(appointment));</span>
+                        
+<span class="nc" id="L202">                        Button deleteButton = new Button(&quot;×&quot;);</span>
+<span class="nc" id="L203">                        deleteButton.setStyle(&quot;-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-size: 10px; &quot; +</span>
+                                            &quot;-fx-min-width: 15px; -fx-min-height: 15px; -fx-padding: 2px; &quot; +
+                                            &quot;-fx-background-radius: 2px; -fx-cursor: hand;&quot;);
+<span class="nc" id="L206">                        deleteButton.setOnAction(e -&gt; deleteAppointment(appointment));</span>
+                        
+<span class="nc" id="L208">                        appointmentBox.getChildren().addAll(appointmentLabel, editButton, deleteButton);</span>
+<span class="nc" id="L209">                        dayCell.getChildren().add(appointmentBox);</span>
+<span class="nc" id="L210">                    }</span>
+
+<span class="nc" id="L212">                    dayCell.getChildren().add(0, dayNumber);</span>
+<span class="nc" id="L213">                    calendarGrid.add(dayCell, dayOfWeekIndex - 1, week);</span>
+<span class="nc" id="L214">                    day++;</span>
+                }
+            }
+        }
+<span class="nc" id="L218">    }</span>
+
+    private List&lt;Appointment&gt; getAppointmentsForDate(LocalDate date) {
+<span class="nc" id="L221">        List&lt;Appointment&gt; dayAppointments = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        for (Appointment appointment : appointments) {</span>
+<span class="nc" id="L223">            LocalDate appointmentDate = appointment.getStart().toLocalDate();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">            if (appointmentDate.equals(date)) {</span>
+<span class="nc" id="L225">                dayAppointments.add(appointment);</span>
+            }
+<span class="nc" id="L227">        }</span>
+<span class="nc" id="L228">        return dayAppointments;</span>
+    }
+
+    private String getColorForGroup(String group) {
+<span class="nc bnc" id="L232" title="All 6 branches missed.">        return switch (group) {</span>
+<span class="nc" id="L233">            case &quot;Hospitalisation&quot; -&gt; &quot;#9C27B0&quot;; // Violet</span>
+<span class="nc" id="L234">            case &quot;Consultation&quot; -&gt; &quot;#4CAF50&quot;;    // Vert</span>
+<span class="nc" id="L235">            case &quot;Urgence&quot; -&gt; &quot;#F44336&quot;;         // Rouge</span>
+<span class="nc" id="L236">            case &quot;Chirurgie&quot; -&gt; &quot;#2196F3&quot;;       // Bleu</span>
+<span class="nc" id="L237">            case &quot;Observation&quot; -&gt; &quot;#FF9800&quot;;     // Orange</span>
+<span class="nc" id="L238">            default -&gt; &quot;#666666&quot;;                // Gris</span>
+        };
+    }
+
+    private void loadSavedAppointments() {
+<span class="nc" id="L243">        List&lt;Appointment&gt; savedAppointments = AppointmentPersistence.loadAppointments();</span>
+<span class="nc" id="L244">        appointments.addAll(savedAppointments);</span>
+<span class="nc" id="L245">    }</span>
+
+    private void saveAppointments() {
+<span class="nc" id="L248">        AppointmentPersistence.saveAppointments(appointments);</span>
+<span class="nc" id="L249">    }</span>
+
+    public void addAppointment(String title, String description, LocalDateTime start, LocalDateTime end, String group) {
+<span class="nc" id="L252">        Appointment appointment = new Appointment(title, description, start, end, group);</span>
+<span class="nc" id="L253">        appointments.add(appointment);</span>
+<span class="nc" id="L254">        saveAppointments();</span>
+<span class="nc" id="L255">        updateCalendar();</span>
+<span class="nc" id="L256">    }</span>
+
+    @FXML
+    private void showAddAppointmentDialog() {
+<span class="nc" id="L260">        Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L261">        dialog.setTitle(&quot;Ajouter un rendez-vous&quot;);</span>
+<span class="nc" id="L262">        dialog.setHeaderText(&quot;Veuillez remplir les détails du rendez-vous&quot;);</span>
+
+<span class="nc" id="L264">        TextField titleField = new TextField();</span>
+<span class="nc" id="L265">        TextArea descriptionField = new TextArea();</span>
+<span class="nc" id="L266">        descriptionField.setPrefRowCount(4);</span>
+<span class="nc" id="L267">        DatePicker datePicker = new DatePicker();</span>
+<span class="nc" id="L268">        ComboBox&lt;String&gt; hourComboBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L269">        ComboBox&lt;String&gt; minuteComboBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L270">        ComboBox&lt;String&gt; durationComboBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L271">        ComboBox&lt;String&gt; typeComboBox = new ComboBox&lt;&gt;();</span>
+
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (int i = 0; i &lt; 24; i++) {</span>
+<span class="nc" id="L274">            hourComboBox.getItems().add(String.format(&quot;%02d&quot;, i));</span>
+        }
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        for (int i = 0; i &lt; 60; i += 15) {</span>
+<span class="nc" id="L277">            minuteComboBox.getItems().add(String.format(&quot;%02d&quot;, i));</span>
+        }
+<span class="nc" id="L279">        durationComboBox.getItems().addAll(&quot;30 minutes&quot;, &quot;1 heure&quot;, &quot;1h30&quot;, &quot;2 heures&quot;, &quot;2h30&quot;, &quot;3 heures&quot;);</span>
+<span class="nc" id="L280">        typeComboBox.getItems().addAll(appointmentGroups);</span>
+
+<span class="nc" id="L282">        hourComboBox.setValue(&quot;09&quot;);</span>
+<span class="nc" id="L283">        minuteComboBox.setValue(&quot;00&quot;);</span>
+<span class="nc" id="L284">        durationComboBox.setValue(&quot;1 heure&quot;);</span>
+<span class="nc" id="L285">        typeComboBox.setValue(&quot;Consultation&quot;);</span>
+
+<span class="nc" id="L287">        GridPane grid = new GridPane();</span>
+<span class="nc" id="L288">        grid.setHgap(10);</span>
+<span class="nc" id="L289">        grid.setVgap(10);</span>
+<span class="nc" id="L290">        grid.setPadding(new Insets(20, 20, 20, 20));</span>
+        
+<span class="nc" id="L292">        grid.addRow(0, new Label(&quot;Titre:&quot;), titleField);</span>
+<span class="nc" id="L293">        grid.addRow(1, new Label(&quot;Description:&quot;), descriptionField);</span>
+<span class="nc" id="L294">        grid.addRow(2, new Label(&quot;Date:&quot;), datePicker);</span>
+<span class="nc" id="L295">        grid.addRow(3, new Label(&quot;Heure:&quot;), new HBox(5, hourComboBox, new Label(&quot;:&quot;), minuteComboBox));</span>
+<span class="nc" id="L296">        grid.addRow(4, new Label(&quot;Durée:&quot;), durationComboBox);</span>
+<span class="nc" id="L297">        grid.addRow(5, new Label(&quot;Type:&quot;), typeComboBox);</span>
+
+<span class="nc" id="L299">        dialog.getDialogPane().setContent(grid);</span>
+<span class="nc" id="L300">        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);</span>
+
+<span class="nc" id="L302">        Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
+<span class="nc bnc" id="L303" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc bnc" id="L304" title="All 7 branches missed.">            int durationMinutes = switch (durationComboBox.getValue()) {</span>
+<span class="nc" id="L305">                case &quot;30 minutes&quot; -&gt; 30;</span>
+<span class="nc" id="L306">                case &quot;1 heure&quot; -&gt; 60;</span>
+<span class="nc" id="L307">                case &quot;1h30&quot; -&gt; 90;</span>
+<span class="nc" id="L308">                case &quot;2 heures&quot; -&gt; 120;</span>
+<span class="nc" id="L309">                case &quot;2h30&quot; -&gt; 150;</span>
+<span class="nc" id="L310">                case &quot;3 heures&quot; -&gt; 180;</span>
+<span class="nc" id="L311">                default -&gt; 60;</span>
+            };
+
+<span class="nc" id="L314">            LocalDateTime start = datePicker.getValue().atTime(</span>
+<span class="nc" id="L315">                    Integer.parseInt(hourComboBox.getValue()),</span>
+<span class="nc" id="L316">                    Integer.parseInt(minuteComboBox.getValue())</span>
+            );
+<span class="nc" id="L318">            LocalDateTime end = start.plusMinutes(durationMinutes);</span>
+
+<span class="nc" id="L320">            addAppointment(titleField.getText(), descriptionField.getText(), start, end, typeComboBox.getValue());</span>
+        }
+<span class="nc" id="L322">    }</span>
+
+    private void showAppointmentList() {
+<span class="nc" id="L325">        Stage listStage = new Stage();</span>
+<span class="nc" id="L326">        listStage.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L327">        listStage.setTitle(&quot;Liste des rendez-vous&quot;);</span>
+
+<span class="nc" id="L329">        TableView&lt;Appointment&gt; table = new TableView&lt;&gt;();</span>
+        
+<span class="nc" id="L331">        TableColumn&lt;Appointment, String&gt; titleCol = new TableColumn&lt;&gt;(&quot;Titre&quot;);</span>
+<span class="nc" id="L332">        titleCol.setCellValueFactory(data -&gt; new SimpleStringProperty(data.getValue().getTitle()));</span>
+        
+<span class="nc" id="L334">        TableColumn&lt;Appointment, String&gt; dateCol = new TableColumn&lt;&gt;(&quot;Date et heure&quot;);</span>
+<span class="nc" id="L335">        dateCol.setCellValueFactory(data -&gt; new SimpleStringProperty(</span>
+<span class="nc" id="L336">            data.getValue().getStart().format(DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;))</span>
+        ));
+        
+<span class="nc" id="L339">        TableColumn&lt;Appointment, String&gt; typeCol = new TableColumn&lt;&gt;(&quot;Type&quot;);</span>
+<span class="nc" id="L340">        typeCol.setCellValueFactory(data -&gt; new SimpleStringProperty(data.getValue().getGroup()));</span>
+
+<span class="nc" id="L342">        TableColumn&lt;Appointment, Void&gt; actionsCol = new TableColumn&lt;&gt;(&quot;Actions&quot;);</span>
+<span class="nc" id="L343">        actionsCol.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L344">            private final Button editButton = new Button(&quot;✎&quot;);</span>
+<span class="nc" id="L345">            private final Button deleteButton = new Button(&quot;×&quot;);</span>
+<span class="nc" id="L346">            private final HBox buttons = new HBox(5, editButton, deleteButton);</span>
+
+            {
+<span class="nc" id="L349">                editButton.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; &quot; +</span>
+                                  &quot;-fx-min-width: 30px; -fx-min-height: 30px; -fx-padding: 5px; &quot; +
+                                  &quot;-fx-background-radius: 3px; -fx-cursor: hand;&quot;);
+<span class="nc" id="L352">                deleteButton.setStyle(&quot;-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-size: 14px; &quot; +</span>
+                                    &quot;-fx-min-width: 30px; -fx-min-height: 30px; -fx-padding: 5px; &quot; +
+                                    &quot;-fx-background-radius: 3px; -fx-cursor: hand;&quot;);
+
+<span class="nc" id="L356">                editButton.setOnAction(event -&gt; {</span>
+<span class="nc" id="L357">                    Appointment appointment = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L358">                    showEditAppointmentDialog(appointment);</span>
+<span class="nc" id="L359">                });</span>
+
+<span class="nc" id="L361">                deleteButton.setOnAction(event -&gt; {</span>
+<span class="nc" id="L362">                    Appointment appointment = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L363">                    deleteAppointment(appointment);</span>
+<span class="nc" id="L364">                });</span>
+<span class="nc" id="L365">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L369">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">                if (empty) {</span>
+<span class="nc" id="L371">                    setGraphic(null);</span>
+                } else {
+<span class="nc" id="L373">                    setGraphic(buttons);</span>
+                }
+<span class="nc" id="L375">            }</span>
+        });
+
+<span class="nc" id="L378">        table.getColumns().addAll(titleCol, dateCol, typeCol, actionsCol);</span>
+<span class="nc" id="L379">        table.setItems(appointments);</span>
+
+<span class="nc" id="L381">        VBox layout = new VBox(10);</span>
+<span class="nc" id="L382">        layout.setPadding(new Insets(10));</span>
+<span class="nc" id="L383">        layout.getChildren().add(table);</span>
+
+<span class="nc" id="L385">        Scene scene = new Scene(layout, 800, 400);</span>
+<span class="nc" id="L386">        listStage.setScene(scene);</span>
+<span class="nc" id="L387">        listStage.show();</span>
+<span class="nc" id="L388">    }</span>
+
+    private void showEditAppointmentDialog(Appointment appointment) {
+<span class="nc" id="L391">        Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L392">        dialog.setTitle(&quot;Modifier le rendez-vous&quot;);</span>
+<span class="nc" id="L393">        dialog.setHeaderText(&quot;Modifiez les détails du rendez-vous&quot;);</span>
+
+<span class="nc" id="L395">        TextField titleField = new TextField(appointment.getTitle());</span>
+<span class="nc" id="L396">        TextArea descriptionField = new TextArea(appointment.getDescription());</span>
+<span class="nc" id="L397">        descriptionField.setPrefRowCount(4);</span>
+<span class="nc" id="L398">        DatePicker datePicker = new DatePicker(appointment.getStart().toLocalDate());</span>
+<span class="nc" id="L399">        ComboBox&lt;String&gt; hourComboBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L400">        ComboBox&lt;String&gt; minuteComboBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L401">        ComboBox&lt;String&gt; durationComboBox = new ComboBox&lt;&gt;();</span>
+<span class="nc" id="L402">        ComboBox&lt;String&gt; typeComboBox = new ComboBox&lt;&gt;();</span>
+
+<span class="nc bnc" id="L404" title="All 2 branches missed.">        for (int i = 0; i &lt; 24; i++) {</span>
+<span class="nc" id="L405">            hourComboBox.getItems().add(String.format(&quot;%02d&quot;, i));</span>
+        }
+<span class="nc bnc" id="L407" title="All 2 branches missed.">        for (int i = 0; i &lt; 60; i += 15) {</span>
+<span class="nc" id="L408">            minuteComboBox.getItems().add(String.format(&quot;%02d&quot;, i));</span>
+        }
+<span class="nc" id="L410">        durationComboBox.getItems().addAll(&quot;30 minutes&quot;, &quot;1 heure&quot;, &quot;1h30&quot;, &quot;2 heures&quot;, &quot;2h30&quot;, &quot;3 heures&quot;);</span>
+<span class="nc" id="L411">        typeComboBox.getItems().addAll(appointmentGroups);</span>
+
+<span class="nc" id="L413">        hourComboBox.setValue(String.format(&quot;%02d&quot;, appointment.getStart().getHour()));</span>
+<span class="nc" id="L414">        minuteComboBox.setValue(String.format(&quot;%02d&quot;, appointment.getStart().getMinute()));</span>
+<span class="nc" id="L415">        long currentDurationMinutes = java.time.Duration.between(appointment.getStart(), appointment.getEnd()).toMinutes();</span>
+<span class="nc" id="L416">        durationComboBox.setValue(getDurationString(currentDurationMinutes));</span>
+<span class="nc" id="L417">        typeComboBox.setValue(appointment.getGroup());</span>
+
+<span class="nc" id="L419">        GridPane grid = new GridPane();</span>
+<span class="nc" id="L420">        grid.setHgap(10);</span>
+<span class="nc" id="L421">        grid.setVgap(10);</span>
+<span class="nc" id="L422">        grid.setPadding(new Insets(20, 20, 20, 20));</span>
+        
+<span class="nc" id="L424">        grid.addRow(0, new Label(&quot;Titre:&quot;), titleField);</span>
+<span class="nc" id="L425">        grid.addRow(1, new Label(&quot;Description:&quot;), descriptionField);</span>
+<span class="nc" id="L426">        grid.addRow(2, new Label(&quot;Date:&quot;), datePicker);</span>
+<span class="nc" id="L427">        grid.addRow(3, new Label(&quot;Heure:&quot;), new HBox(5, hourComboBox, new Label(&quot;:&quot;), minuteComboBox));</span>
+<span class="nc" id="L428">        grid.addRow(4, new Label(&quot;Durée:&quot;), durationComboBox);</span>
+<span class="nc" id="L429">        grid.addRow(5, new Label(&quot;Type:&quot;), typeComboBox);</span>
+
+<span class="nc" id="L431">        dialog.getDialogPane().setContent(grid);</span>
+<span class="nc" id="L432">        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);</span>
+
+<span class="nc" id="L434">        Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
+<span class="nc bnc" id="L435" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc bnc" id="L436" title="All 7 branches missed.">            int newDurationMinutes = switch (durationComboBox.getValue()) {</span>
+<span class="nc" id="L437">                case &quot;30 minutes&quot; -&gt; 30;</span>
+<span class="nc" id="L438">                case &quot;1 heure&quot; -&gt; 60;</span>
+<span class="nc" id="L439">                case &quot;1h30&quot; -&gt; 90;</span>
+<span class="nc" id="L440">                case &quot;2 heures&quot; -&gt; 120;</span>
+<span class="nc" id="L441">                case &quot;2h30&quot; -&gt; 150;</span>
+<span class="nc" id="L442">                case &quot;3 heures&quot; -&gt; 180;</span>
+<span class="nc" id="L443">                default -&gt; 60;</span>
+            };
+
+<span class="nc" id="L446">            LocalDateTime start = datePicker.getValue().atTime(</span>
+<span class="nc" id="L447">                    Integer.parseInt(hourComboBox.getValue()),</span>
+<span class="nc" id="L448">                    Integer.parseInt(minuteComboBox.getValue())</span>
+            );
+<span class="nc" id="L450">            LocalDateTime end = start.plusMinutes(newDurationMinutes);</span>
+
+<span class="nc" id="L452">            appointment.setTitle(titleField.getText());</span>
+<span class="nc" id="L453">            appointment.setDescription(descriptionField.getText());</span>
+<span class="nc" id="L454">            appointment.setStart(start);</span>
+<span class="nc" id="L455">            appointment.setEnd(end);</span>
+<span class="nc" id="L456">            appointment.setGroup(typeComboBox.getValue());</span>
+
+<span class="nc" id="L458">            saveAppointments();</span>
+<span class="nc" id="L459">            updateCalendar();</span>
+        }
+<span class="nc" id="L461">    }</span>
+
+    private String getDurationString(long minutes) {
+<span class="nc bnc" id="L464" title="All 7 branches missed.">        return switch ((int) minutes) {</span>
+<span class="nc" id="L465">            case 30 -&gt; &quot;30 minutes&quot;;</span>
+<span class="nc" id="L466">            case 60 -&gt; &quot;1 heure&quot;;</span>
+<span class="nc" id="L467">            case 90 -&gt; &quot;1h30&quot;;</span>
+<span class="nc" id="L468">            case 120 -&gt; &quot;2 heures&quot;;</span>
+<span class="nc" id="L469">            case 150 -&gt; &quot;2h30&quot;;</span>
+<span class="nc" id="L470">            case 180 -&gt; &quot;3 heures&quot;;</span>
+<span class="nc" id="L471">            default -&gt; &quot;1 heure&quot;;</span>
+        };
+    }
+
+    private void deleteAppointment(Appointment appointment) {
+<span class="nc" id="L476">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L477">        alert.setTitle(&quot;Confirmation de suppression&quot;);</span>
+<span class="nc" id="L478">        alert.setHeaderText(&quot;Supprimer le rendez-vous&quot;);</span>
+<span class="nc" id="L479">        alert.setContentText(&quot;Êtes-vous sûr de vouloir supprimer ce rendez-vous ?&quot;);</span>
+
+<span class="nc" id="L481">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
+<span class="nc bnc" id="L482" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L483">            appointments.remove(appointment);</span>
+<span class="nc" id="L484">            saveAppointments();</span>
+<span class="nc" id="L485">            updateCalendar();</span>
+        }
+<span class="nc" id="L487">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

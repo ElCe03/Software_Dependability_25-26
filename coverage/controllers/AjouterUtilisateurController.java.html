@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AjouterUtilisateurController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">AjouterUtilisateurController.java</span></div><h1>AjouterUtilisateurController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import entite.*;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import service.EmailSender;
+import service.UserService;
+
+
+import java.io.IOException;
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.ResourceBundle;
+import java.util.regex.Pattern;
+
+<span class="nc" id="L25">public class AjouterUtilisateurController implements Initializable {</span>
+
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private TextField nomField;
+    @FXML private TextField prenomField;
+    @FXML private ComboBox&lt;String&gt; typeComboBox;
+    @FXML private Button btnCreer;
+    @FXML private Label emailError;
+    @FXML private Label passwordError;
+    @FXML private Label nomError;
+    @FXML private Label prenomError;
+    @FXML private Label typeError;
+
+<span class="nc" id="L39">    private final UserService userService = new UserService();</span>
+
+    // Expressions régulières pour la validation
+    private static final String EMAIL_REGEX = &quot;^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$&quot;;
+<span class="nc" id="L43">    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);</span>
+    private static final String NAME_REGEX = &quot;^[A-Za-zÀ-ÿ\\s-]+$&quot;;
+<span class="nc" id="L45">    private static final Pattern NAME_PATTERN = Pattern.compile(NAME_REGEX);</span>
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Initialiser le ComboBox avec les types d'utilisateurs
+<span class="nc" id="L50">        typeComboBox.setItems(FXCollections.observableArrayList(</span>
+                &quot;medecin&quot;,
+                &quot;patient&quot;,
+                &quot;pharmacien&quot;,
+                &quot;staff&quot;,
+                &quot;admin&quot;
+        ));
+<span class="nc" id="L57">        typeComboBox.setPromptText(&quot;Sélectionnez un type&quot;);</span>
+
+        // Réinitialiser les messages d'erreur
+<span class="nc" id="L60">        resetErrorLabels();</span>
+<span class="nc" id="L61">    }</span>
+
+    @FXML
+    private void handleAjouterUtilisateur() {
+        try {
+            // Réinitialiser les messages d'erreur
+<span class="nc" id="L67">            resetErrorLabels();</span>
+
+            // Récupérer les entrées
+<span class="nc" id="L70">            String email = emailField.getText().trim();</span>
+<span class="nc" id="L71">            String password = passwordField.getText();</span>
+<span class="nc" id="L72">            String nom = nomField.getText().trim();</span>
+<span class="nc" id="L73">            String prenom = prenomField.getText().trim();</span>
+<span class="nc" id="L74">            String type = typeComboBox.getValue();</span>
+
+            // Valider les entrées
+<span class="nc" id="L77">            boolean isValid = true;</span>
+
+            // Validation du type
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (type == null) {</span>
+<span class="nc" id="L81">                typeError.setText(&quot;Veuillez sélectionner un type d'utilisateur.&quot;);</span>
+<span class="nc" id="L82">                typeError.setVisible(true);</span>
+<span class="nc" id="L83">                isValid = false;</span>
+            }
+
+            // Validation de l'email
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            if (email.isEmpty()) {</span>
+<span class="nc" id="L88">                emailError.setText(&quot;L'email est requis.&quot;);</span>
+<span class="nc" id="L89">                emailError.setVisible(true);</span>
+<span class="nc" id="L90">                isValid = false;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            } else if (!EMAIL_PATTERN.matcher(email).matches()) {</span>
+<span class="nc" id="L92">                emailError.setText(&quot;Veuillez entrer un email valide.&quot;);</span>
+<span class="nc" id="L93">                emailError.setVisible(true);</span>
+<span class="nc" id="L94">                isValid = false;</span>
+            }
+
+            // Validation du mot de passe
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (password.isEmpty()) {</span>
+<span class="nc" id="L99">                passwordError.setText(&quot;Le mot de passe est requis.&quot;);</span>
+<span class="nc" id="L100">                passwordError.setVisible(true);</span>
+<span class="nc" id="L101">                isValid = false;</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            } else if (password.length() &lt; 8) {</span>
+<span class="nc" id="L103">                passwordError.setText(&quot;Le mot de passe doit contenir au moins 8 caractères.&quot;);</span>
+<span class="nc" id="L104">                passwordError.setVisible(true);</span>
+<span class="nc" id="L105">                isValid = false;</span>
+            }
+
+            // Validation du nom
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            if (nom.isEmpty()) {</span>
+<span class="nc" id="L110">                nomError.setText(&quot;Le nom est requis.&quot;);</span>
+<span class="nc" id="L111">                nomError.setVisible(true);</span>
+<span class="nc" id="L112">                isValid = false;</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            } else if (!NAME_PATTERN.matcher(nom).matches()) {</span>
+<span class="nc" id="L114">                nomError.setText(&quot;Le nom ne doit contenir que des lettres et des espaces.&quot;);</span>
+<span class="nc" id="L115">                nomError.setVisible(true);</span>
+<span class="nc" id="L116">                isValid = false;</span>
+            }
+
+            // Validation du prénom
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            if (prenom.isEmpty()) {</span>
+<span class="nc" id="L121">                prenomError.setText(&quot;Le prénom est requis.&quot;);</span>
+<span class="nc" id="L122">                prenomError.setVisible(true);</span>
+<span class="nc" id="L123">                isValid = false;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            } else if (!NAME_PATTERN.matcher(prenom).matches()) {</span>
+<span class="nc" id="L125">                prenomError.setText(&quot;Le prénom ne doit contenir que des lettres et des espaces.&quot;);</span>
+<span class="nc" id="L126">                prenomError.setVisible(true);</span>
+<span class="nc" id="L127">                isValid = false;</span>
+            }
+
+            // Si une validation échoue, arrêter le traitement
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (!isValid) {</span>
+<span class="nc" id="L132">                return;</span>
+            }
+
+            // Instancier la sous-classe appropriée
+            Users user;
+<span class="nc bnc" id="L137" title="All 6 branches missed.">            switch (type.toLowerCase()) {</span>
+                case &quot;patient&quot;:
+<span class="nc" id="L139">                    user = new Patient();</span>
+<span class="nc" id="L140">                    break;</span>
+                case &quot;medecin&quot;:
+<span class="nc" id="L142">                    user = new Medecin();</span>
+<span class="nc" id="L143">                    break;</span>
+                case &quot;pharmacien&quot;:
+<span class="nc" id="L145">                    user = new Pharmacien();</span>
+<span class="nc" id="L146">                    break;</span>
+                case &quot;staff&quot;:
+<span class="nc" id="L148">                    user = new Staff();</span>
+<span class="nc" id="L149">                    break;</span>
+                case &quot;admin&quot;:
+<span class="nc" id="L151">                    user = new Users();</span>
+<span class="nc" id="L152">                    break;</span>
+                default:
+<span class="nc" id="L154">                    user = new Users();</span>
+                    break;
+            }
+
+            // Remplir les champs communs
+<span class="nc" id="L159">            user.setEmail(email);</span>
+<span class="nc" id="L160">            user.setPassword(password);</span>
+<span class="nc" id="L161">            user.setNom(nom);</span>
+<span class="nc" id="L162">            user.setPrenom(prenom);</span>
+<span class="nc" id="L163">            user.setType(type);</span>
+<span class="nc" id="L164">            EmailSender.envoyerEmailInscription(email, nom, password, type);</span>
+
+            // Si le type est &quot;admin&quot;, enregistrer directement et rediriger
+<span class="nc bnc" id="L167" title="All 2 branches missed.">            if (type.toLowerCase().equals(&quot;admin&quot;)) {</span>
+<span class="nc" id="L168">                userService.ajouterUtilisateur(user, type);</span>
+<span class="nc" id="L169">                showAlert(Alert.AlertType.INFORMATION, &quot;Succès&quot;, &quot;Admin créé avec succès !&quot;);// Redirection vers la liste des utilisateurs</span>
+
+<span class="nc" id="L171">                FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ListeUtilisateurs.fxml&quot;));</span>
+<span class="nc" id="L172">                Parent root = loader.load();</span>
+<span class="nc" id="L173">                Stage stage = (Stage) btnCreer.getScene().getWindow();</span>
+<span class="nc" id="L174">                stage.setScene(new Scene(root));</span>
+<span class="nc" id="L175">                stage.setTitle(&quot;Liste Utilisateurs&quot;);</span>
+<span class="nc" id="L176">                stage.show();</span>
+<span class="nc" id="L177">            } else {</span>
+                // Redirection vers l'interface appropriée pour les autres types
+                String fxmlFile;
+                String title;
+<span class="nc bnc" id="L181" title="All 5 branches missed.">                switch (type.toLowerCase()) {</span>
+                    case &quot;medecin&quot;:
+<span class="nc" id="L183">                        fxmlFile = &quot;/ajouterMedecin.fxml&quot;;</span>
+<span class="nc" id="L184">                        title = &quot;Ajout Médecin&quot;;</span>
+<span class="nc" id="L185">                        break;</span>
+                    case &quot;patient&quot;:
+<span class="nc" id="L187">                        fxmlFile = &quot;/ajouterPatient.fxml&quot;;</span>
+<span class="nc" id="L188">                        title = &quot;Ajout Patient&quot;;</span>
+<span class="nc" id="L189">                        break;</span>
+                    case &quot;pharmacien&quot;:
+<span class="nc" id="L191">                        fxmlFile = &quot;/ajouterPharmacien.fxml&quot;;</span>
+<span class="nc" id="L192">                        title = &quot;Ajout Pharmacien&quot;;</span>
+<span class="nc" id="L193">                        break;</span>
+                    case &quot;staff&quot;:
+<span class="nc" id="L195">                        fxmlFile = &quot;/ajouterStaff.fxml&quot;;</span>
+<span class="nc" id="L196">                        title = &quot;Ajout Staff&quot;;</span>
+<span class="nc" id="L197">                        break;</span>
+                    default:
+<span class="nc" id="L199">                        fxmlFile = &quot;/ListeUtilisateurs.fxml&quot;;</span>
+<span class="nc" id="L200">                        title = &quot;Liste Utilisateurs&quot;;</span>
+                        break;
+                }
+
+<span class="nc" id="L204">                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));</span>
+<span class="nc" id="L205">                Parent root = loader.load();</span>
+
+
+                // Passer l'utilisateur au contrôleur
+<span class="nc" id="L209">                Object controller = loader.getController();</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                if (controller instanceof MedecinController) {</span>
+<span class="nc" id="L211">                    ((MedecinController) controller).setUtilisateur((Medecin) user);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                } else if (controller instanceof PatientController) {</span>
+<span class="nc" id="L213">                    ((PatientController) controller).setUtilisateur((Patient) user);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                } else if (controller instanceof PharmacienController) {</span>
+<span class="nc" id="L215">                    ((PharmacienController) controller).setUtilisateur((Pharmacien) user);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                } else if (controller instanceof StaffController) {</span>
+<span class="nc" id="L217">                    ((StaffController) controller).setUtilisateur((Staff) user);</span>
+                }
+
+<span class="nc" id="L220">                Stage stage = (Stage) btnCreer.getScene().getWindow();</span>
+<span class="nc" id="L221">                stage.setScene(new Scene(root));</span>
+<span class="nc" id="L222">                stage.setTitle(title);</span>
+<span class="nc" id="L223">                stage.show();</span>
+            }
+
+<span class="nc" id="L226">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L227">            showAlert(Alert.AlertType.WARNING, &quot;Champs manquants&quot;, e.getMessage());</span>
+<span class="nc" id="L228">        } catch (IOException e) {</span>
+<span class="nc" id="L229">            showAlert(Alert.AlertType.ERROR, &quot;Erreur FXML&quot;, &quot;Erreur lors du chargement de l'interface : &quot; + e.getMessage());</span>
+<span class="nc" id="L230">        } catch (SQLException e) {</span>
+<span class="nc" id="L231">            showAlert(Alert.AlertType.ERROR, &quot;Erreur&quot;, &quot;Erreur lors de la création de l'utilisateur : &quot; + e.getMessage());</span>
+<span class="nc" id="L232">        }</span>
+<span class="nc" id="L233">    }</span>
+
+    private void resetErrorLabels() {
+<span class="nc" id="L236">        emailError.setText(&quot;&quot;);</span>
+<span class="nc" id="L237">        emailError.setVisible(false);</span>
+<span class="nc" id="L238">        passwordError.setText(&quot;&quot;);</span>
+<span class="nc" id="L239">        passwordError.setVisible(false);</span>
+<span class="nc" id="L240">        nomError.setText(&quot;&quot;);</span>
+<span class="nc" id="L241">        nomError.setVisible(false);</span>
+<span class="nc" id="L242">        prenomError.setText(&quot;&quot;);</span>
+<span class="nc" id="L243">        prenomError.setVisible(false);</span>
+<span class="nc" id="L244">        typeError.setText(&quot;&quot;);</span>
+<span class="nc" id="L245">        typeError.setVisible(false);</span>
+<span class="nc" id="L246">    }</span>
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+<span class="nc" id="L249">        Alert alert = new Alert(type);</span>
+<span class="nc" id="L250">        alert.setTitle(title);</span>
+<span class="nc" id="L251">        alert.setHeaderText(null);</span>
+<span class="nc" id="L252">        alert.setContentText(content);</span>
+<span class="nc" id="L253">        alert.showAndWait();</span>
+<span class="nc" id="L254">    }</span>
+
+
+
+
+    @FXML
+    private void handleBack(ActionEvent event) {
+        try {
+            // Load the login.fxml file
+<span class="nc" id="L263">            Parent LoginRoot = FXMLLoader.load(getClass().getResource(&quot;/login.fxml&quot;));</span>
+
+            // Get the current stage
+<span class="nc" id="L266">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Set the new scene
+<span class="nc" id="L269">            Scene scene = new Scene(LoginRoot);</span>
+<span class="nc" id="L270">            stage.setScene(scene);</span>
+<span class="nc" id="L271">            stage.show();</span>
+<span class="nc" id="L272">        } catch (IOException e) {</span>
+<span class="nc" id="L273">            e.printStackTrace();</span>
+<span class="nc" id="L274">            showErrorAlert(&quot;Failed to load consultation page&quot;, &quot;Please try again later.&quot;);</span>
+<span class="nc" id="L275">        }</span>
+<span class="nc" id="L276">    }</span>
+    private void showErrorAlert(String header, String content) {
+<span class="nc" id="L278">        Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L279">        alert.setTitle(&quot;Navigation Error&quot;);</span>
+<span class="nc" id="L280">        alert.setHeaderText(header);</span>
+<span class="nc" id="L281">        alert.setContentText(content);</span>
+<span class="nc" id="L282">        alert.showAndWait();</span>
+<span class="nc" id="L283">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

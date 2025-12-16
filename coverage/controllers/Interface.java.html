@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Interface.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">Interface.java</span></div><h1>Interface.java</h1><pre class="source lang-java linenums">package controllers;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import java.io.IOException;
+import javafx.scene.Parent;
+import javafx.fxml.FXMLLoader;
+import javafx.stage.Stage;
+
+<span class="nc" id="L15">public class Interface {</span>
+
+    @FXML
+    private VBox contentArea;  // This is where new content will appear
+    @FXML
+    private Button backButton;
+    @FXML
+    private Button    BackLogin;
+    //Add this to your FXML file
+    @FXML
+    private void handleUsers(ActionEvent event) {
+<span class="nc" id="L26">        Label userLabel = new Label(&quot;User Management Section&quot;);</span>
+<span class="nc" id="L27">        userLabel.setStyle(&quot;-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2c3e50;&quot;);</span>
+
+<span class="nc" id="L29">        contentArea.getChildren().clear();  // Clear old content</span>
+<span class="nc" id="L30">        contentArea.getChildren().add(userLabel);  // Show new conten</span>
+
+
+
+        // @FXML
+  // private void handleMedicalServices(ActionEvent event) {
+    //    Label serviceLabel = new Label(&quot;Medical Services Section&quot;);
+      //  serviceLabel.setStyle(&quot;-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2c3e50;&quot;);
+
+      //  contentArea.getChildren().clear();  // Remove old content
+       // contentArea.getChildren().add(serviceLabel);  // Show new content
+    //}
+    try {
+        // Load the Medical Services FXML
+<span class="nc" id="L44">        FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/ListeUtilisateurs.fxml&quot;));</span>
+<span class="nc" id="L45">        Parent medicalForm = loader.load();</span>
+
+<span class="nc" id="L47">        contentArea.getChildren().clear();</span>
+<span class="nc" id="L48">        contentArea.getChildren().add(medicalForm);</span>
+
+<span class="nc" id="L50">    } catch (IOException e) {</span>
+<span class="nc" id="L51">        e.printStackTrace();</span>
+<span class="nc" id="L52">        loadContent(&quot;Error loading medical services form&quot;);</span>
+<span class="nc" id="L53">    }}</span>
+    @FXML
+    private void handleEquipement (ActionEvent event) {
+        try {
+<span class="nc" id="L57">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/equipement.fxml&quot;));</span>
+<span class="nc" id="L58">            Parent equipementView = loader.load();</span>
+
+<span class="nc" id="L60">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L61">            contentArea.getChildren().add(equipementView);</span>
+
+<span class="nc" id="L63">        } catch (IOException e) {</span>
+<span class="nc" id="L64">            e.printStackTrace();</span>
+<span class="nc" id="L65">            loadContent(&quot;Erreur lors du chargement de la page des équipements&quot;);</span>
+<span class="nc" id="L66">        }</span>
+<span class="nc" id="L67">    }</span>
+
+    @FXML
+    private void handleMedicalServices(ActionEvent event) {
+        try {
+            // Load the Medical Services FXML
+<span class="nc" id="L73">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/medical_services.fxml&quot;));</span>
+<span class="nc" id="L74">            Parent medicalForm = loader.load();</span>
+
+<span class="nc" id="L76">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L77">            contentArea.getChildren().add(medicalForm);</span>
+
+<span class="nc" id="L79">        } catch (IOException e) {</span>
+<span class="nc" id="L80">            e.printStackTrace();</span>
+<span class="nc" id="L81">            loadContent(&quot;Error loading medical services form&quot;);</span>
+<span class="nc" id="L82">        }</span>
+<span class="nc" id="L83">    }</span>
+
+    private void loadContent(String text) {
+<span class="nc" id="L86">        Label label = new Label(text);</span>
+<span class="nc" id="L87">        label.setStyle(&quot;-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2c3e50;&quot;);</span>
+<span class="nc" id="L88">        contentArea.getChildren().clear();</span>
+<span class="nc" id="L89">        contentArea.getChildren().add(label);</span>
+<span class="nc" id="L90">    }</span>
+
+
+
+
+
+    @FXML
+    private void handleAdminConsultation(ActionEvent event) {
+        try {
+            // Load the Medical Services FXML
+<span class="nc" id="L100">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/admin_consultations.fxml&quot;));</span>
+<span class="nc" id="L101">            Parent medicalForm = loader.load();</span>
+
+<span class="nc" id="L103">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L104">            contentArea.getChildren().add(medicalForm);</span>
+
+<span class="nc" id="L106">        } catch (IOException e) {</span>
+<span class="nc" id="L107">            e.printStackTrace();</span>
+<span class="nc" id="L108">            loadContent(&quot;Error loading admin consulataions view&quot;);</span>
+<span class="nc" id="L109">        }</span>
+<span class="nc" id="L110">    }</span>
+
+
+
+    @FXML
+    private void handleMedicationStock(ActionEvent event) {
+        try {
+<span class="nc" id="L117">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/medicament.fxml&quot;));</span>
+<span class="nc" id="L118">            Parent medicationView = loader.load();</span>
+
+<span class="nc" id="L120">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L121">            contentArea.getChildren().add(medicationView);</span>
+
+<span class="nc" id="L123">        } catch (IOException e) {</span>
+<span class="nc" id="L124">            e.printStackTrace();</span>
+<span class="nc" id="L125">            loadContent(&quot;Error loading medication view&quot;);</span>
+<span class="nc" id="L126">        }</span>
+<span class="nc" id="L127">    }</span>
+    @FXML
+    private void handleInfrastructure(ActionEvent event) {
+        try {
+<span class="nc" id="L131">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/departement.fxml&quot;));</span>
+<span class="nc" id="L132">            Parent medicationView = loader.load();</span>
+
+<span class="nc" id="L134">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L135">            contentArea.getChildren().add(medicationView);</span>
+
+<span class="nc" id="L137">        } catch (IOException e) {</span>
+<span class="nc" id="L138">            e.printStackTrace();</span>
+<span class="nc" id="L139">            loadContent(&quot;Error loading medication view&quot;);</span>
+<span class="nc" id="L140">        }</span>
+<span class="nc" id="L141">    }</span>
+
+
+
+    @FXML
+    private void handlePatientDashboard(ActionEvent event) {
+        try {
+            // Load the Patient Dashboard in a new window
+<span class="nc" id="L149">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/patient_dashboard.fxml&quot;));</span>
+<span class="nc" id="L150">            Parent patientDashboard = loader.load();</span>
+
+            // Create a new stage for the dashboard
+<span class="nc" id="L153">            Stage patientStage = new Stage();</span>
+<span class="nc" id="L154">            patientStage.setTitle(&quot;Patient Dashboard&quot;);</span>
+<span class="nc" id="L155">            patientStage.setScene(new Scene(patientDashboard));</span>
+<span class="nc" id="L156">            patientStage.show();</span>
+<span class="nc" id="L157">        } catch (IOException e) {</span>
+<span class="nc" id="L158">            e.printStackTrace();</span>
+<span class="nc" id="L159">            loadContent(&quot;Error loading patient dashboard: &quot; + e.getMessage());</span>
+<span class="nc" id="L160">        }</span>
+<span class="nc" id="L161">    }</span>
+
+    @FXML
+    private void handleDossiersMedicaux(ActionEvent event) {
+        try {
+            // Load the Dossier Medicale FXML
+<span class="nc" id="L167">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/dossier_medicale.fxml&quot;));</span>
+<span class="nc" id="L168">            Parent dossierForm = loader.load();</span>
+
+            // Replace content area with the dossier medicale form
+<span class="nc" id="L171">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L172">            contentArea.getChildren().add(dossierForm);</span>
+<span class="nc" id="L173">        } catch (IOException e) {</span>
+<span class="nc" id="L174">            e.printStackTrace();</span>
+<span class="nc" id="L175">            loadContent(&quot;Error loading dossiers médicaux form: &quot; + e.getMessage());</span>
+<span class="nc" id="L176">        }</span>
+<span class="nc" id="L177">    }</span>
+    @FXML
+    private void handleSejours(ActionEvent event) {
+        try {
+            // Load the Sejour FXML
+<span class="nc" id="L182">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/sejour_form.fxml&quot;));</span>
+<span class="nc" id="L183">            Parent sejourForm = loader.load();</span>
+
+            // Replace content area with the sejour form
+<span class="nc" id="L186">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L187">            contentArea.getChildren().add(sejourForm);</span>
+<span class="nc" id="L188">        } catch (IOException e) {</span>
+<span class="nc" id="L189">            e.printStackTrace();</span>
+<span class="nc" id="L190">            loadContent(&quot;Error loading séjours form: &quot; + e.getMessage());</span>
+<span class="nc" id="L191">        }</span>
+<span class="nc" id="L192">    }</span>
+    @FXML
+    private void handleStatistiques(ActionEvent event) {
+        try {
+            // Load the Statistics FXML
+<span class="nc" id="L197">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/statistiques.fxml&quot;));</span>
+<span class="nc" id="L198">            Parent statistiquesView = loader.load();</span>
+
+<span class="nc" id="L200">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L201">            contentArea.getChildren().add(statistiquesView);</span>
+
+<span class="nc" id="L203">        } catch (IOException e) {</span>
+<span class="nc" id="L204">            e.printStackTrace();</span>
+<span class="nc" id="L205">            loadContent(&quot;Error loading statistics view: &quot; + e.getMessage());</span>
+<span class="nc" id="L206">        }</span>
+<span class="nc" id="L207">    }</span>
+
+    @FXML
+    private void handleCalendar(ActionEvent event) {
+        try {
+            // Load the Medical Calendar FXML
+<span class="nc" id="L213">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/medical_calendar.fxml&quot;));</span>
+<span class="nc" id="L214">            Parent calendarForm = loader.load();</span>
+
+            // Replace content area with the calendar form
+<span class="nc" id="L217">            contentArea.getChildren().clear();</span>
+<span class="nc" id="L218">            contentArea.getChildren().add(calendarForm);</span>
+<span class="nc" id="L219">        } catch (IOException e) {</span>
+<span class="nc" id="L220">            e.printStackTrace();</span>
+<span class="nc" id="L221">            loadContent(&quot;Error loading calendar: &quot; + e.getMessage());</span>
+<span class="nc" id="L222">        }</span>
+<span class="nc" id="L223">    }</span>
+
+
+    @FXML
+    private void handleBackButton() {
+        try {
+<span class="nc" id="L229">            Stage stage = (Stage) backButton.getScene().getWindow();</span>
+<span class="nc" id="L230">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/DashboardMedecin.fxml&quot;));</span>
+<span class="nc" id="L231">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L232">            stage.setScene(scene);</span>
+<span class="nc" id="L233">            stage.show();</span>
+<span class="nc" id="L234">        } catch (IOException e) {</span>
+<span class="nc" id="L235">            e.printStackTrace();</span>
+<span class="nc" id="L236">            showAlert(&quot;Error&quot;, &quot;Could not load the dashboard&quot;);</span>
+<span class="nc" id="L237">        }</span>
+<span class="nc" id="L238">    }</span>
+
+    private void showAlert(String title, String content) {
+<span class="nc" id="L241">        Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L242">        alert.setTitle(title);</span>
+<span class="nc" id="L243">        alert.setHeaderText(null);</span>
+<span class="nc" id="L244">        alert.setContentText(content);</span>
+<span class="nc" id="L245">        alert.showAndWait();</span>
+<span class="nc" id="L246">    }</span>
+
+
+
+    @FXML
+    private void handleBackLogin() {
+        try {
+<span class="nc" id="L253">            Stage stage = (Stage) backButton.getScene().getWindow();</span>
+<span class="nc" id="L254">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/login.fxml&quot;));</span>
+<span class="nc" id="L255">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L256">            stage.setScene(scene);</span>
+<span class="nc" id="L257">            stage.show();</span>
+<span class="nc" id="L258">        } catch (IOException e) {</span>
+<span class="nc" id="L259">            e.printStackTrace();</span>
+<span class="nc" id="L260">            showAlert(&quot;Error&quot;, &quot;Could not load the dashboard&quot;);</span>
+<span class="nc" id="L261">        }</span>
+<span class="nc" id="L262">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

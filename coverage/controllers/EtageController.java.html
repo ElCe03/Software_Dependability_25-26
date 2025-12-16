@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EtageController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">EtageController.java</span></div><h1>EtageController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.departement;
+import entite.etage;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import service.DepartemntService;
+import service.EtageService;
+import service.SalleService;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+<span class="nc" id="L28">public class EtageController {</span>
+    @FXML private TextField numeroField;
+    @FXML private ComboBox&lt;departement&gt; departementCombo;
+    @FXML private Label numeroError;
+    @FXML private Label departementError;
+    @FXML private TableView&lt;etage&gt; etageTable;
+    @FXML private TableColumn&lt;etage, Integer&gt; idColumn;
+    @FXML private TableColumn&lt;etage, Integer&gt; numeroColumn;
+    @FXML private TableColumn&lt;etage, String&gt; departementColumn;
+    @FXML private TableColumn&lt;etage, Integer&gt; nbrSalleColumn;
+    @FXML private TableColumn&lt;etage, Void&gt; modifierColumn;
+    @FXML private TableColumn&lt;etage, Void&gt; supprimerColumn;
+    @FXML private Button saveButton;
+    @FXML private Button cancelButton;
+    @FXML private TextField searchField; // Added for dynamic search
+
+<span class="nc" id="L44">    private final EtageService etageService = new EtageService();</span>
+<span class="nc" id="L45">    private final DepartemntService departementService = new DepartemntService();</span>
+<span class="nc" id="L46">    private final SalleService salleService = new SalleService();</span>
+<span class="nc" id="L47">    private final ObservableList&lt;etage&gt; etageList = FXCollections.observableArrayList();</span>
+<span class="nc" id="L48">    private final ObservableList&lt;etage&gt; filteredEtageList = FXCollections.observableArrayList(); // For filtered data</span>
+<span class="nc" id="L49">    private final ObservableList&lt;departement&gt; departementList = FXCollections.observableArrayList();</span>
+<span class="nc" id="L50">    private etage etageEnCoursDeModification = null;</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L54">        setupTable();</span>
+<span class="nc" id="L55">        loadDepartements();</span>
+<span class="nc" id="L56">        configureDepartementCombo();</span>
+<span class="nc" id="L57">        loadEtages();</span>
+<span class="nc" id="L58">        setupSearch(); // Added to set up dynamic search</span>
+<span class="nc" id="L59">    }</span>
+
+    private void configureDepartementCombo() {
+<span class="nc" id="L62">        departementCombo.setConverter(new StringConverter&lt;departement&gt;() {</span>
+            @Override
+            public String toString(departement departement) {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                return departement != null ? departement.getNom() : &quot;&quot;;</span>
+            }
+
+            @Override
+            public departement fromString(String string) {
+<span class="nc" id="L70">                return departementCombo.getItems().stream()</span>
+<span class="nc" id="L71">                        .filter(d -&gt; d.getNom().equals(string))</span>
+<span class="nc" id="L72">                        .findFirst()</span>
+<span class="nc" id="L73">                        .orElse(null);</span>
+            }
+        });
+
+<span class="nc" id="L77">        departementCombo.setCellFactory(param -&gt; new ListCell&lt;departement&gt;() {</span>
+            @Override
+            protected void updateItem(departement item, boolean empty) {
+<span class="nc" id="L80">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">                if (empty || item == null) {</span>
+<span class="nc" id="L82">                    setText(null);</span>
+                } else {
+<span class="nc" id="L84">                    setText(item.getNom());</span>
+                }
+<span class="nc" id="L86">            }</span>
+        });
+<span class="nc" id="L88">    }</span>
+
+    private void setupTable() {
+        // Configuration des colonnes
+<span class="nc" id="L92">        idColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;id&quot;));</span>
+<span class="nc" id="L93">        numeroColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;numero&quot;));</span>
+
+<span class="nc" id="L95">        departementColumn.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L96">            departement d = cellData.getValue().getDepartement();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            return new javafx.beans.property.SimpleStringProperty(d != null ? d.getNom() : &quot;&quot;);</span>
+        });
+
+<span class="nc" id="L100">        nbrSalleColumn.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L101">            etage e = cellData.getValue();</span>
+<span class="nc" id="L102">            return new SimpleIntegerProperty(e.getNbrSalle()).asObject();</span>
+        });
+
+        // Configuration des boutons d'action
+<span class="nc" id="L106">        modifierColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L107">            private final Button btn = new Button(&quot;✏️&quot;);</span>
+            {
+<span class="nc" id="L109">                btn.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
+<span class="nc" id="L110">                btn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L111">                    etage etage = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L112">                    handleModify(etage);</span>
+<span class="nc" id="L113">                });</span>
+<span class="nc" id="L114">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L118">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">                setGraphic(empty ? null : btn);</span>
+<span class="nc" id="L120">            }</span>
+        });
+
+<span class="nc" id="L123">        supprimerColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L124">            private final Button btn = new Button(&quot;🗑️&quot;);</span>
+            {
+<span class="nc" id="L126">                btn.setStyle(&quot;-fx-background-color: #EF5350; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
+<span class="nc" id="L127">                btn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L128">                    etage etage = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L129">                    handleDelete(etage);</span>
+<span class="nc" id="L130">                });</span>
+<span class="nc" id="L131">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L135">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">                setGraphic(empty ? null : btn);</span>
+<span class="nc" id="L137">            }</span>
+        });
+<span class="nc" id="L139">    }</span>
+
+    private void loadDepartements() {
+<span class="nc" id="L142">        List&lt;departement&gt; departements = departementService.getAllDepartements();</span>
+<span class="nc" id="L143">        departementList.setAll(departements);</span>
+<span class="nc" id="L144">        departementCombo.setItems(departementList);</span>
+<span class="nc" id="L145">    }</span>
+
+    private void loadEtages() {
+<span class="nc" id="L148">        List&lt;etage&gt; etages = etageService.getAllEtages();</span>
+
+        // Calcul du nombre de salles pour chaque étage
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        for (etage e : etages) {</span>
+<span class="nc" id="L152">            int count = salleService.countSallesByEtage(e.getId());</span>
+<span class="nc" id="L153">            e.setNbrSalle(count);</span>
+<span class="nc" id="L154">        }</span>
+
+<span class="nc" id="L156">        etageList.setAll(etages);</span>
+<span class="nc" id="L157">        filteredEtageList.setAll(etages); // Initialize filtered list</span>
+<span class="nc" id="L158">        etageTable.setItems(filteredEtageList);</span>
+<span class="nc" id="L159">    }</span>
+
+    private void setupSearch() {
+        // Add listener to searchField for dynamic filtering
+<span class="nc" id="L163">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
+<span class="nc" id="L164">            filterEtages(newValue);</span>
+<span class="nc" id="L165">        });</span>
+<span class="nc" id="L166">    }</span>
+
+    private void filterEtages(String searchText) {
+<span class="nc bnc" id="L169" title="All 4 branches missed.">        if (searchText == null || searchText.isEmpty()) {</span>
+<span class="nc" id="L170">            filteredEtageList.setAll(etageList);</span>
+        } else {
+<span class="nc" id="L172">            String lowerCaseFilter = searchText.toLowerCase();</span>
+<span class="nc" id="L173">            List&lt;etage&gt; filteredList = etageList.stream()</span>
+<span class="nc" id="L174">                    .filter(etage -&gt; {</span>
+<span class="nc" id="L175">                        boolean matchesNumero = String.valueOf(etage.getNumero()).contains(lowerCaseFilter);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                        boolean matchesDepartement = etage.getDepartement() != null &amp;&amp;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                                etage.getDepartement().getNom().toLowerCase().contains(lowerCaseFilter);</span>
+<span class="nc bnc" id="L178" title="All 4 branches missed.">                        return matchesNumero || matchesDepartement;</span>
+                    })
+<span class="nc" id="L180">                    .collect(Collectors.toList());</span>
+<span class="nc" id="L181">            filteredEtageList.setAll(filteredList);</span>
+        }
+<span class="nc" id="L183">    }</span>
+
+    public void refreshEtage(etage etage) {
+<span class="nc" id="L186">        int count = salleService.countSallesByEtage(etage.getId());</span>
+<span class="nc" id="L187">        etage.setNbrSalle(count);</span>
+<span class="nc" id="L188">        etageTable.refresh();</span>
+<span class="nc" id="L189">    }</span>
+
+    @FXML
+    private void handleSave() {
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (validateForm()) {</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">            if (etageEnCoursDeModification == null) {</span>
+                // Ajout d'un nouvel étage
+<span class="nc" id="L196">                etage newEtage = new etage();</span>
+<span class="nc" id="L197">                newEtage.setNumero(Integer.parseInt(numeroField.getText()));</span>
+<span class="nc" id="L198">                newEtage.setDepartement(departementCombo.getValue());</span>
+<span class="nc" id="L199">                etageService.addEtage(newEtage);</span>
+<span class="nc" id="L200">            } else {</span>
+                // Modification d'un étage existant
+<span class="nc" id="L202">                etageEnCoursDeModification.setNumero(Integer.parseInt(numeroField.getText()));</span>
+<span class="nc" id="L203">                etageEnCoursDeModification.setDepartement(departementCombo.getValue());</span>
+<span class="nc" id="L204">                etageService.updateEtage(etageEnCoursDeModification);</span>
+<span class="nc" id="L205">                etageEnCoursDeModification = null;</span>
+<span class="nc" id="L206">                saveButton.setText(&quot;Ajouter&quot;);</span>
+            }
+<span class="nc" id="L208">            clearForm();</span>
+<span class="nc" id="L209">            loadEtages();</span>
+        }
+<span class="nc" id="L211">    }</span>
+
+    private void handleModify(etage etage) {
+        try {
+<span class="nc" id="L215">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/modifierEtage.fxml&quot;));</span>
+<span class="nc" id="L216">            Parent root = loader.load();</span>
+
+<span class="nc" id="L218">            ModifierEtageController controller = loader.getController();</span>
+<span class="nc" id="L219">            controller.setEtageData(etage);</span>
+<span class="nc" id="L220">            controller.setDepartements(departementList);</span>
+
+<span class="nc" id="L222">            Stage stage = new Stage();</span>
+<span class="nc" id="L223">            stage.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L224">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L225">            stage.showAndWait();</span>
+
+            // Après fermeture de la fenêtre de modification
+<span class="nc" id="L228">            loadEtages();</span>
+<span class="nc" id="L229">        } catch (IOException e) {</span>
+<span class="nc" id="L230">            showAlert(&quot;Erreur&quot;, &quot;Impossible d'ouvrir l'éditeur&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L231">        }</span>
+<span class="nc" id="L232">    }</span>
+
+    private void handleDelete(etage etage) {
+<span class="nc" id="L235">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L236">        alert.setTitle(&quot;Confirmation&quot;);</span>
+<span class="nc" id="L237">        alert.setContentText(&quot;Êtes-vous sûr de vouloir supprimer cet étage ?&quot;);</span>
+
+<span class="nc" id="L239">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
+<span class="nc bnc" id="L240" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L241">            etageService.deleteEtage(etage.getId());</span>
+<span class="nc" id="L242">            loadEtages();</span>
+        }
+<span class="nc" id="L244">    }</span>
+
+    private boolean validateForm() {
+<span class="nc" id="L247">        boolean isValid = true;</span>
+
+        try {
+<span class="nc" id="L250">            Integer.parseInt(numeroField.getText());</span>
+<span class="nc" id="L251">            numeroError.setText(&quot;&quot;);</span>
+<span class="nc" id="L252">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L253">            numeroError.setText(&quot;Numéro invalide&quot;);</span>
+<span class="nc" id="L254">            isValid = false;</span>
+<span class="nc" id="L255">        }</span>
+
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (departementCombo.getValue() == null) {</span>
+<span class="nc" id="L258">            departementError.setText(&quot;Département requis&quot;);</span>
+<span class="nc" id="L259">            isValid = false;</span>
+        } else {
+<span class="nc" id="L261">            departementError.setText(&quot;&quot;);</span>
+        }
+
+<span class="nc" id="L264">        return isValid;</span>
+    }
+
+    @FXML
+    private void clearForm() {
+<span class="nc" id="L269">        numeroField.clear();</span>
+<span class="nc" id="L270">        departementCombo.setValue(null);</span>
+<span class="nc" id="L271">        numeroError.setText(&quot;&quot;);</span>
+<span class="nc" id="L272">        departementError.setText(&quot;&quot;);</span>
+<span class="nc" id="L273">    }</span>
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+<span class="nc" id="L276">        Alert alert = new Alert(type);</span>
+<span class="nc" id="L277">        alert.setTitle(title);</span>
+<span class="nc" id="L278">        alert.setContentText(message);</span>
+<span class="nc" id="L279">        alert.showAndWait();</span>
+<span class="nc" id="L280">    }</span>
+
+    // Méthodes de navigation
+    @FXML
+    private void showDepartements(ActionEvent event) {
+<span class="nc" id="L285">        loadView(&quot;/departement.fxml&quot;, event);</span>
+<span class="nc" id="L286">    }</span>
+
+    @FXML
+    private void showEtages(ActionEvent event) {
+<span class="nc" id="L290">        loadView(&quot;/etage.fxml&quot;, event);</span>
+<span class="nc" id="L291">    }</span>
+
+    @FXML
+    private void showSalles(ActionEvent event) {
+<span class="nc" id="L295">        loadView(&quot;/salle.fxml&quot;, event);</span>
+<span class="nc" id="L296">    }</span>
+
+    @FXML
+    private void Acceuil(ActionEvent event) {
+<span class="nc" id="L300">        loadView(&quot;/interface.fxml&quot;, event);</span>
+<span class="nc" id="L301">    }</span>
+
+    private void loadView(String fxmlPath, ActionEvent event) {
+        try {
+<span class="nc" id="L305">            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));</span>
+<span class="nc" id="L306">            Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L307">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L308">            stage.show();</span>
+<span class="nc" id="L309">        } catch (IOException e) {</span>
+<span class="nc" id="L310">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger la vue&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L311">        }</span>
+<span class="nc" id="L312">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

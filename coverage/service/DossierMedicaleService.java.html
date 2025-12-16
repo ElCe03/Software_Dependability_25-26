@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DossierMedicaleService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">DossierMedicaleService.java</span></div><h1>DossierMedicaleService.java</h1><pre class="source lang-java linenums">package service;
+
+import entite.DossierMedicale;
+import entite.User;
+import util.DataSource;
+
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Service class for handling database operations for the DossierMedicale entity
+ */
+public class DossierMedicaleService {
+    private Connection connection;
+    private UserServiceE userService;
+    private SejourService sejourService;
+    
+<span class="nc" id="L20">    public DossierMedicaleService() {</span>
+<span class="nc" id="L21">        connection = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L22">        userService = new UserServiceE();</span>
+<span class="nc" id="L23">    }</span>
+    
+    public void setSejourService(SejourService sejourService) {
+<span class="nc" id="L26">        this.sejourService = sejourService;</span>
+<span class="nc" id="L27">    }</span>
+    
+    /**
+     * Add a new medical record to the database
+     * @param dossier the medical record to add
+     * @return true if successful, false otherwise
+     */
+    public boolean ajouterDossier(DossierMedicale dossier) {
+<span class="nc" id="L35">        String sql = &quot;INSERT INTO dossier_medicale (date_de_creation, historique_des_maladies, &quot; +</span>
+                &quot;operations_passees, consultations_passees, statut_dossier, notes, image, &quot; +
+                &quot;patient_id, medecin_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;;
+                
+<span class="nc" id="L39">        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {</span>
+<span class="nc" id="L40">            pstmt.setTimestamp(1, Timestamp.valueOf(dossier.getDateDeCreation()));</span>
+<span class="nc" id="L41">            pstmt.setString(2, dossier.getHistoriqueDesMaladies());</span>
+<span class="nc" id="L42">            pstmt.setString(3, dossier.getOperationsPassees());</span>
+<span class="nc" id="L43">            pstmt.setString(4, dossier.getConsultationsPassees());</span>
+<span class="nc" id="L44">            pstmt.setString(5, dossier.getStatutDossier());</span>
+<span class="nc" id="L45">            pstmt.setString(6, dossier.getNotes());</span>
+<span class="nc" id="L46">            pstmt.setString(7, dossier.getImage());</span>
+<span class="nc" id="L47">            pstmt.setInt(8, dossier.getPatient().getId());</span>
+<span class="nc" id="L48">            pstmt.setInt(9, dossier.getMedecin().getId());</span>
+            
+<span class="nc" id="L50">            int affectedRows = pstmt.executeUpdate();</span>
+            
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            if (affectedRows &gt; 0) {</span>
+<span class="nc" id="L53">                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">                    if (generatedKeys.next()) {</span>
+<span class="nc" id="L55">                        dossier.setId(generatedKeys.getInt(1));</span>
+                    }
+                }
+<span class="nc" id="L58">                return true;</span>
+            }
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L61">            System.err.println(&quot;Erreur lors de l'ajout d'un dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L62">            e.printStackTrace();</span>
+<span class="nc" id="L63">        }</span>
+        
+<span class="nc" id="L65">        return false;</span>
+    }
+    
+    /**
+     * Update an existing medical record in the database
+     * @param dossier the medical record to update
+     * @return true if successful, false otherwise
+     */
+    public boolean modifierDossier(DossierMedicale dossier) {
+<span class="nc" id="L74">        String sql = &quot;UPDATE dossier_medicale SET date_de_creation = ?, historique_des_maladies = ?, &quot; +</span>
+                &quot;operations_passees = ?, consultations_passees = ?, statut_dossier = ?, &quot; +
+                &quot;notes = ?, image = ?, patient_id = ?, medecin_id = ? WHERE id = ?&quot;;
+                
+<span class="nc" id="L78">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L79">            pstmt.setTimestamp(1, Timestamp.valueOf(dossier.getDateDeCreation()));</span>
+<span class="nc" id="L80">            pstmt.setString(2, dossier.getHistoriqueDesMaladies());</span>
+<span class="nc" id="L81">            pstmt.setString(3, dossier.getOperationsPassees());</span>
+<span class="nc" id="L82">            pstmt.setString(4, dossier.getConsultationsPassees());</span>
+<span class="nc" id="L83">            pstmt.setString(5, dossier.getStatutDossier());</span>
+<span class="nc" id="L84">            pstmt.setString(6, dossier.getNotes());</span>
+<span class="nc" id="L85">            pstmt.setString(7, dossier.getImage());</span>
+<span class="nc" id="L86">            pstmt.setInt(8, dossier.getPatient().getId());</span>
+<span class="nc" id="L87">            pstmt.setInt(9, dossier.getMedecin().getId());</span>
+<span class="nc" id="L88">            pstmt.setInt(10, dossier.getId());</span>
+            
+<span class="nc" id="L90">            int affectedRows = pstmt.executeUpdate();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            return affectedRows &gt; 0;</span>
+<span class="nc" id="L92">        } catch (SQLException e) {</span>
+<span class="nc" id="L93">            System.err.println(&quot;Erreur lors de la modification d'un dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L94">            e.printStackTrace();</span>
+        }
+        
+<span class="nc" id="L97">        return false;</span>
+    }
+    
+    /**
+     * Delete a medical record from the database
+     * @param dossierId the ID of the medical record to delete
+     * @return true if successful, false otherwise
+     */
+    public boolean supprimerDossier(int dossierId) {
+<span class="nc" id="L106">        String sql = &quot;DELETE FROM dossier_medicale WHERE id = ?&quot;;</span>
+        
+<span class="nc" id="L108">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L109">            pstmt.setInt(1, dossierId);</span>
+            
+<span class="nc" id="L111">            int affectedRows = pstmt.executeUpdate();</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            return affectedRows &gt; 0;</span>
+<span class="nc" id="L113">        } catch (SQLException e) {</span>
+<span class="nc" id="L114">            System.err.println(&quot;Erreur lors de la suppression d'un dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L115">            e.printStackTrace();</span>
+        }
+        
+<span class="nc" id="L118">        return false;</span>
+    }
+    
+    /**
+     * Get a medical record by its ID, with optional loading of related séjours
+     * @param dossierId the ID of the medical record to retrieve
+     * @param loadSejours whether to load associated séjours
+     * @return the DossierMedicale object if found, null otherwise
+     */
+    public DossierMedicale recupererDossierParId(int dossierId, boolean loadSejours) {
+<span class="nc" id="L128">        String sql = &quot;SELECT * FROM dossier_medicale WHERE id = ?&quot;;</span>
+        
+<span class="nc" id="L130">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L131">            pstmt.setInt(1, dossierId);</span>
+            
+<span class="nc" id="L133">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L135">                    DossierMedicale dossier = extractDossierFromResultSet(rs);</span>
+                    
+                    // Load associated séjours only if requested and sejourService is initialized
+<span class="nc bnc" id="L138" title="All 4 branches missed.">                    if (loadSejours &amp;&amp; sejourService != null) {</span>
+<span class="nc" id="L139">                        dossier.setSejours(sejourService.recupererSejoursParDossier(dossierId));</span>
+                    }
+                    
+<span class="nc" id="L142">                    return dossier;</span>
+                }
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L146">            System.err.println(&quot;Erreur lors de la récupération d'un dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L147">            e.printStackTrace();</span>
+<span class="nc" id="L148">        }</span>
+        
+<span class="nc" id="L150">        return null;</span>
+    }
+    
+    /**
+     * Get a medical record by its ID, including related séjours
+     * @param dossierId the ID of the medical record to retrieve
+     * @return the DossierMedicale object if found, null otherwise
+     */
+    public DossierMedicale recupererDossierParId(int dossierId) {
+<span class="nc" id="L159">        return recupererDossierParId(dossierId, true);</span>
+    }
+    
+    /**
+     * Get all medical records from the database, with optional loading of related séjours
+     * @param loadSejours whether to load associated séjours
+     * @return a list of all medical records
+     */
+    public List&lt;DossierMedicale&gt; recupererTousDossiers(boolean loadSejours) {
+<span class="nc" id="L168">        List&lt;DossierMedicale&gt; dossiers = new ArrayList&lt;DossierMedicale&gt;();</span>
+<span class="nc" id="L169">        String sql = &quot;SELECT * FROM dossier_medicale&quot;;</span>
+        
+<span class="nc" id="L171">        try (Statement stmt = connection.createStatement();</span>
+<span class="nc" id="L172">             ResultSet rs = stmt.executeQuery(sql)) {</span>
+            
+<span class="nc bnc" id="L174" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L175">                DossierMedicale dossier = extractDossierFromResultSet(rs);</span>
+<span class="nc" id="L176">                dossiers.add(dossier);</span>
+<span class="nc" id="L177">            }</span>
+            
+             // Load associated séjours for each dossier if requested and sejourService is initialized
+<span class="nc bnc" id="L180" title="All 4 branches missed.">            if (loadSejours &amp;&amp; sejourService != null) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">                for (DossierMedicale dossier : dossiers) {</span>
+<span class="nc" id="L182">                    dossier.setSejours(sejourService.recupererSejoursParDossier(dossier.getId()));</span>
+<span class="nc" id="L183">                }</span>
+            }
+<span class="nc" id="L185">        } catch (SQLException e) {</span>
+<span class="nc" id="L186">            System.err.println(&quot;Erreur lors de la récupération des dossiers médicaux: &quot; + e.getMessage());</span>
+<span class="nc" id="L187">            e.printStackTrace();</span>
+<span class="nc" id="L188">        }</span>
+        
+<span class="nc" id="L190">        return dossiers;</span>
+    }
+    
+    /**
+     * Get all medical records from the database, including related séjours
+     * @return a list of all medical records
+     */
+    public List&lt;DossierMedicale&gt; recupererTousDossiers() {
+<span class="nc" id="L198">        return recupererTousDossiers(true);</span>
+    }
+    
+    /**
+     * Get all medical records for a specific patient, with optional loading of related séjours
+     * @param patientId the ID of the patient
+     * @param loadSejours whether to load associated séjours
+     * @return a list of medical records for the patient
+     */
+    public List&lt;DossierMedicale&gt; recupererDossiersParPatient(int patientId, boolean loadSejours) {
+<span class="nc" id="L208">        List&lt;DossierMedicale&gt; dossiers = new ArrayList&lt;DossierMedicale&gt;();</span>
+<span class="nc" id="L209">        String sql = &quot;SELECT * FROM dossier_medicale WHERE patient_id = ?&quot;;</span>
+        
+<span class="nc" id="L211">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L212">            pstmt.setInt(1, patientId);</span>
+            
+<span class="nc" id="L214">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L216">                    DossierMedicale dossier = extractDossierFromResultSet(rs);</span>
+<span class="nc" id="L217">                    dossiers.add(dossier);</span>
+<span class="nc" id="L218">                }</span>
+                
+                // Load associated séjours for each dossier if requested and sejourService is initialized
+<span class="nc bnc" id="L221" title="All 4 branches missed.">                if (loadSejours &amp;&amp; sejourService != null) {</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                    for (DossierMedicale dossier : dossiers) {</span>
+<span class="nc" id="L223">                        dossier.setSejours(sejourService.recupererSejoursParDossier(dossier.getId()));</span>
+<span class="nc" id="L224">                    }</span>
+                }
+            }
+<span class="nc" id="L227">        } catch (SQLException e) {</span>
+<span class="nc" id="L228">            System.err.println(&quot;Erreur lors de la récupération des dossiers médicaux par patient: &quot; + e.getMessage());</span>
+<span class="nc" id="L229">            e.printStackTrace();</span>
+<span class="nc" id="L230">        }</span>
+        
+<span class="nc" id="L232">        return dossiers;</span>
+    }
+    
+    /**
+     * Get all medical records for a specific patient, including related séjours
+     * @param patientId the ID of the patient
+     * @return a list of medical records for the patient
+     */
+    public List&lt;DossierMedicale&gt; recupererDossiersParPatient(int patientId) {
+<span class="nc" id="L241">        return recupererDossiersParPatient(patientId, true);</span>
+    }
+    
+    /**
+     * Get all medical records for a specific doctor, with optional loading of related séjours
+     * @param medecinId the ID of the doctor
+     * @param loadSejours whether to load associated séjours
+     * @return a list of medical records assigned to the doctor
+     */
+    public List&lt;DossierMedicale&gt; recupererDossiersParMedecin(int medecinId, boolean loadSejours) {
+<span class="nc" id="L251">        List&lt;DossierMedicale&gt; dossiers = new ArrayList&lt;DossierMedicale&gt;();</span>
+<span class="nc" id="L252">        String sql = &quot;SELECT * FROM dossier_medicale WHERE medecin_id = ?&quot;;</span>
+        
+<span class="nc" id="L254">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L255">            pstmt.setInt(1, medecinId);</span>
+            
+<span class="nc" id="L257">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L259">                    DossierMedicale dossier = extractDossierFromResultSet(rs);</span>
+<span class="nc" id="L260">                    dossiers.add(dossier);</span>
+<span class="nc" id="L261">                }</span>
+                
+                // Load associated séjours for each dossier if requested and sejourService is initialized
+<span class="nc bnc" id="L264" title="All 4 branches missed.">                if (loadSejours &amp;&amp; sejourService != null) {</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">                    for (DossierMedicale dossier : dossiers) {</span>
+<span class="nc" id="L266">                        dossier.setSejours(sejourService.recupererSejoursParDossier(dossier.getId()));</span>
+<span class="nc" id="L267">                    }</span>
+                }
+            }
+<span class="nc" id="L270">        } catch (SQLException e) {</span>
+<span class="nc" id="L271">            System.err.println(&quot;Erreur lors de la récupération des dossiers médicaux par médecin: &quot; + e.getMessage());</span>
+<span class="nc" id="L272">            e.printStackTrace();</span>
+<span class="nc" id="L273">        }</span>
+        
+<span class="nc" id="L275">        return dossiers;</span>
+    }
+    
+    /**
+     * Get all medical records for a specific doctor, including related séjours
+     * @param medecinId the ID of the doctor
+     * @return a list of medical records assigned to the doctor
+     */
+    public List&lt;DossierMedicale&gt; recupererDossiersParMedecin(int medecinId) {
+<span class="nc" id="L284">        return recupererDossiersParMedecin(medecinId, true);</span>
+    }
+    
+    /**
+     * Get all medical records with a specific status, with optional loading of related séjours
+     * @param statut the status to filter by
+     * @param loadSejours whether to load associated séjours
+     * @return a list of medical records with the specified status
+     */
+    public List&lt;DossierMedicale&gt; recupererDossiersParStatut(String statut, boolean loadSejours) {
+<span class="nc" id="L294">        List&lt;DossierMedicale&gt; dossiers = new ArrayList&lt;DossierMedicale&gt;();</span>
+<span class="nc" id="L295">        String sql = &quot;SELECT * FROM dossier_medicale WHERE statut_dossier = ?&quot;;</span>
+        
+<span class="nc" id="L297">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="nc" id="L298">            pstmt.setString(1, statut);</span>
+            
+<span class="nc" id="L300">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L302">                    DossierMedicale dossier = extractDossierFromResultSet(rs);</span>
+<span class="nc" id="L303">                    dossiers.add(dossier);</span>
+<span class="nc" id="L304">                }</span>
+                
+                // Load associated séjours for each dossier if requested and sejourService is initialized
+<span class="nc bnc" id="L307" title="All 4 branches missed.">                if (loadSejours &amp;&amp; sejourService != null) {</span>
+<span class="nc bnc" id="L308" title="All 2 branches missed.">                    for (DossierMedicale dossier : dossiers) {</span>
+<span class="nc" id="L309">                        dossier.setSejours(sejourService.recupererSejoursParDossier(dossier.getId()));</span>
+<span class="nc" id="L310">                    }</span>
+                }
+            }
+<span class="nc" id="L313">        } catch (SQLException e) {</span>
+<span class="nc" id="L314">            System.err.println(&quot;Erreur lors de la récupération des dossiers médicaux par statut: &quot; + e.getMessage());</span>
+<span class="nc" id="L315">            e.printStackTrace();</span>
+<span class="nc" id="L316">        }</span>
+        
+<span class="nc" id="L318">        return dossiers;</span>
+    }
+    
+    /**
+     * Get all medical records with a specific status, including related séjours
+     * @param statut the status to filter by
+     * @return a list of medical records with the specified status
+     */
+    public List&lt;DossierMedicale&gt; recupererDossiersParStatut(String statut) {
+<span class="nc" id="L327">        return recupererDossiersParStatut(statut, true);</span>
+    }
+    
+    /**
+     * Helper method to extract a DossierMedicale object from a ResultSet
+     * @param rs the ResultSet containing dossier data
+     * @return a DossierMedicale object populated with data from the ResultSet
+     * @throws SQLException if there is an error accessing the ResultSet
+     */
+    private DossierMedicale extractDossierFromResultSet(ResultSet rs) throws SQLException {
+<span class="nc" id="L337">        DossierMedicale dossier = new DossierMedicale();</span>
+<span class="nc" id="L338">        dossier.setId(rs.getInt(&quot;id&quot;));</span>
+        
+<span class="nc" id="L340">        Timestamp dateCreation = rs.getTimestamp(&quot;date_de_creation&quot;);</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">        if (dateCreation != null) {</span>
+<span class="nc" id="L342">            dossier.setDateDeCreation(dateCreation.toLocalDateTime());</span>
+        } else {
+<span class="nc" id="L344">            dossier.setDateDeCreation(LocalDateTime.now());</span>
+        }
+        
+<span class="nc" id="L347">        dossier.setHistoriqueDesMaladies(rs.getString(&quot;historique_des_maladies&quot;));</span>
+<span class="nc" id="L348">        dossier.setOperationsPassees(rs.getString(&quot;operations_passees&quot;));</span>
+<span class="nc" id="L349">        dossier.setConsultationsPassees(rs.getString(&quot;consultations_passees&quot;));</span>
+<span class="nc" id="L350">        dossier.setStatutDossier(rs.getString(&quot;statut_dossier&quot;));</span>
+<span class="nc" id="L351">        dossier.setNotes(rs.getString(&quot;notes&quot;));</span>
+<span class="nc" id="L352">        dossier.setImage(rs.getString(&quot;image&quot;));</span>
+        
+        // Load related patient and doctor
+<span class="nc" id="L355">        int patientId = rs.getInt(&quot;patient_id&quot;);</span>
+<span class="nc" id="L356">        int medecinId = rs.getInt(&quot;medecin_id&quot;);</span>
+        
+<span class="nc" id="L358">        User patient = userService.recupererUserParId(patientId);</span>
+<span class="nc" id="L359">        User medecin = userService.recupererUserParId(medecinId);</span>
+        
+<span class="nc" id="L361">        dossier.setPatient(patient);</span>
+<span class="nc" id="L362">        dossier.setMedecin(medecin);</span>
+        
+<span class="nc" id="L364">        return dossier;</span>
+    }
+    
+    /**
+     * Get statistics on medical records
+     * @return a map containing various statistics
+     */
+    public java.util.Map&lt;String, Object&gt; getStatistiques() {
+<span class="nc" id="L372">        java.util.Map&lt;String, Object&gt; stats = new java.util.HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L373">        System.out.println(&quot;DossierMedicaleService.getStatistiques() - Starting to fetch statistics&quot;);</span>
+        
+        // Count total dossiers - Make sure we're counting only valid records
+<span class="nc" id="L376">        String sqlTotal = &quot;SELECT COUNT(*) FROM dossier_medicale WHERE id IS NOT NULL&quot;;</span>
+<span class="nc" id="L377">        System.out.println(&quot;SQL Query for total dossiers: &quot; + sqlTotal);</span>
+
+        // Count dossiers by status - Use COALESCE to handle NULL values
+<span class="nc" id="L380">        String sqlByStatus = &quot;SELECT COALESCE(statut_dossier, 'Non défini') as statut, COUNT(*) as count &quot; +</span>
+                            &quot;FROM dossier_medicale &quot; +
+                            &quot;GROUP BY COALESCE(statut_dossier, 'Non défini')&quot;;
+<span class="nc" id="L383">        System.out.println(&quot;SQL Query for dossiers by status: &quot; + sqlByStatus);</span>
+
+                            // Count dossiers created per month in current year - Handle NULL dates
+<span class="nc" id="L386">        String sqlByMonth = &quot;SELECT MONTH(COALESCE(date_de_creation, CURRENT_DATE())) as month, COUNT(*) as count &quot; +</span>
+                         &quot;FROM dossier_medicale &quot; +
+                         &quot;WHERE YEAR(COALESCE(date_de_creation, CURRENT_DATE())) = YEAR(CURRENT_DATE()) &quot; +
+                         &quot;GROUP BY MONTH(COALESCE(date_de_creation, CURRENT_DATE())) &quot; +
+                         &quot;ORDER BY month&quot;;
+<span class="nc" id="L391">        System.out.println(&quot;SQL Query for dossiers by month: &quot; + sqlByMonth);</span>
+        
+        // Get count of dossiers per medecin - Include INNER JOIN to ensure only valid medecins
+<span class="nc" id="L394">        String sqlByMedecin = &quot;SELECT m.id, m.nom, m.prenom, COUNT(d.id) as count &quot; +</span>
+                           &quot;FROM dossier_medicale d &quot; +
+                           &quot;INNER JOIN user m ON d.medecin_id = m.id &quot; +
+                           &quot;WHERE m.id IS NOT NULL &quot; +
+                           &quot;GROUP BY m.id, m.nom, m.prenom &quot; +
+                           &quot;ORDER BY count DESC&quot;;
+<span class="nc" id="L400">        System.out.println(&quot;SQL Query for dossiers by medecin: &quot; + sqlByMedecin);</span>
+
+<span class="nc" id="L402">        try (Statement stmt = connection.createStatement()) {</span>
+            // Get total count
+<span class="nc" id="L404">            try (ResultSet rs = stmt.executeQuery(sqlTotal)) {</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L406">                    int total = rs.getInt(1);</span>
+<span class="nc" id="L407">                    stats.put(&quot;totalDossiers&quot;, total);</span>
+<span class="nc" id="L408">                    System.out.println(&quot;Found &quot; + total + &quot; total dossiers&quot;);</span>
+                }
+<span class="nc" id="L410">            } catch (SQLException e) {</span>
+<span class="nc" id="L411">                System.err.println(&quot;Error executing total dossiers query: &quot; + e.getMessage());</span>
+<span class="nc" id="L412">                e.printStackTrace();</span>
+<span class="nc" id="L413">            }</span>
+            
+            // Get counts by status
+<span class="nc" id="L416">            java.util.Map&lt;String, Integer&gt; statsByStatus = new java.util.HashMap&lt;String, Integer&gt;();</span>
+<span class="nc" id="L417">            try (ResultSet rs = stmt.executeQuery(sqlByStatus)) {</span>
+<span class="nc bnc" id="L418" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L419">                    String status = rs.getString(&quot;statut&quot;);</span>
+<span class="nc" id="L420">                    int count = rs.getInt(&quot;count&quot;);</span>
+<span class="nc" id="L421">                    statsByStatus.put(status, count);</span>
+<span class="nc" id="L422">                    System.out.println(&quot;Found &quot; + count + &quot; dossiers with status: &quot; + status);</span>
+<span class="nc" id="L423">                }</span>
+<span class="nc" id="L424">            } catch (SQLException e) {</span>
+<span class="nc" id="L425">                System.err.println(&quot;Error executing dossiers by status query: &quot; + e.getMessage());</span>
+<span class="nc" id="L426">                e.printStackTrace();</span>
+<span class="nc" id="L427">            }</span>
+<span class="nc" id="L428">            stats.put(&quot;dossiersByStatus&quot;, (Object) statsByStatus);</span>
+            
+            // Get counts by month
+<span class="nc" id="L431">            java.util.Map&lt;Integer, Integer&gt; statsByMonth = new java.util.HashMap&lt;Integer, Integer&gt;();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">            for (int i = 1; i &lt;= 12; i++) {</span>
+<span class="nc" id="L433">                statsByMonth.put(i, 0); // Initialize all months with 0</span>
+            }
+<span class="nc" id="L435">            try (ResultSet rs = stmt.executeQuery(sqlByMonth)) {</span>
+<span class="nc bnc" id="L436" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L437">                    int month = rs.getInt(&quot;month&quot;);</span>
+<span class="nc" id="L438">                    int count = rs.getInt(&quot;count&quot;);</span>
+<span class="nc" id="L439">                    statsByMonth.put(month, count);</span>
+<span class="nc" id="L440">                    System.out.println(&quot;Found &quot; + count + &quot; dossiers for month: &quot; + month);</span>
+<span class="nc" id="L441">                }</span>
+<span class="nc" id="L442">            } catch (SQLException e) {</span>
+<span class="nc" id="L443">                System.err.println(&quot;Error executing dossiers by month query: &quot; + e.getMessage());</span>
+<span class="nc" id="L444">                e.printStackTrace();</span>
+<span class="nc" id="L445">            }</span>
+<span class="nc" id="L446">            stats.put(&quot;dossiersByMonth&quot;, (Object) statsByMonth);</span>
+            
+            // Get count by medecin
+<span class="nc" id="L449">            List&lt;java.util.Map&lt;String, Object&gt;&gt; statsByMedecin = new ArrayList&lt;java.util.Map&lt;String, Object&gt;&gt;();</span>
+<span class="nc" id="L450">            try (ResultSet rs = stmt.executeQuery(sqlByMedecin)) {</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L452">                    java.util.Map&lt;String, Object&gt; medecinStat = new java.util.HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L453">                    int id = rs.getInt(&quot;id&quot;);</span>
+<span class="nc" id="L454">                    String nom = rs.getString(&quot;nom&quot;);</span>
+<span class="nc" id="L455">                    String prenom = rs.getString(&quot;prenom&quot;);</span>
+<span class="nc" id="L456">                    int count = rs.getInt(&quot;count&quot;);</span>
+                    
+<span class="nc" id="L458">                    medecinStat.put(&quot;id&quot;, id);</span>
+<span class="nc" id="L459">                    medecinStat.put(&quot;nom&quot;, nom);</span>
+<span class="nc" id="L460">                    medecinStat.put(&quot;prenom&quot;, prenom);</span>
+<span class="nc" id="L461">                    medecinStat.put(&quot;count&quot;, count);</span>
+<span class="nc" id="L462">                    statsByMedecin.add(medecinStat);</span>
+                    
+<span class="nc" id="L464">                    System.out.println(&quot;Found &quot; + count + &quot; dossiers for medecin: &quot; + prenom + &quot; &quot; + nom);</span>
+<span class="nc" id="L465">                }</span>
+<span class="nc" id="L466">            } catch (SQLException e) {</span>
+<span class="nc" id="L467">                System.err.println(&quot;Error executing dossiers by medecin query: &quot; + e.getMessage());</span>
+<span class="nc" id="L468">                e.printStackTrace();</span>
+<span class="nc" id="L469">            }</span>
+<span class="nc" id="L470">            stats.put(&quot;dossiersByMedecin&quot;, (Object) statsByMedecin);</span>
+            
+<span class="nc" id="L472">            System.out.println(&quot;DossierMedicaleService.getStatistiques() completed successfully&quot;);</span>
+<span class="nc" id="L473">        } catch (SQLException e) {</span>
+<span class="nc" id="L474">            System.err.println(&quot;Error in DossierMedicaleService.getStatistiques(): &quot; + e.getMessage());</span>
+<span class="nc" id="L475">            e.printStackTrace();</span>
+<span class="nc" id="L476">        }</span>
+        
+<span class="nc" id="L478">        return stats;</span>
+    }    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

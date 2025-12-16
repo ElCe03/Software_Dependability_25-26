@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Pharmacien.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">Pharmacien.java</span></div><h1>Pharmacien.java</h1><pre class="source lang-java linenums">package entite;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+import java.util.List;
+@Entity
+@DiscriminatorValue(&quot;PARMACIEN&quot;)
+public class Pharmacien extends Users {
+
+    /*@ spec_public nullable @*/
+    private String telephone;
+
+    /*@ 
+      @ ensures roles != null &amp;&amp; roles.isEmpty();
+      @ ensures telephone == null;
+      @*/
+    public Pharmacien() {
+<span class="nc" id="L18">        super();</span>
+<span class="nc" id="L19">    }</span>
+
+    /*@ 
+      @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);
+      @ 
+      @ ensures this.id == id;
+      @ ensures this.email == email;
+      @ ensures this.telephone == telephone;
+      @ 
+      @ ensures (roles != null) ==&gt; this.roles == roles;
+      @ ensures (roles == null) ==&gt; (this.roles != null &amp;&amp; this.roles.isEmpty());
+      @*/
+    public Pharmacien(int id, String email, String password, List&lt;String&gt; roles,String type,
+                      String nom, String prenom, String telephone) {
+<span class="nc" id="L33">        super(id, email, password, roles, nom, prenom, type);</span>
+<span class="nc" id="L34">        this.telephone = telephone;</span>
+<span class="nc" id="L35">    }</span>
+
+    /*@ pure @*/
+    public String getTelephone() {
+<span class="nc" id="L39">        return telephone;</span>
+    }
+
+    /*@ assignable this.telephone; @*/
+    public void setTelephone(String telephone) {
+<span class="nc" id="L44">        this.telephone = telephone;</span>
+<span class="nc" id="L45">    }</span>
+
+
+    @Override
+    public String toString() {
+<span class="nc" id="L50">        return &quot;Pharmacien{&quot; +</span>
+<span class="nc" id="L51">                &quot;id=&quot; + getId() +</span>
+<span class="nc" id="L52">                &quot;, email='&quot; + getEmail() + '\'' +</span>
+<span class="nc" id="L53">                &quot;, nom='&quot; + getNom() + '\'' +</span>
+<span class="nc" id="L54">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
+<span class="nc" id="L55">                &quot;, roles=&quot; + getRoles() +</span>
+                &quot;, telephone='&quot; + telephone + '\'' +
+                '}';
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

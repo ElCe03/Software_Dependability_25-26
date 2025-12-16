@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PatientDashboardControllerE.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">PatientDashboardControllerE.java</span></div><h1>PatientDashboardControllerE.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.google.zxing.WriterException;
+import entite.DossierMedicale;
+import entite.Sejour;
+import entite.User;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import org.json.JSONObject;
+import service.DossierMedicaleService;
+import service.SejourService;
+import service.UserService;
+import service.UserServiceE;
+import util.AlertUtil;
+import util.QRCodeGenerator;
+import util.SessionManager;
+
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+<span class="nc" id="L42">public class PatientDashboardControllerE implements Initializable {</span>
+    
+    // Dashboard elements
+    @FXML
+    private Label lblPatientName;
+    
+    @FXML
+    private Label lblWelcome;
+    
+    @FXML
+    private Label lblDossierCount;
+    
+    @FXML
+    private Label lblSejourCount;
+    
+    @FXML
+    private TableView&lt;Sejour&gt; recentSejoursTable;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colRecentDateEntree;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colRecentDateSortie;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colRecentTypeSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colRecentFraisSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colRecentStatutPaiement;
+    
+    // Dossier medical elements
+    @FXML
+    private ScrollPane dossierContent;
+    
+    @FXML
+    private Label lblDossierId;
+    
+    @FXML
+    private Label lblDossierDateCreation;
+    
+    @FXML
+    private Label lblDossierMedecin;
+    
+    @FXML
+    private Label lblDossierStatut;
+    
+    @FXML
+    private Label lblHistoriqueMaladies;
+    
+    @FXML
+    private Label lblOperationsPassees;
+    
+    @FXML
+    private Label lblConsultationsPassees;
+    
+    @FXML
+    private Label lblNotes;
+    
+    // Séjours elements
+    @FXML
+    private VBox sejoursContent;
+    
+    @FXML
+    private TableView&lt;Sejour&gt; allSejoursTable;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colAllDateEntree;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colAllDateSortie;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colAllTypeSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colAllFraisSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colAllMoyenPaiement;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colAllStatutPaiement;
+    
+    @FXML
+    private VBox dashboardContent;
+    
+    @FXML
+    private TabPane tabPane;
+    
+    @FXML
+    private Button btnVoirDetailSejour;
+    
+    // Add QR code elements
+    @FXML
+    private ImageView qrCodeImageView;
+    
+    @FXML
+    private VBox qrCodeContainer;
+    
+    // Services
+    private DossierMedicaleService dossierService;
+    private SejourService sejourService;
+    private UserServiceE userServiceE;
+    
+    // Data
+    private User currentUser;
+    private DossierMedicale patientDossier;
+    private ObservableList&lt;Sejour&gt; recentSejours;
+    private ObservableList&lt;Sejour&gt; allSejours;
+    
+<span class="nc" id="L155">    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+<span class="nc" id="L156">    private static final Logger logger = Logger.getLogger(PatientDashboardControllerE.class.getName());</span>
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Initialize services
+<span class="nc" id="L161">        dossierService = new DossierMedicaleService();</span>
+<span class="nc" id="L162">        sejourService = new SejourService();</span>
+<span class="nc" id="L163">        userServiceE = new UserServiceE();</span>
+        
+        // Set circular references
+<span class="nc" id="L166">        dossierService.setSejourService(sejourService);</span>
+<span class="nc" id="L167">        sejourService.setDossierService(dossierService);</span>
+        
+        // Initialize lists
+<span class="nc" id="L170">        recentSejours = FXCollections.observableArrayList();</span>
+<span class="nc" id="L171">        allSejours = FXCollections.observableArrayList();</span>
+        
+        // Setup table columns for recent sejours
+<span class="nc" id="L174">        setupRecentSejoursTable();</span>
+        
+        // Setup table columns for all sejours
+<span class="nc" id="L177">        setupAllSejoursTable();</span>
+        
+        // Get current user from session
+<span class="nc" id="L180">        currentUser = SessionManager.getCurrentUser();</span>
+        
+        // Check if user is logged in
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (currentUser != null) {</span>
+            // Verify the user exists in the database
+<span class="nc" id="L185">            User dbUser = userServiceE.recupererUserParId(currentUser.getId());</span>
+            
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (dbUser == null) {</span>
+                // For testing/development purposes, try to load a valid patient from the database
+<span class="nc" id="L189">                logger.warning(&quot;User ID &quot; + currentUser.getId() + &quot; not found in database. Attempting to load a valid patient user.&quot;);</span>
+                
+                // Try to find a valid patient user
+<span class="nc" id="L192">                List&lt;User&gt; patients = userServiceE.recupererUsersParRole(&quot;patient&quot;);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                if (!patients.isEmpty()) {</span>
+<span class="nc" id="L194">                    currentUser = patients.get(0);</span>
+<span class="nc" id="L195">                    logger.info(&quot;Loaded alternative patient user: ID=&quot; + currentUser.getId() + </span>
+<span class="nc" id="L196">                              &quot;, Name=&quot; + currentUser.getPrenom() + &quot; &quot; + currentUser.getNom());</span>
+                    
+                    // Update session
+<span class="nc" id="L199">                    SessionManager.setCurrentUser(currentUser);</span>
+<span class="nc" id="L200">                    loadUserData();</span>
+                } else {
+<span class="nc" id="L202">                    logger.severe(&quot;No patient users found in the database&quot;);</span>
+<span class="nc" id="L203">                    AlertUtil.showError(null, &quot;Erreur de Connexion&quot;, </span>
+                            &quot;Aucun utilisateur de type patient n'est disponible dans la base de données.&quot;);
+                }
+<span class="nc" id="L206">            } else {</span>
+                // Use the user from the database
+<span class="nc" id="L208">                currentUser = dbUser;</span>
+<span class="nc" id="L209">                loadUserData();</span>
+            }
+<span class="nc" id="L211">        } else {</span>
+<span class="nc" id="L212">            logger.warning(&quot;No user is currently logged in&quot;);</span>
+<span class="nc" id="L213">            AlertUtil.showError(null, &quot;Erreur d'authentification&quot;, &quot;Aucun utilisateur n'est connecté.&quot;);</span>
+            // Here you could redirect to login
+        }
+        
+        // Tab pane listeners for content switching
+<span class="nc" id="L218">        tabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
+<span class="nc" id="L219">            int index = newValue.intValue();</span>
+<span class="nc" id="L220">            updateVisibleContent(index);</span>
+<span class="nc" id="L221">        });</span>
+        
+        // Set initial content visibility (Dashboard)
+<span class="nc" id="L224">        updateVisibleContent(0);</span>
+        
+        // Setup button disability for séjours details
+<span class="nc" id="L227">        btnVoirDetailSejour.setDisable(true);</span>
+<span class="nc" id="L228">        allSejoursTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -&gt; {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">            btnVoirDetailSejour.setDisable(newSelection == null);</span>
+<span class="nc" id="L230">        });</span>
+        
+<span class="nc" id="L232">        recentSejoursTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -&gt; {</span>
+<span class="nc bnc" id="L233" title="All 4 branches missed.">            if (newSelection != null &amp;&amp; dashboardContent.isVisible()) {</span>
+<span class="nc" id="L234">                btnVoirDetailSejour.setDisable(false);</span>
+            }
+<span class="nc" id="L236">        });</span>
+<span class="nc" id="L237">    }</span>
+    
+    private void loadUserData() {
+        // Update UI with user info
+<span class="nc" id="L241">        lblPatientName.setText(currentUser.getPrenom() + &quot; &quot; + currentUser.getNom());</span>
+<span class="nc" id="L242">        lblWelcome.setText(&quot;Heureux de vous revoir, &quot; + currentUser.getPrenom() + &quot;!&quot;);</span>
+        
+        // Load patient's medical record
+<span class="nc" id="L245">        loadPatientDossier();</span>
+        
+        // Load patient's séjours
+<span class="nc" id="L248">        loadPatientSejours();</span>
+<span class="nc" id="L249">    }</span>
+    
+    /**
+     * Load patient's medical record
+     */
+    private void loadPatientDossier() {
+        try {
+<span class="nc" id="L256">            logger.info(&quot;Loading medical records for patient ID: &quot; + currentUser.getId());</span>
+            
+            // Verify that the user exists in the database
+<span class="nc" id="L259">            User dbUser = userServiceE.recupererUserParId(currentUser.getId());</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            if (dbUser == null) {</span>
+<span class="nc" id="L261">                logger.severe(&quot;Failed to load dossier: User with ID &quot; + currentUser.getId() + &quot; does not exist in the database&quot;);</span>
+<span class="nc" id="L262">                AlertUtil.showError(null, &quot;Erreur de Chargement&quot;, </span>
+                        &quot;Impossible de charger le dossier médical. L'utilisateur n'existe pas dans la base de données.&quot;);
+<span class="nc" id="L264">                return;</span>
+            }
+            
+            // Update current user with database info to ensure consistency
+<span class="nc" id="L268">            currentUser = dbUser;</span>
+            
+            // Ensure the current user has patient role or type
+<span class="nc bnc" id="L271" title="All 4 branches missed.">            if (!currentUser.isPatient() &amp;&amp; !&quot;patient&quot;.equalsIgnoreCase(currentUser.getType())) {</span>
+<span class="nc" id="L272">                logger.warning(&quot;Current user is not a patient. Type: &quot; + currentUser.getType() + &quot;, Roles: &quot; + currentUser.getRoles());</span>
+<span class="nc" id="L273">                AlertUtil.showWarning(null, &quot;Attention&quot;, </span>
+                        &quot;Votre compte n'est pas configuré comme un compte patient. Veuillez contacter l'administration.&quot;);
+<span class="nc" id="L275">                return;</span>
+            }
+            
+            // Get patient's dossiers - this will fetch all medical records where patient_id equals current user id
+<span class="nc" id="L279">            List&lt;DossierMedicale&gt; dossiers = dossierService.recupererDossiersParPatient(currentUser.getId());</span>
+            
+<span class="nc bnc" id="L281" title="All 4 branches missed.">            if (dossiers != null &amp;&amp; !dossiers.isEmpty()) {</span>
+<span class="nc" id="L282">                logger.info(&quot;Found &quot; + dossiers.size() + &quot; medical records for patient ID: &quot; + currentUser.getId());</span>
+                
+                // A patient should typically have one dossier, but we'll take the most recent one if there are multiple
+<span class="nc" id="L285">                patientDossier = dossiers.stream()</span>
+<span class="nc" id="L286">                        .max(Comparator.comparing(DossierMedicale::getDateDeCreation))</span>
+<span class="nc" id="L287">                        .orElse(null);</span>
+                
+<span class="nc bnc" id="L289" title="All 2 branches missed.">                if (patientDossier != null) {</span>
+                    // Log more detailed information for debugging
+<span class="nc" id="L291">                    logger.info(&quot;Selected dossier ID: &quot; + patientDossier.getId() + </span>
+<span class="nc" id="L292">                               &quot;, Created: &quot; + patientDossier.getDateDeCreation() + </span>
+<span class="nc" id="L293">                               &quot;, Status: &quot; + patientDossier.getStatutDossier());</span>
+                    
+                    // Make sure patient object is set in the dossier
+<span class="nc bnc" id="L296" title="All 2 branches missed.">                    if (patientDossier.getPatient() == null) {</span>
+<span class="nc" id="L297">                        patientDossier.setPatient(currentUser);</span>
+                    }
+                    
+                    // Make sure medecin object is loaded if not already present
+<span class="nc bnc" id="L301" title="All 4 branches missed.">                    if (patientDossier.getMedecin() == null &amp;&amp; patientDossier.getMedecinId() &gt; 0) {</span>
+<span class="nc" id="L302">                        User medecin = userServiceE.recupererUserParId(patientDossier.getMedecinId());</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">                        if (medecin != null) {</span>
+<span class="nc" id="L304">                            patientDossier.setMedecin(medecin);</span>
+<span class="nc" id="L305">                            logger.info(&quot;Loaded doctor: &quot; + medecin.getPrenom() + &quot; &quot; + medecin.getNom() + </span>
+<span class="nc" id="L306">                                      &quot;, Specialite: &quot; + medecin.getSpecialite());</span>
+                        } else {
+<span class="nc" id="L308">                            logger.warning(&quot;Failed to load doctor with ID: &quot; + patientDossier.getMedecinId());</span>
+                        }
+                    }
+                    
+                    // Update dashboard counts
+<span class="nc" id="L313">                    lblDossierCount.setText(&quot;1&quot;);</span>
+                    
+                    // Update dossier details in the UI
+<span class="nc" id="L316">                    updateDossierDetails();</span>
+                    
+                    // Load associated stays
+<span class="nc" id="L319">                    loadPatientSejours();</span>
+                } else {
+<span class="nc" id="L321">                    logger.warning(&quot;Failed to select a dossier from &quot; + dossiers.size() + &quot; records&quot;);</span>
+<span class="nc" id="L322">                    createNewDossierForPatient();</span>
+                }
+            } else {
+<span class="nc" id="L325">                logger.info(&quot;No medical records found for patient ID: &quot; + currentUser.getId() + &quot;, creating new one&quot;);</span>
+<span class="nc" id="L326">                createNewDossierForPatient();</span>
+            }
+<span class="nc" id="L328">        } catch (Exception e) {</span>
+<span class="nc" id="L329">            logger.log(Level.SEVERE, &quot;Error loading patient dossier&quot;, e);</span>
+<span class="nc" id="L330">            AlertUtil.showError(null, &quot;Erreur&quot;, </span>
+<span class="nc" id="L331">                    &quot;Une erreur est survenue lors du chargement de votre dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L332">        }</span>
+<span class="nc" id="L333">    }</span>
+    
+    /**
+     * Creates a new medical record for the current patient and saves it to the database
+     */
+    private void createNewDossierForPatient() {
+        try {
+<span class="nc" id="L340">            logger.info(&quot;Creating new medical record for patient ID: &quot; + currentUser.getId());</span>
+            
+            // First, verify that the user exists in the database
+<span class="nc" id="L343">            User dbUser = userServiceE.recupererUserParId(currentUser.getId());</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">            if (dbUser == null) {</span>
+<span class="nc" id="L345">                logger.severe(&quot;Failed to create dossier: User with ID &quot; + currentUser.getId() + &quot; does not exist in the database&quot;);</span>
+<span class="nc" id="L346">                AlertUtil.showError(null, &quot;Erreur de Création&quot;, </span>
+                        &quot;Impossible de créer un dossier médical. L'utilisateur n'existe pas dans la base de données.&quot;);
+<span class="nc" id="L348">                return;</span>
+            }
+            
+            // If the user isn't a patient, we can't create a dossier
+<span class="nc bnc" id="L352" title="All 4 branches missed.">            if (!dbUser.isPatient() &amp;&amp; !&quot;patient&quot;.equalsIgnoreCase(dbUser.getType())) {</span>
+<span class="nc" id="L353">                logger.warning(&quot;Failed to create dossier: User with ID &quot; + dbUser.getId() + &quot; is not a patient (Type: &quot; + dbUser.getType() + &quot;)&quot;);</span>
+<span class="nc" id="L354">                AlertUtil.showWarning(null, &quot;Erreur de Création&quot;, </span>
+                        &quot;Impossible de créer un dossier médical. L'utilisateur n'est pas un patient.&quot;);
+<span class="nc" id="L356">                return;</span>
+            }
+            
+            // Create a new dossier for the patient
+<span class="nc" id="L360">            DossierMedicale newDossier = new DossierMedicale();</span>
+<span class="nc" id="L361">            newDossier.setPatient(dbUser); // Use the database user to ensure it exists</span>
+<span class="nc" id="L362">            newDossier.setDateDeCreation(LocalDateTime.now());</span>
+<span class="nc" id="L363">            newDossier.setStatutDossier(&quot;Actif&quot;);</span>
+            
+            // Find a doctor to assign (any doctor will do for now)
+<span class="nc" id="L366">            List&lt;User&gt; doctors = userServiceE.recupererUsersParRole(&quot;medecin&quot;);</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">            if (!doctors.isEmpty()) {</span>
+<span class="nc" id="L368">                newDossier.setMedecin(doctors.get(0));</span>
+            } else {
+                // If no doctor is found, handle the situation - we can't create a dossier without a doctor
+<span class="nc" id="L371">                logger.warning(&quot;No doctors found in the database, cannot create medical record&quot;);</span>
+<span class="nc" id="L372">                AlertUtil.showWarning(null, &quot;Erreur de Création&quot;, </span>
+                        &quot;Impossible de créer un dossier médical. Aucun médecin n'est disponible dans le système.&quot;);
+<span class="nc" id="L374">                return;</span>
+            }
+            
+            // Set default values for text fields
+<span class="nc" id="L378">            newDossier.setHistoriqueDesMaladies(&quot;Aucun historique médical enregistré&quot;);</span>
+<span class="nc" id="L379">            newDossier.setOperationsPassees(&quot;Aucune opération enregistrée&quot;);</span>
+<span class="nc" id="L380">            newDossier.setConsultationsPassees(&quot;Aucune consultation enregistrée&quot;);</span>
+<span class="nc" id="L381">            newDossier.setNotes(&quot;Dossier créé automatiquement le &quot; + </span>
+<span class="nc" id="L382">                    LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy à HH:mm&quot;)));</span>
+            
+            // Save the new dossier to the database
+<span class="nc" id="L385">            boolean success = dossierService.ajouterDossier(newDossier);</span>
+            
+<span class="nc bnc" id="L387" title="All 2 branches missed.">            if (success) {</span>
+<span class="nc" id="L388">                logger.info(&quot;Successfully created new dossier with ID: &quot; + newDossier.getId());</span>
+                
+                // Set the newly created dossier as the current one
+<span class="nc" id="L391">                patientDossier = newDossier;</span>
+                
+                // Update dashboard counts
+<span class="nc" id="L394">                lblDossierCount.setText(&quot;1&quot;);</span>
+                
+                // Update dossier details in the UI
+<span class="nc" id="L397">                updateDossierDetails();</span>
+                
+                // Show a success message
+<span class="nc" id="L400">                AlertUtil.showInformation(null, &quot;Dossier Médical Créé&quot;, </span>
+                        &quot;Un nouveau dossier médical a été créé pour vous. Veuillez contacter l'administration pour plus de détails.&quot;);
+            } else {
+<span class="nc" id="L403">                logger.warning(&quot;Failed to create new dossier for patient ID: &quot; + currentUser.getId());</span>
+<span class="nc" id="L404">                AlertUtil.showWarning(null, &quot;Erreur de Création&quot;, </span>
+                        &quot;Impossible de créer un nouveau dossier médical. Veuillez contacter l'administration.&quot;);
+            }
+<span class="nc" id="L407">        } catch (Exception e) {</span>
+<span class="nc" id="L408">            logger.log(Level.SEVERE, &quot;Error creating new dossier&quot;, e);</span>
+<span class="nc" id="L409">            AlertUtil.showError(null, &quot;Erreur&quot;, </span>
+<span class="nc" id="L410">                    &quot;Une erreur est survenue lors de la création d'un nouveau dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L411">        }</span>
+<span class="nc" id="L412">    }</span>
+    
+    /**
+     * Update the UI with medical record details
+     */
+    private void updateDossierDetails() {
+<span class="nc bnc" id="L418" title="All 2 branches missed.">        if (patientDossier == null) {</span>
+<span class="nc" id="L419">            logger.warning(&quot;Trying to display null dossier&quot;);</span>
+            
+            // Hide QR Code container when no dossier is available
+<span class="nc bnc" id="L422" title="All 2 branches missed.">            if (qrCodeContainer != null) {</span>
+<span class="nc" id="L423">                qrCodeContainer.setVisible(false);</span>
+<span class="nc" id="L424">                qrCodeContainer.setManaged(false);</span>
+            }
+            
+            // Handle the case where there is no dossier yet
+<span class="nc" id="L428">            VBox noDossierBox = new VBox();</span>
+<span class="nc" id="L429">            noDossierBox.setSpacing(20);</span>
+<span class="nc" id="L430">            noDossierBox.setAlignment(javafx.geometry.Pos.CENTER);</span>
+<span class="nc" id="L431">            noDossierBox.setPadding(new javafx.geometry.Insets(30));</span>
+<span class="nc" id="L432">            noDossierBox.setStyle(&quot;-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 3);&quot;);</span>
+            
+<span class="nc" id="L434">            Label titleLabel = new Label(&quot;Aucun dossier médical disponible&quot;);</span>
+<span class="nc" id="L435">            titleLabel.setStyle(&quot;-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #f44336; -fx-font-family: 'Segoe UI';&quot;);</span>
+            
+<span class="nc" id="L437">            de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView icon = new de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView();</span>
+<span class="nc" id="L438">            icon.setGlyphName(&quot;EXCLAMATION_TRIANGLE&quot;);</span>
+<span class="nc" id="L439">            icon.setSize(&quot;48&quot;);</span>
+<span class="nc" id="L440">            icon.setGlyphStyle(&quot;-fx-fill: #f44336;&quot;);</span>
+            
+<span class="nc" id="L442">            Button createButton = new Button(&quot;Créer un nouveau dossier&quot;);</span>
+<span class="nc" id="L443">            createButton.setStyle(&quot;-fx-background-color: #2196f3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-background-radius: 5;&quot;);</span>
+<span class="nc" id="L444">            createButton.setOnAction(e -&gt; createNewDossierForPatient());</span>
+            
+<span class="nc" id="L446">            noDossierBox.getChildren().addAll(icon, titleLabel, createButton);</span>
+            
+<span class="nc" id="L448">            dossierContent.setContent(noDossierBox);</span>
+<span class="nc" id="L449">            return;</span>
+        }
+        
+        // Patient has a dossier, show its details
+        // (existing code to display dossier details)
+<span class="nc" id="L454">        lblDossierId.setText(String.valueOf(patientDossier.getId()));</span>
+        
+<span class="nc" id="L456">        LocalDateTime dateCreation = patientDossier.getDateDeCreation();</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">        lblDossierDateCreation.setText(dateCreation != null ? dateCreation.format(DATE_FORMATTER) : &quot;Non spécifiée&quot;);</span>
+        
+<span class="nc" id="L459">            User medecin = patientDossier.getMedecin();</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">        lblDossierMedecin.setText(medecin != null ? medecin.getPrenom() + &quot; &quot; + medecin.getNom() : &quot;Non assigné&quot;);</span>
+        
+<span class="nc" id="L462">        String statut = patientDossier.getStatutDossier();</span>
+<span class="nc bnc" id="L463" title="All 2 branches missed.">        lblDossierStatut.setText(statut != null ? statut : &quot;Non spécifié&quot;);</span>
+        
+<span class="nc bnc" id="L465" title="All 2 branches missed.">        lblHistoriqueMaladies.setText(patientDossier.getHistoriqueDesMaladies() != null ? </span>
+<span class="nc" id="L466">                patientDossier.getHistoriqueDesMaladies() : &quot;Aucun historique enregistré&quot;);</span>
+        
+<span class="nc bnc" id="L468" title="All 2 branches missed.">        lblOperationsPassees.setText(patientDossier.getOperationsPassees() != null ? </span>
+<span class="nc" id="L469">                patientDossier.getOperationsPassees() : &quot;Aucune opération enregistrée&quot;);</span>
+        
+<span class="nc bnc" id="L471" title="All 2 branches missed.">        lblConsultationsPassees.setText(patientDossier.getConsultationsPassees() != null ? </span>
+<span class="nc" id="L472">                patientDossier.getConsultationsPassees() : &quot;Aucune consultation enregistrée&quot;);</span>
+        
+<span class="nc bnc" id="L474" title="All 2 branches missed.">        lblNotes.setText(patientDossier.getNotes() != null ? </span>
+<span class="nc" id="L475">                patientDossier.getNotes() : &quot;Aucune note enregistrée&quot;);</span>
+                
+        // Generate and display QR Code
+<span class="nc" id="L478">        generateQRCode();</span>
+<span class="nc" id="L479">        }</span>
+        
+    /**
+     * Generate a QR code for the patient's dossier medical
+     */
+    private void generateQRCode() {
+<span class="nc bnc" id="L485" title="All 4 branches missed.">        if (patientDossier == null || qrCodeImageView == null) {</span>
+<span class="nc" id="L486">            return;</span>
+        }
+        
+        try {
+            // Make QR code container visible
+<span class="nc bnc" id="L491" title="All 2 branches missed.">            if (qrCodeContainer != null) {</span>
+<span class="nc" id="L492">                qrCodeContainer.setVisible(true);</span>
+<span class="nc" id="L493">                qrCodeContainer.setManaged(true);</span>
+            }
+            
+            // Create JSON object with essential medical record data
+<span class="nc" id="L497">            JSONObject dossierData = new JSONObject();</span>
+<span class="nc" id="L498">            dossierData.put(&quot;id&quot;, patientDossier.getId());</span>
+<span class="nc" id="L499">            dossierData.put(&quot;patient&quot;, currentUser.getPrenom() + &quot; &quot; + currentUser.getNom());</span>
+<span class="nc" id="L500">            dossierData.put(&quot;dateCreation&quot;, patientDossier.getDateDeCreation().format(DATE_FORMATTER));</span>
+            
+<span class="nc" id="L502">            User medecin = patientDossier.getMedecin();</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">            if (medecin != null) {</span>
+<span class="nc" id="L504">                dossierData.put(&quot;medecin&quot;, medecin.getPrenom() + &quot; &quot; + medecin.getNom());</span>
+            }
+            
+<span class="nc" id="L507">            dossierData.put(&quot;statutDossier&quot;, patientDossier.getStatutDossier());</span>
+            
+            // Generate QR code from JSON data
+<span class="nc" id="L510">            qrCodeImageView.setImage(QRCodeGenerator.generateQRCodeImage(dossierData.toString(), 250, 250));</span>
+            
+<span class="nc" id="L512">        } catch (WriterException | IOException e) {</span>
+<span class="nc" id="L513">            logger.log(Level.SEVERE, &quot;Error generating QR code&quot;, e);</span>
+<span class="nc" id="L514">            qrCodeImageView.setImage(null);</span>
+            
+            // Show error label
+<span class="nc" id="L517">            Label errorLabel = new Label(&quot;Erreur lors de la génération du code QR&quot;);</span>
+<span class="nc" id="L518">            errorLabel.setStyle(&quot;-fx-text-fill: #f44336; -fx-font-size: 12px;&quot;);</span>
+            
+            // Replace QR code with error message if possible
+<span class="nc bnc" id="L521" title="All 2 branches missed.">            if (qrCodeContainer != null) {</span>
+<span class="nc" id="L522">                qrCodeContainer.getChildren().clear();</span>
+<span class="nc" id="L523">                qrCodeContainer.getChildren().add(errorLabel);</span>
+            }
+<span class="nc" id="L525">        }</span>
+<span class="nc" id="L526">    }</span>
+    
+    /**
+     * Load patient's séjours (stays) from the database
+     */
+    private void loadPatientSejours() {
+<span class="nc bnc" id="L532" title="All 2 branches missed.">        if (patientDossier == null) {</span>
+<span class="nc" id="L533">            logger.warning(&quot;Cannot load séjours: patientDossier is null&quot;);</span>
+<span class="nc" id="L534">            lblSejourCount.setText(&quot;0&quot;);</span>
+<span class="nc" id="L535">            recentSejours.clear();</span>
+<span class="nc" id="L536">            allSejours.clear();</span>
+<span class="nc" id="L537">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L541">            logger.info(&quot;Loading séjours for dossier ID: &quot; + patientDossier.getId());</span>
+            
+            // Load séjours from database
+<span class="nc" id="L544">            List&lt;Sejour&gt; sejours = sejourService.recupererSejoursParDossier(patientDossier.getId());</span>
+            
+<span class="nc bnc" id="L546" title="All 4 branches missed.">            if (sejours != null &amp;&amp; !sejours.isEmpty()) {</span>
+<span class="nc" id="L547">                logger.info(&quot;Found &quot; + sejours.size() + &quot; séjours for dossier ID: &quot; + patientDossier.getId());</span>
+                
+                // Set the DossierMedicale reference in each Sejour for proper loading in detail view
+<span class="nc bnc" id="L550" title="All 2 branches missed.">                for (Sejour sejour : sejours) {</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">                    if (sejour.getDossierMedicale() == null) {</span>
+<span class="nc" id="L552">                        sejour.setDossierMedicale(patientDossier);</span>
+                    }
+                    
+                    // Log details for debugging
+<span class="nc" id="L556">                    logger.fine(&quot;Loaded séjour ID: &quot; + sejour.getId() + </span>
+<span class="nc" id="L557">                             &quot;, Type: &quot; + sejour.getTypeSejour() + </span>
+<span class="nc" id="L558">                             &quot;, Entry: &quot; + sejour.getDateEntree() + </span>
+<span class="nc" id="L559">                             &quot;, Exit: &quot; + sejour.getDateSortie() + </span>
+<span class="nc" id="L560">                             &quot;, Status: &quot; + sejour.getStatutPaiement());</span>
+<span class="nc" id="L561">                }</span>
+                
+                // Clear previous data
+<span class="nc" id="L564">                recentSejours.clear();</span>
+<span class="nc" id="L565">                allSejours.clear();</span>
+                
+                // Add all séjours to the allSejours list
+<span class="nc" id="L568">                allSejours.addAll(sejours);</span>
+                
+                // Take only the 5 most recent séjours for the recent list
+<span class="nc" id="L571">                List&lt;Sejour&gt; recentList = sejours.stream()</span>
+<span class="nc" id="L572">                        .sorted(Comparator.comparing(Sejour::getDateEntree).reversed())</span>
+<span class="nc" id="L573">                        .limit(5)</span>
+<span class="nc" id="L574">                        .collect(Collectors.toList());</span>
+                
+<span class="nc bnc" id="L576" title="All 2 branches missed.">                if (!recentList.isEmpty()) {</span>
+<span class="nc" id="L577">                    recentSejours.addAll(recentList);</span>
+<span class="nc" id="L578">                    logger.info(&quot;Added &quot; + recentList.size() + &quot; recent séjours to dashboard&quot;);</span>
+                } else {
+<span class="nc" id="L580">                    logger.info(&quot;No recent séjours to display on dashboard&quot;);</span>
+                }
+                
+                // Update the count label
+<span class="nc" id="L584">                lblSejourCount.setText(String.valueOf(sejours.size()));</span>
+<span class="nc" id="L585">            } else {</span>
+                // No séjours found
+<span class="nc" id="L587">                logger.info(&quot;No séjours found for dossier ID: &quot; + patientDossier.getId());</span>
+<span class="nc" id="L588">                lblSejourCount.setText(&quot;0&quot;);</span>
+<span class="nc" id="L589">                recentSejours.clear();</span>
+<span class="nc" id="L590">                allSejours.clear();</span>
+            }
+            
+            // Force refresh of table views
+<span class="nc" id="L594">            recentSejoursTable.refresh();</span>
+<span class="nc" id="L595">            allSejoursTable.refresh();</span>
+            
+<span class="nc" id="L597">        } catch (Exception e) {</span>
+<span class="nc" id="L598">            logger.log(Level.SEVERE, &quot;Error loading patient séjours&quot;, e);</span>
+<span class="nc" id="L599">            AlertUtil.showError(null, &quot;Erreur&quot;, </span>
+<span class="nc" id="L600">                    &quot;Une erreur est survenue lors du chargement de vos séjours: &quot; + e.getMessage());</span>
+            
+            // Clear tables on error
+<span class="nc" id="L603">            recentSejours.clear();</span>
+<span class="nc" id="L604">            allSejours.clear();</span>
+<span class="nc" id="L605">            lblSejourCount.setText(&quot;0&quot;);</span>
+<span class="nc" id="L606">        }</span>
+<span class="nc" id="L607">    }</span>
+    
+    private void setupRecentSejoursTable() {
+        // Setup column cell value factories with appropriate formatting
+<span class="nc" id="L611">        colRecentDateEntree.setCellValueFactory(param -&gt; {</span>
+<span class="nc bnc" id="L612" title="All 2 branches missed.">            if (param.getValue().getDateEntree() != null) {</span>
+<span class="nc" id="L613">                return new SimpleStringProperty(param.getValue().getDateEntree().format(DATE_FORMATTER));</span>
+            }
+<span class="nc" id="L615">            return new SimpleStringProperty(&quot;Non définie&quot;);</span>
+        });
+        
+<span class="nc" id="L618">        colRecentDateSortie.setCellValueFactory(param -&gt; {</span>
+<span class="nc bnc" id="L619" title="All 2 branches missed.">            if (param.getValue().getDateSortie() != null) {</span>
+<span class="nc" id="L620">                return new SimpleStringProperty(param.getValue().getDateSortie().format(DATE_FORMATTER));</span>
+            }
+<span class="nc" id="L622">            return new SimpleStringProperty(&quot;Non définie&quot;);</span>
+        });
+        
+<span class="nc" id="L625">        colRecentTypeSejour.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L626">            String typeSejour = param.getValue().getTypeSejour();</span>
+<span class="nc bnc" id="L627" title="All 2 branches missed.">            return new SimpleStringProperty(typeSejour != null ? typeSejour : &quot;&quot;);</span>
+        });
+        
+<span class="nc" id="L630">        colRecentFraisSejour.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L631">            Double frais = param.getValue().getFraisSejour();</span>
+<span class="nc bnc" id="L632" title="All 2 branches missed.">            if (frais != null) {</span>
+<span class="nc" id="L633">                return new SimpleStringProperty(String.format(&quot;%.2f €&quot;, frais));</span>
+            }
+<span class="nc" id="L635">            return new SimpleStringProperty(&quot;0.00 €&quot;);</span>
+        });
+        
+<span class="nc" id="L638">        colRecentStatutPaiement.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L639">            String statut = param.getValue().getStatutPaiement();</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">            return new SimpleStringProperty(statut != null ? statut : &quot;&quot;);</span>
+        });
+        
+        // Set custom cell factory for statut column to apply different colors
+<span class="nc" id="L644">        colRecentStatutPaiement.setCellFactory(column -&gt; new TableCell&lt;Sejour, String&gt;() {</span>
+            @Override
+            protected void updateItem(String item, boolean empty) {
+<span class="nc" id="L647">                super.updateItem(item, empty);</span>
+                
+<span class="nc bnc" id="L649" title="All 4 branches missed.">                if (item == null || empty) {</span>
+<span class="nc" id="L650">                    setText(null);</span>
+<span class="nc" id="L651">                    setStyle(&quot;&quot;);</span>
+                } else {
+<span class="nc" id="L653">                    setText(item);</span>
+                    
+                    // Set style based on payment status
+<span class="nc bnc" id="L656" title="All 2 branches missed.">                    if (item.equalsIgnoreCase(&quot;Payé&quot;)) {</span>
+<span class="nc" id="L657">                        setStyle(&quot;-fx-background-color: #d4edda; -fx-text-fill: #155724;&quot;);</span>
+<span class="nc bnc" id="L658" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;En attente&quot;)) {</span>
+<span class="nc" id="L659">                        setStyle(&quot;-fx-background-color: #fff3cd; -fx-text-fill: #856404;&quot;);</span>
+<span class="nc bnc" id="L660" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;Annulé&quot;)) {</span>
+<span class="nc" id="L661">                        setStyle(&quot;-fx-background-color: #f8d7da; -fx-text-fill: #721c24;&quot;);</span>
+<span class="nc bnc" id="L662" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;Partiel&quot;)) {</span>
+<span class="nc" id="L663">                        setStyle(&quot;-fx-background-color: #cce5ff; -fx-text-fill: #004085;&quot;);</span>
+<span class="nc bnc" id="L664" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;Remboursé&quot;)) {</span>
+<span class="nc" id="L665">                        setStyle(&quot;-fx-background-color: #e0cfef; -fx-text-fill: #4b2354;&quot;);</span>
+                    } else {
+<span class="nc" id="L667">                        setStyle(&quot;&quot;);</span>
+                    }
+                }
+<span class="nc" id="L670">            }</span>
+        });
+        
+        // Set the items
+<span class="nc" id="L674">        recentSejoursTable.setItems(recentSejours);</span>
+<span class="nc" id="L675">    }</span>
+    
+    private void setupAllSejoursTable() {
+        // Setup column cell value factories with appropriate formatting
+<span class="nc" id="L679">        colAllDateEntree.setCellValueFactory(param -&gt; {</span>
+<span class="nc bnc" id="L680" title="All 2 branches missed.">            if (param.getValue().getDateEntree() != null) {</span>
+<span class="nc" id="L681">                return new SimpleStringProperty(param.getValue().getDateEntree().format(DATE_FORMATTER));</span>
+            }
+<span class="nc" id="L683">            return new SimpleStringProperty(&quot;Non définie&quot;);</span>
+        });
+        
+<span class="nc" id="L686">        colAllDateSortie.setCellValueFactory(param -&gt; {</span>
+<span class="nc bnc" id="L687" title="All 2 branches missed.">            if (param.getValue().getDateSortie() != null) {</span>
+<span class="nc" id="L688">                return new SimpleStringProperty(param.getValue().getDateSortie().format(DATE_FORMATTER));</span>
+            }
+<span class="nc" id="L690">            return new SimpleStringProperty(&quot;Non définie&quot;);</span>
+        });
+        
+<span class="nc" id="L693">        colAllTypeSejour.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L694">            String typeSejour = param.getValue().getTypeSejour();</span>
+<span class="nc bnc" id="L695" title="All 2 branches missed.">            return new SimpleStringProperty(typeSejour != null ? typeSejour : &quot;&quot;);</span>
+        });
+        
+<span class="nc" id="L698">        colAllFraisSejour.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L699">            Double frais = param.getValue().getFraisSejour();</span>
+<span class="nc bnc" id="L700" title="All 2 branches missed.">            if (frais != null) {</span>
+<span class="nc" id="L701">                return new SimpleStringProperty(String.format(&quot;%.2f €&quot;, frais));</span>
+            }
+<span class="nc" id="L703">            return new SimpleStringProperty(&quot;0.00 €&quot;);</span>
+        });
+        
+<span class="nc" id="L706">        colAllMoyenPaiement.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L707">            String moyenPaiement = param.getValue().getMoyenPaiement();</span>
+<span class="nc bnc" id="L708" title="All 2 branches missed.">            return new SimpleStringProperty(moyenPaiement != null ? moyenPaiement : &quot;&quot;);</span>
+        });
+        
+<span class="nc" id="L711">        colAllStatutPaiement.setCellValueFactory(param -&gt; {</span>
+<span class="nc" id="L712">            String statut = param.getValue().getStatutPaiement();</span>
+<span class="nc bnc" id="L713" title="All 2 branches missed.">            return new SimpleStringProperty(statut != null ? statut : &quot;&quot;);</span>
+        });
+        
+        // Set custom cell factory for statut column to apply different colors
+<span class="nc" id="L717">        colAllStatutPaiement.setCellFactory(column -&gt; new TableCell&lt;Sejour, String&gt;() {</span>
+            @Override
+            protected void updateItem(String item, boolean empty) {
+<span class="nc" id="L720">                super.updateItem(item, empty);</span>
+                
+<span class="nc bnc" id="L722" title="All 4 branches missed.">                if (item == null || empty) {</span>
+<span class="nc" id="L723">                    setText(null);</span>
+<span class="nc" id="L724">                    setStyle(&quot;&quot;);</span>
+                } else {
+<span class="nc" id="L726">                    setText(item);</span>
+                    
+                    // Set style based on payment status
+<span class="nc bnc" id="L729" title="All 2 branches missed.">                    if (item.equalsIgnoreCase(&quot;Payé&quot;)) {</span>
+<span class="nc" id="L730">                        setStyle(&quot;-fx-background-color: #d4edda; -fx-text-fill: #155724;&quot;);</span>
+<span class="nc bnc" id="L731" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;En attente&quot;)) {</span>
+<span class="nc" id="L732">                        setStyle(&quot;-fx-background-color: #fff3cd; -fx-text-fill: #856404;&quot;);</span>
+<span class="nc bnc" id="L733" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;Annulé&quot;)) {</span>
+<span class="nc" id="L734">                        setStyle(&quot;-fx-background-color: #f8d7da; -fx-text-fill: #721c24;&quot;);</span>
+<span class="nc bnc" id="L735" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;Partiel&quot;)) {</span>
+<span class="nc" id="L736">                        setStyle(&quot;-fx-background-color: #cce5ff; -fx-text-fill: #004085;&quot;);</span>
+<span class="nc bnc" id="L737" title="All 2 branches missed.">                    } else if (item.equalsIgnoreCase(&quot;Remboursé&quot;)) {</span>
+<span class="nc" id="L738">                        setStyle(&quot;-fx-background-color: #e0cfef; -fx-text-fill: #4b2354;&quot;);</span>
+                    } else {
+<span class="nc" id="L740">                        setStyle(&quot;&quot;);</span>
+                    }
+                }
+<span class="nc" id="L743">            }</span>
+        });
+        
+        // Set the items
+<span class="nc" id="L747">        allSejoursTable.setItems(allSejours);</span>
+<span class="nc" id="L748">    }</span>
+    
+    private void updateVisibleContent(int tabIndex) {
+        // Hide all content first
+<span class="nc" id="L752">        dashboardContent.setVisible(false);</span>
+<span class="nc" id="L753">        dashboardContent.setManaged(false);</span>
+<span class="nc" id="L754">        dossierContent.setVisible(false);</span>
+<span class="nc" id="L755">        dossierContent.setManaged(false);</span>
+<span class="nc" id="L756">        sejoursContent.setVisible(false);</span>
+<span class="nc" id="L757">        sejoursContent.setManaged(false);</span>
+        
+        // Show selected content
+<span class="nc bnc" id="L760" title="All 4 branches missed.">        switch (tabIndex) {</span>
+            case 0: // Dashboard
+<span class="nc" id="L762">                dashboardContent.setVisible(true);</span>
+<span class="nc" id="L763">                dashboardContent.setManaged(true);</span>
+<span class="nc" id="L764">                break;</span>
+            case 1: // Dossier médical
+<span class="nc" id="L766">                dossierContent.setVisible(true);</span>
+<span class="nc" id="L767">                dossierContent.setManaged(true);</span>
+<span class="nc" id="L768">                break;</span>
+            case 2: // Séjours
+<span class="nc" id="L770">                sejoursContent.setVisible(true);</span>
+<span class="nc" id="L771">                sejoursContent.setManaged(true);</span>
+                break;
+        }
+<span class="nc" id="L774">    }</span>
+    
+    @FXML
+    private void handleDossierTabSelected(javafx.event.Event event) {
+<span class="nc bnc" id="L778" title="All 2 branches missed.">        if (patientDossier == null) {</span>
+            // If we're selecting the dossier tab but no dossier is loaded, try to load it
+<span class="nc" id="L780">            loadPatientDossier();</span>
+        }
+        
+<span class="nc" id="L783">        Tab tab = (Tab) event.getSource();</span>
+<span class="nc bnc" id="L784" title="All 2 branches missed.">        if (tab.isSelected()) {</span>
+<span class="nc" id="L785">            updateVisibleContent(1);</span>
+        }
+<span class="nc" id="L787">    }</span>
+    
+    @FXML
+    private void handleSejoursTabSelected(javafx.event.Event event) {
+<span class="nc bnc" id="L791" title="All 2 branches missed.">        if (allSejours.isEmpty()) {</span>
+            // If we're selecting the séjours tab but no séjours are loaded, try to load them
+<span class="nc" id="L793">            loadPatientSejours();</span>
+        }
+        
+<span class="nc" id="L796">        Tab tab = (Tab) event.getSource();</span>
+<span class="nc bnc" id="L797" title="All 2 branches missed.">        if (tab.isSelected()) {</span>
+<span class="nc" id="L798">            updateVisibleContent(2);</span>
+        }
+<span class="nc" id="L800">    }</span>
+    
+    @FXML
+    private void handleVoirDetailSejour(ActionEvent event) {
+<span class="nc" id="L804">        Sejour selectedSejour = null;</span>
+        
+        // Check which table is visible and get the selected sejour
+<span class="nc bnc" id="L807" title="All 2 branches missed.">        if (dashboardContent.isVisible()) {</span>
+<span class="nc" id="L808">            selectedSejour = recentSejoursTable.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L809" title="All 2 branches missed.">        } else if (sejoursContent.isVisible()) {</span>
+<span class="nc" id="L810">            selectedSejour = allSejoursTable.getSelectionModel().getSelectedItem();</span>
+        }
+        
+<span class="nc bnc" id="L813" title="All 2 branches missed.">        if (selectedSejour == null) {</span>
+<span class="nc" id="L814">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Veuillez sélectionner un séjour à visualiser.&quot;);
+<span class="nc" id="L816">            return;</span>
+        }
+        
+        try {
+            // Ensure DossierMedicale is set in the sejour if not already loaded
+<span class="nc bnc" id="L821" title="All 4 branches missed.">            if (selectedSejour.getDossierMedicale() == null &amp;&amp; patientDossier != null) {</span>
+<span class="nc" id="L822">                selectedSejour.setDossierMedicale(patientDossier);</span>
+            }
+            
+            // Load the full Sejour with all details if needed
+<span class="nc bnc" id="L826" title="All 4 branches missed.">            if (selectedSejour.getTypeSejour() == null || selectedSejour.getMoyenPaiement() == null) {</span>
+<span class="nc" id="L827">                Sejour fullSejour = sejourService.recupererSejourParId(selectedSejour.getId());</span>
+<span class="nc bnc" id="L828" title="All 2 branches missed.">                if (fullSejour != null) {</span>
+<span class="nc" id="L829">                    selectedSejour = fullSejour;</span>
+                    
+                    // Make sure DossierMedicale is set in case it wasn't loaded from database
+<span class="nc bnc" id="L832" title="All 4 branches missed.">                    if (fullSejour.getDossierMedicale() == null &amp;&amp; patientDossier != null) {</span>
+<span class="nc" id="L833">                        fullSejour.setDossierMedicale(patientDossier);</span>
+                    }
+                }
+            }
+            
+            // Load the sejour detail view
+<span class="nc" id="L839">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/sejour_detail_patient.fxml&quot;));</span>
+<span class="nc" id="L840">            Parent root = loader.load();</span>
+            
+            // Get the controller and set the sejour
+<span class="nc" id="L843">            SejourDetailPatientController controller = loader.getController();</span>
+<span class="nc" id="L844">            controller.setSejour(selectedSejour);</span>
+            
+            // Show the stage
+<span class="nc" id="L847">            Stage stage = new Stage();</span>
+<span class="nc" id="L848">            stage.setTitle(&quot;Détails du Séjour #&quot; + selectedSejour.getId());</span>
+<span class="nc" id="L849">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L850">            stage.initModality(Modality.WINDOW_MODAL);</span>
+<span class="nc" id="L851">            stage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
+<span class="nc" id="L852">            stage.show();</span>
+<span class="nc" id="L853">        } catch (Exception e) {</span>
+<span class="nc" id="L854">            logger.log(Level.SEVERE, &quot;Error opening sejour detail view&quot;, e);</span>
+<span class="nc" id="L855">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+<span class="nc" id="L856">                    &quot;Erreur&quot;, &quot;Impossible d'ouvrir la vue détaillée du séjour: &quot; + e.getMessage());</span>
+<span class="nc" id="L857">        }</span>
+<span class="nc" id="L858">    }</span>
+    
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        // Clear current session
+<span class="nc" id="L863">        SessionManager.logout();</span>
+
+        try {
+            // Load the front view instead of login
+<span class="nc" id="L867">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/front.fxml&quot;));</span>
+<span class="nc" id="L868">            Parent root = loader.load();</span>
+            
+            // Get the current stage
+<span class="nc" id="L871">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+            
+            // Set the new scene
+<span class="nc" id="L874">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L875">            stage.setTitle(&quot;Accueil&quot;);</span>
+<span class="nc" id="L876">            stage.show();</span>
+<span class="nc" id="L877">        } catch (IOException e) {</span>
+<span class="nc" id="L878">            logger.log(Level.SEVERE, &quot;Error navigating to front view&quot;, e);</span>
+<span class="nc" id="L879">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+<span class="nc" id="L880">                    &quot;Erreur&quot;, &quot;Impossible de retourner à l'accueil: &quot; + e.getMessage());</span>
+<span class="nc" id="L881">        }</span>
+<span class="nc" id="L882">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

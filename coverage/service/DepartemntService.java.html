@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DepartemntService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">DepartemntService.java</span></div><h1>DepartemntService.java</h1><pre class="source lang-java linenums">package service;
+
+import entite.departement;
+import util.DataSource;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="fc" id="L10">public class DepartemntService {</span>
+
+    public void addDepartement(departement d) {
+<span class="nc" id="L13">        String query = &quot;INSERT INTO departement (nom, adresse, image) VALUES (?, ?, ?)&quot;;</span>
+<span class="nc" id="L14">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L15">             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {</span>
+
+<span class="nc" id="L17">            ps.setString(1, d.getNom());</span>
+<span class="nc" id="L18">            ps.setString(2, d.getAdresse());</span>
+<span class="nc" id="L19">            ps.setString(3, d.getImage());</span>
+<span class="nc" id="L20">            ps.executeUpdate();</span>
+
+<span class="nc" id="L22">            try (ResultSet rs = ps.getGeneratedKeys()) {</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L24">                    d.setId(rs.getInt(1));</span>
+                }
+            }
+<span class="nc" id="L27">        } catch (SQLException ex) {</span>
+<span class="nc" id="L28">            System.err.println(&quot;Error adding departement: &quot; + ex.getMessage());</span>
+<span class="nc" id="L29">            ex.printStackTrace();</span>
+<span class="nc" id="L30">            throw new RuntimeException(&quot;Failed to add departement&quot;, ex);</span>
+<span class="nc" id="L31">        }</span>
+<span class="nc" id="L32">    }</span>
+
+    public List&lt;departement&gt; getAllDepartements() {
+<span class="nc" id="L35">        List&lt;departement&gt; list = new ArrayList&lt;departement&gt;();</span>
+<span class="nc" id="L36">        String query = &quot;SELECT d.*, COALESCE(COUNT(e.id), 0) as etage_count &quot; +</span>
+                &quot;FROM departement d &quot; +
+                &quot;LEFT JOIN etage e ON d.id = e.departement_id &quot; +
+                &quot;GROUP BY d.id, d.nom, d.adresse, d.image&quot;;
+
+<span class="nc" id="L41">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L42">             PreparedStatement ps = conn.prepareStatement(query);</span>
+<span class="nc" id="L43">             ResultSet rs = ps.executeQuery()) {</span>
+
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L46">                departement d = new departement(</span>
+<span class="nc" id="L47">                        rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L48">                        rs.getString(&quot;nom&quot;),</span>
+<span class="nc" id="L49">                        rs.getString(&quot;adresse&quot;),</span>
+<span class="nc" id="L50">                        rs.getString(&quot;image&quot;)</span>
+                );
+<span class="nc" id="L52">                int count = rs.getInt(&quot;etage_count&quot;);</span>
+<span class="nc" id="L53">                d.setNbr_etage(count);</span>
+<span class="nc" id="L54">                System.out.println(&quot;Departement &quot; + d.getNom() + &quot; (ID: &quot; + d.getId() + &quot;) has &quot; + count + &quot; etages&quot;);</span>
+<span class="nc" id="L55">                list.add(d);</span>
+<span class="nc" id="L56">            }</span>
+<span class="nc" id="L57">        } catch (SQLException ex) {</span>
+<span class="nc" id="L58">            System.err.println(&quot;Error fetching departements: &quot; + ex.getMessage());</span>
+<span class="nc" id="L59">            ex.printStackTrace();</span>
+<span class="nc" id="L60">            throw new RuntimeException(&quot;Failed to fetch departements&quot;, ex);</span>
+<span class="nc" id="L61">        }</span>
+<span class="nc" id="L62">        return list;</span>
+    }
+
+    public void updateDepartement(departement d) {
+<span class="nc" id="L66">        String query = &quot;UPDATE departement SET nom = ?, adresse = ?, image = ? WHERE id = ?&quot;;</span>
+<span class="nc" id="L67">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L68">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+
+<span class="nc" id="L70">            ps.setString(1, d.getNom());</span>
+<span class="nc" id="L71">            ps.setString(2, d.getAdresse());</span>
+<span class="nc" id="L72">            ps.setString(3, d.getImage());</span>
+<span class="nc" id="L73">            ps.setInt(4, d.getId());</span>
+<span class="nc" id="L74">            ps.executeUpdate();</span>
+<span class="nc" id="L75">        } catch (SQLException ex) {</span>
+<span class="nc" id="L76">            System.err.println(&quot;Error updating departement: &quot; + ex.getMessage());</span>
+<span class="nc" id="L77">            ex.printStackTrace();</span>
+<span class="nc" id="L78">            throw new RuntimeException(&quot;Failed to update departement&quot;, ex);</span>
+<span class="nc" id="L79">        }</span>
+<span class="nc" id="L80">    }</span>
+
+    public void deleteDepartement(departement d) {
+<span class="nc" id="L83">        deleteDepartement(d.getId()); // Delegate to the int version</span>
+<span class="nc" id="L84">    }</span>
+
+    public void deleteDepartement(int id) {
+<span class="nc" id="L87">        String query = &quot;DELETE FROM departement WHERE id = ?&quot;;</span>
+<span class="nc" id="L88">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L89">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+
+<span class="nc" id="L91">            ps.setInt(1, id);</span>
+<span class="nc" id="L92">            ps.executeUpdate();</span>
+<span class="nc" id="L93">        } catch (SQLException ex) {</span>
+<span class="nc" id="L94">            System.err.println(&quot;Error deleting departement: &quot; + ex.getMessage());</span>
+<span class="nc" id="L95">            ex.printStackTrace();</span>
+<span class="nc" id="L96">            throw new RuntimeException(&quot;Failed to delete departement&quot;, ex);</span>
+<span class="nc" id="L97">        }</span>
+<span class="nc" id="L98">    }</span>
+
+    public static departement getDepartementById(int departementId) {
+<span class="nc" id="L101">        String query = &quot;SELECT d.*, COALESCE(COUNT(e.id), 0) as etage_count &quot; +</span>
+                &quot;FROM departement d &quot; +
+                &quot;LEFT JOIN etage e ON d.id = e.departement_id &quot; +
+                &quot;WHERE d.id = ? &quot; +
+                &quot;GROUP BY d.id, d.nom, d.adresse, d.image&quot;;
+<span class="nc" id="L106">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L107">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="nc" id="L108">            ps.setInt(1, departementId);</span>
+<span class="nc" id="L109">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L111">                    departement d = new departement(</span>
+<span class="nc" id="L112">                            rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L113">                            rs.getString(&quot;nom&quot;),</span>
+<span class="nc" id="L114">                            rs.getString(&quot;adresse&quot;),</span>
+<span class="nc" id="L115">                            rs.getString(&quot;image&quot;)</span>
+                    );
+<span class="nc" id="L117">                    int count = rs.getInt(&quot;etage_count&quot;);</span>
+<span class="nc" id="L118">                    d.setNbr_etage(count);</span>
+<span class="nc" id="L119">                    System.out.println(&quot;Departement ID &quot; + departementId + &quot; has &quot; + count + &quot; etages&quot;);</span>
+<span class="nc" id="L120">                    return d;</span>
+                }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L123" title="All 4 branches missed.">        } catch (SQLException ex) {</span>
+<span class="nc" id="L124">            System.err.println(&quot;Error fetching departement by id: &quot; + ex.getMessage());</span>
+<span class="nc" id="L125">            ex.printStackTrace();</span>
+<span class="nc" id="L126">            throw new RuntimeException(&quot;Failed to fetch departement by id&quot;, ex);</span>
+<span class="nc" id="L127">        }</span>
+<span class="nc" id="L128">        return null;</span>
+    }
+
+    public List&lt;departement&gt; searchDepartements(String searchTerm) {
+<span class="nc" id="L132">        List&lt;departement&gt; results = new ArrayList&lt;departement&gt;();</span>
+<span class="nc" id="L133">        String query = &quot;SELECT d.*, COALESCE(COUNT(e.id), 0) as etage_count &quot; +</span>
+                &quot;FROM departement d &quot; +
+                &quot;LEFT JOIN etage e ON d.id = e.departement_id &quot; +
+                &quot;WHERE d.nom LIKE ? OR d.adresse LIKE ? OR d.image LIKE ? &quot; +
+                &quot;GROUP BY d.id, d.nom, d.adresse, d.image&quot;;
+
+<span class="nc" id="L139">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L140">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+
+<span class="nc" id="L142">            String like = &quot;%&quot; + searchTerm + &quot;%&quot;;</span>
+<span class="nc" id="L143">            ps.setString(1, like);</span>
+<span class="nc" id="L144">            ps.setString(2, like);</span>
+<span class="nc" id="L145">            ps.setString(3, like);</span>
+
+<span class="nc" id="L147">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L149">                    departement d = new departement(</span>
+<span class="nc" id="L150">                            rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L151">                            rs.getString(&quot;nom&quot;),</span>
+<span class="nc" id="L152">                            rs.getString(&quot;adresse&quot;),</span>
+<span class="nc" id="L153">                            rs.getString(&quot;image&quot;)</span>
+                    );
+<span class="nc" id="L155">                    int count = rs.getInt(&quot;etage_count&quot;);</span>
+<span class="nc" id="L156">                    d.setNbr_etage(count);</span>
+<span class="nc" id="L157">                    System.out.println(&quot;Search result: Departement &quot; + d.getNom() + &quot; (ID: &quot; + d.getId() + &quot;) has &quot; + count + &quot; etages&quot;);</span>
+<span class="nc" id="L158">                    results.add(d);</span>
+<span class="nc" id="L159">                }</span>
+            }
+<span class="nc" id="L161">        } catch (SQLException ex) {</span>
+<span class="nc" id="L162">            System.err.println(&quot;Error searching departements: &quot; + ex.getMessage());</span>
+<span class="nc" id="L163">            ex.printStackTrace();</span>
+<span class="nc" id="L164">            throw new RuntimeException(&quot;Failed to search departements&quot;, ex);</span>
+<span class="nc" id="L165">        }</span>
+<span class="nc" id="L166">        return results;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

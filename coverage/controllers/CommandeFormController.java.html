@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CommandeFormController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">CommandeFormController.java</span></div><h1>CommandeFormController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
+import entite.Commande;
+import entite.Medicament;
+import entite.MedicamentCommande;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.print.PrinterJob;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import service.CommandeService;
+import service.MedicamentService;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.time.LocalDate;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
+<span class="nc" id="L32">public class CommandeFormController implements Initializable {</span>
+
+    // FXML components unchanged
+    @FXML private DatePicker dateCommandePicker;
+    @FXML private ComboBox&lt;Medicament&gt; medicamentComboBox;
+    @FXML private Spinner&lt;Integer&gt; quantiteSpinner;
+    @FXML private ListView&lt;String&gt; medicamentListView;
+    @FXML private Label totalPrixLabel;
+    @FXML private Label dateError;
+    @FXML private Label medicamentError;
+    @FXML private Label quantiteError;
+
+    @FXML
+    private Button backButton;
+
+<span class="nc" id="L47">    private final CommandeService commandeService = new CommandeService();</span>
+<span class="nc" id="L48">    private final MedicamentService medicamentService = new MedicamentService();</span>
+<span class="nc" id="L49">    private final Commande currentCommande = new Commande();</span>
+
+    private static final String SUCCESS_URL = &quot;http://localhost:4242/success&quot;;
+    private static final String CANCEL_URL = &quot;http://localhost:4242/cancel&quot;;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+
+<span class="nc" id="L57">        Properties props = loadConfig();</span>
+<span class="nc" id="L58">        String stripeApiKey = props.getProperty(&quot;stripe.api.key&quot;);</span>
+
+<span class="nc bnc" id="L60" title="All 4 branches missed.">        if (stripeApiKey != null &amp;&amp; !stripeApiKey.isEmpty()) {</span>
+<span class="nc" id="L61">            configureStripe(stripeApiKey);</span>
+        } else {
+<span class="nc" id="L63">            System.err.println(&quot;Can't find stripe api key&quot;);</span>
+<span class="nc" id="L64">            showAlert(Alert.AlertType.ERROR, &quot;Error in payments.&quot;);</span>
+        }
+
+<span class="nc" id="L67">        medicamentComboBox.getItems().addAll(medicamentService.readAll());</span>
+
+<span class="nc" id="L69">        medicamentComboBox.setConverter(new StringConverter&lt;Medicament&gt;() {</span>
+            @Override
+            public String toString(Medicament medicament) {
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                return medicament != null ? medicament.getNom_medicament() : &quot;&quot;;</span>
+            }
+
+            @Override
+            public Medicament fromString(String string) {
+<span class="nc" id="L77">                return null;</span>
+            }
+        });
+
+<span class="nc" id="L81">        quantiteSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));</span>
+<span class="nc" id="L82">        quantiteSpinner.valueProperty().addListener((obs, oldVal, newVal) -&gt; updateTotalPrix());</span>
+<span class="nc" id="L83">        medicamentComboBox.valueProperty().addListener((obs, oldVal, newVal) -&gt; updateTotalPrix());</span>
+<span class="nc" id="L84">    }</span>
+
+
+    private static void configureStripe(String apiKey) {
+<span class="nc" id="L88">        Stripe.apiKey = apiKey;</span>
+<span class="nc" id="L89">    }</span>
+
+    private static Properties loadConfig() {
+<span class="nc" id="L92">        Properties props = new Properties();</span>
+<span class="nc" id="L93">        try (InputStream input = CommandeFormController.class.getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (input != null) {</span>
+<span class="nc" id="L95">                props.load(input);</span>
+            } else {
+<span class="nc" id="L97">                System.err.println(&quot;Impossibile trovare il file config.properties&quot;);</span>
+            }
+<span class="nc" id="L99">        } catch (IOException e) {</span>
+<span class="nc" id="L100">            System.err.println(&quot;Errore caricamento config: &quot; + e.getMessage());</span>
+<span class="nc" id="L101">        }</span>
+<span class="nc" id="L102">        return props;</span>
+    }
+    
+
+    @FXML
+    private void handleAddCommande() {
+<span class="nc" id="L108">        clearErrors();</span>
+<span class="nc" id="L109">        boolean isValid = true;</span>
+
+<span class="nc" id="L111">        LocalDate dateCommande = dateCommandePicker.getValue();</span>
+<span class="nc" id="L112">        Medicament selectedMedicament = medicamentComboBox.getValue();</span>
+<span class="nc" id="L113">        int quantite = quantiteSpinner.getValue();</span>
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (dateCommande == null) {</span>
+<span class="nc" id="L116">            dateError.setText(&quot;Date requise.&quot;);</span>
+<span class="nc" id="L117">            isValid = false;</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        } else if (dateCommande.isBefore(LocalDate.now())) {</span>
+<span class="nc" id="L119">            dateError.setText(&quot;La date ne peut pas être dans le passé.&quot;);</span>
+<span class="nc" id="L120">            isValid = false;</span>
+        }
+
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (selectedMedicament == null) {</span>
+<span class="nc" id="L124">            medicamentError.setText(&quot;Médicament requis.&quot;);</span>
+<span class="nc" id="L125">            isValid = false;</span>
+        }
+
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (quantite &lt;= 0) {</span>
+<span class="nc" id="L129">            quantiteError.setText(&quot;Quantité invalide.&quot;);</span>
+<span class="nc" id="L130">            isValid = false;</span>
+<span class="nc bnc" id="L131" title="All 4 branches missed.">        } else if (selectedMedicament != null &amp;&amp; quantite &gt; selectedMedicament.getQuantite_stock()) {</span>
+<span class="nc" id="L132">            quantiteError.setText(&quot;Quantité dépasse le stock disponible (&quot; + selectedMedicament.getQuantite_stock() + &quot;).&quot;);</span>
+<span class="nc" id="L133">            isValid = false;</span>
+        }
+
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (!isValid) return;</span>
+
+<span class="nc" id="L138">        currentCommande.setDate_commande(dateCommande);</span>
+<span class="nc" id="L139">        currentCommande.addMedicament(selectedMedicament, quantite);</span>
+<span class="nc" id="L140">        medicamentListView.getItems().add(</span>
+<span class="nc" id="L141">                selectedMedicament.getNom_medicament() + &quot; x&quot; + quantite + &quot; (&quot; +</span>
+<span class="nc" id="L142">                        selectedMedicament.getPrix_medicament() * quantite + &quot; DT)&quot;</span>
+        );
+<span class="nc" id="L144">        updateTotalPrix();</span>
+<span class="nc" id="L145">    }</span>
+
+    private void updateTotalPrix() {
+<span class="nc" id="L148">        double total = currentCommande.getMedicaments().stream()</span>
+<span class="nc" id="L149">                .mapToDouble(mc -&gt; mc.getMedicament().getPrix_medicament() * mc.getQuantite())</span>
+<span class="nc" id="L150">                .sum();</span>
+
+<span class="nc" id="L152">        currentCommande.setTotal_prix(total);</span>
+<span class="nc" id="L153">        totalPrixLabel.setText(String.format(&quot;%.2f DT&quot;, total));</span>
+<span class="nc" id="L154">    }</span>
+
+    @FXML
+    private void handleSaveCommande() {
+<span class="nc" id="L158">        handleAddCommande();</span>
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (currentCommande.getMedicaments().isEmpty()) {</span>
+<span class="nc" id="L161">            showAlert(Alert.AlertType.WARNING, &quot;Veuillez ajouter au moins un médicament.&quot;);</span>
+<span class="nc" id="L162">            return;</span>
+        }
+
+        try {
+<span class="nc" id="L166">            Session session = createStripeSession();</span>
+
+            // Enregistrer la session Stripe
+<span class="nc" id="L169">            currentCommande.setStripeSessionId(session.getId());</span>
+<span class="nc" id="L170">            currentCommande.setStatus(&quot;pending&quot;);</span>
+<span class="nc" id="L171">            commandeService.create(currentCommande);</span>
+
+<span class="nc" id="L173">            showStripePaymentPage(session.getUrl());</span>
+<span class="nc" id="L174">        } catch (StripeException e) {</span>
+<span class="nc" id="L175">            showAlert(Alert.AlertType.ERROR, &quot;Erreur de paiement: &quot; + e.getMessage());</span>
+<span class="nc" id="L176">        }</span>
+<span class="nc" id="L177">    }</span>
+
+    private Session createStripeSession() throws StripeException {
+<span class="nc" id="L180">        SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()</span>
+<span class="nc" id="L181">                .setMode(SessionCreateParams.Mode.PAYMENT)</span>
+<span class="nc" id="L182">                .setSuccessUrl(SUCCESS_URL)</span>
+<span class="nc" id="L183">                .setCancelUrl(CANCEL_URL);</span>
+
+<span class="nc" id="L185">        currentCommande.getMedicaments().forEach(mc -&gt; {</span>
+<span class="nc" id="L186">            paramsBuilder.addLineItem(</span>
+<span class="nc" id="L187">                    SessionCreateParams.LineItem.builder()</span>
+<span class="nc" id="L188">                            .setPriceData(</span>
+<span class="nc" id="L189">                                    SessionCreateParams.LineItem.PriceData.builder()</span>
+<span class="nc" id="L190">                                            .setCurrency(&quot;eur&quot;)</span>
+<span class="nc" id="L191">                                            .setUnitAmount((long) (mc.getMedicament().getPrix_medicament() * 100))</span>
+<span class="nc" id="L192">                                            .setProductData(</span>
+<span class="nc" id="L193">                                                    SessionCreateParams.LineItem.PriceData.ProductData.builder()</span>
+<span class="nc" id="L194">                                                            .setName(mc.getMedicament().getNom_medicament())</span>
+<span class="nc" id="L195">                                                            .build()</span>
+                                            )
+<span class="nc" id="L197">                                            .build()</span>
+                            )
+<span class="nc" id="L199">                            .setQuantity((long) mc.getQuantite())</span>
+<span class="nc" id="L200">                            .build()</span>
+            );
+<span class="nc" id="L202">        });</span>
+
+<span class="nc" id="L204">        return Session.create(paramsBuilder.build());</span>
+    }
+
+    private void showStripePaymentPage(String checkoutUrl) {
+<span class="nc" id="L208">        Stage stage = new Stage();</span>
+<span class="nc" id="L209">        WebView webView = new WebView();</span>
+<span class="nc" id="L210">        WebEngine webEngine = webView.getEngine();</span>
+
+<span class="nc" id="L212">        webEngine.locationProperty().addListener((obs, oldVal, newVal) -&gt; {</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            if (newVal != null) handlePaymentResult(newVal, stage);</span>
+<span class="nc" id="L214">        });</span>
+
+<span class="nc" id="L216">        webEngine.load(checkoutUrl);</span>
+<span class="nc" id="L217">        stage.setScene(new Scene(webView));</span>
+<span class="nc" id="L218">        stage.show();</span>
+<span class="nc" id="L219">    }</span>
+
+    private void handlePaymentResult(String url, Stage paymentStage) {
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (url.startsWith(SUCCESS_URL)) {</span>
+<span class="nc" id="L223">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L224">                paymentStage.close();</span>
+
+                // Mettre à jour le statut
+<span class="nc" id="L227">                currentCommande.setStatus(&quot;paid&quot;);</span>
+<span class="nc" id="L228">                commandeService.update(currentCommande);</span>
+
+<span class="nc" id="L230">                saveCommandeAndRedirect();</span>
+<span class="nc" id="L231">                generatePdf(currentCommande);</span>
+<span class="nc" id="L232">            });</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        } else if (url.startsWith(CANCEL_URL)) {</span>
+<span class="nc" id="L234">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L235">                paymentStage.close();</span>
+<span class="nc" id="L236">                showAlert(Alert.AlertType.INFORMATION, &quot;Paiement annulé&quot;);</span>
+<span class="nc" id="L237">            });</span>
+        }
+<span class="nc" id="L239">    }</span>
+
+    private void saveCommandeAndRedirect() {
+        try {
+<span class="nc" id="L243">            commandeService.create(currentCommande);</span>
+
+<span class="nc" id="L245">            currentCommande.getMedicaments().forEach(mc -&gt; {</span>
+<span class="nc" id="L246">                Medicament medicament = mc.getMedicament();</span>
+<span class="nc" id="L247">                medicament.setQuantite_stock(medicament.getQuantite_stock() - mc.getQuantite());</span>
+<span class="nc" id="L248">                medicamentService.update(medicament);</span>
+<span class="nc" id="L249">            });</span>
+
+<span class="nc" id="L251">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/commande_list.fxml&quot;));</span>
+<span class="nc" id="L252">            Parent root = loader.load();</span>
+<span class="nc" id="L253">            Stage currentStage = (Stage) totalPrixLabel.getScene().getWindow();</span>
+<span class="nc" id="L254">            currentStage.setScene(new Scene(root));</span>
+<span class="nc" id="L255">        } catch (IOException e) {</span>
+<span class="nc" id="L256">            showAlert(Alert.AlertType.ERROR, &quot;Erreur de redirection: &quot; + e.getMessage());</span>
+<span class="nc" id="L257">        }</span>
+<span class="nc" id="L258">    }</span>
+
+    private void generatePdf(Commande commande) {
+        try {
+<span class="nc" id="L262">            StringBuilder html = new StringBuilder();</span>
+<span class="nc" id="L263">            html.append(&quot;&lt;html&gt;&lt;head&gt;&lt;style&gt;&quot;)</span>
+<span class="nc" id="L264">                    .append(&quot;body { font-family: Arial, sans-serif; margin: 20px; }&quot;)</span>
+<span class="nc" id="L265">                    .append(&quot;.header { display: flex; align-items: center; margin-bottom: 20px; }&quot;)</span>
+<span class="nc" id="L266">                    .append(&quot;.logo { height: 80px; margin-right: 20px; }&quot;)</span>
+<span class="nc" id="L267">                    .append(&quot;.title { flex-grow: 1; }&quot;)</span>
+<span class="nc" id="L268">                    .append(&quot;h1 { margin: 0; color: #2c3e50; }&quot;)</span>
+<span class="nc" id="L269">                    .append(&quot;.date { color: #7f8c8d; font-size: 14px; }&quot;)</span>
+<span class="nc" id="L270">                    .append(&quot;table { width: 100%; border-collapse: collapse; margin-top: 20px; }&quot;)</span>
+<span class="nc" id="L271">                    .append(&quot;th { background-color: #3498db; color: white; text-align: left; padding: 10px; }&quot;)</span>
+<span class="nc" id="L272">                    .append(&quot;td { padding: 8px; border-bottom: 1px solid #ddd; }&quot;)</span>
+<span class="nc" id="L273">                    .append(&quot;tr:nth-child(even) { background-color: #f2f2f2; }&quot;)</span>
+<span class="nc" id="L274">                    .append(&quot;.footer { margin-top: 20px; text-align: right; font-size: 12px; color: #7f8c8d; }&quot;)</span>
+<span class="nc" id="L275">                    .append(&quot;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&quot;)</span>
+
+<span class="nc" id="L277">                    .append(&quot;&lt;div class='header'&gt;&quot;)</span>
+<span class="nc" id="L278">                    .append(&quot;&lt;img class='logo' src='&quot;).append(getClass().getResource(&quot;/img/logo.png&quot;)).append(&quot;'/&gt;&quot;)</span>
+<span class="nc" id="L279">                    .append(&quot;&lt;div class='title'&gt;&quot;)</span>
+<span class="nc" id="L280">                    .append(&quot;&lt;h1&gt;Facture Commande #&quot;).append(commande.getId()).append(&quot;&lt;/h1&gt;&quot;)</span>
+<span class="nc" id="L281">                    .append(&quot;&lt;div class='date'&gt;Date: &quot;).append(commande.getDate_commande()).append(&quot;&lt;/div&gt;&quot;)</span>
+<span class="nc" id="L282">                    .append(&quot;&lt;/div&gt;&lt;/div&gt;&quot;)</span>
+
+<span class="nc" id="L284">                    .append(&quot;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&quot;)</span>
+<span class="nc" id="L285">                    .append(&quot;&lt;th&gt;Médicament&lt;/th&gt;&lt;th&gt;Quantité&lt;/th&gt;&lt;th&gt;Prix Unitaire&lt;/th&gt;&lt;th&gt;Total&lt;/th&gt;&quot;)</span>
+<span class="nc" id="L286">                    .append(&quot;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&quot;);</span>
+
+<span class="nc bnc" id="L288" title="All 2 branches missed.">            for (MedicamentCommande mc : commande.getMedicaments()) {</span>
+<span class="nc" id="L289">                double total = mc.getQuantite() * mc.getMedicament().getPrix_medicament();</span>
+<span class="nc" id="L290">                html.append(&quot;&lt;tr&gt;&quot;)</span>
+<span class="nc" id="L291">                        .append(&quot;&lt;td&gt;&quot;).append(mc.getMedicament().getNom_medicament()).append(&quot;&lt;/td&gt;&quot;)</span>
+<span class="nc" id="L292">                        .append(&quot;&lt;td&gt;&quot;).append(mc.getQuantite()).append(&quot;&lt;/td&gt;&quot;)</span>
+<span class="nc" id="L293">                        .append(&quot;&lt;td&gt;&quot;).append(String.format(&quot;%.2f DT&quot;, mc.getMedicament().getPrix_medicament())).append(&quot;&lt;/td&gt;&quot;)</span>
+<span class="nc" id="L294">                        .append(&quot;&lt;td&gt;&quot;).append(String.format(&quot;%.2f DT&quot;, total)).append(&quot;&lt;/td&gt;&quot;)</span>
+<span class="nc" id="L295">                        .append(&quot;&lt;/tr&gt;&quot;);</span>
+<span class="nc" id="L296">            }</span>
+
+<span class="nc" id="L298">            html.append(&quot;&lt;/tbody&gt;&lt;/table&gt;&quot;)</span>
+<span class="nc" id="L299">                    .append(&quot;&lt;div class='footer'&gt;&quot;)</span>
+<span class="nc" id="L300">                    .append(&quot;Total: &quot;).append(String.format(&quot;%.2f DT&quot;, commande.getTotal_prix()))</span>
+<span class="nc" id="L301">                    .append(&quot;&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;&quot;);</span>
+
+            // Use WebView to render the HTML
+<span class="nc" id="L304">            WebView webView = new WebView();</span>
+<span class="nc" id="L305">            WebEngine webEngine = webView.getEngine();</span>
+<span class="nc" id="L306">            webEngine.loadContent(html.toString());</span>
+
+            // Print dialog and print
+<span class="nc" id="L309">            PrinterJob job = PrinterJob.createPrinterJob();</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">            if (job != null) {</span>
+<span class="nc" id="L311">                job.showPrintDialog(null);</span>
+<span class="nc" id="L312">                webEngine.print(job);</span>
+<span class="nc" id="L313">                job.endJob();</span>
+<span class="nc" id="L314">                showAlert(Alert.AlertType.INFORMATION, &quot;Facture exportée avec succès !&quot;);</span>
+            }
+
+<span class="nc" id="L317">        } catch (Exception e) {</span>
+<span class="nc" id="L318">            e.printStackTrace();</span>
+<span class="nc" id="L319">            showAlert(Alert.AlertType.ERROR, &quot;Erreur lors de l'export PDF : &quot; + e.getMessage());</span>
+<span class="nc" id="L320">        }</span>
+<span class="nc" id="L321">    }</span>
+
+
+    private void resetForm() {
+<span class="nc" id="L325">        dateCommandePicker.setValue(null);</span>
+<span class="nc" id="L326">        medicamentComboBox.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L327">        quantiteSpinner.getValueFactory().setValue(1);</span>
+<span class="nc" id="L328">        medicamentListView.getItems().clear();</span>
+<span class="nc" id="L329">        totalPrixLabel.setText(&quot;0.00 DT&quot;);</span>
+<span class="nc" id="L330">        currentCommande.getMedicaments().clear();</span>
+<span class="nc" id="L331">        currentCommande.setTotal_prix(0);</span>
+<span class="nc" id="L332">    }</span>
+
+    private void showAlert(Alert.AlertType type, String message) {
+<span class="nc" id="L335">        new Alert(type, message, ButtonType.OK).show();</span>
+<span class="nc" id="L336">    }</span>
+
+    private void clearErrors() {
+<span class="nc" id="L339">        dateError.setText(&quot;&quot;);</span>
+<span class="nc" id="L340">        medicamentError.setText(&quot;&quot;);</span>
+<span class="nc" id="L341">        quantiteError.setText(&quot;&quot;);</span>
+<span class="nc" id="L342">    }</span>
+
+    @FXML
+    private void handleBackButtoncataloguecommande() {
+        try {
+<span class="nc" id="L347">            Stage stage = (Stage) backButton.getScene().getWindow();</span>
+<span class="nc" id="L348">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/catalogue.fxml&quot;));</span>
+<span class="nc" id="L349">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L350">            stage.setScene(scene);</span>
+<span class="nc" id="L351">            stage.show();</span>
+<span class="nc" id="L352">        } catch (Exception e) {</span>
+<span class="nc" id="L353">            e.printStackTrace();</span>
+<span class="nc" id="L354">            showAlert(&quot;Error&quot;, &quot;Could not return to catalogue&quot;);</span>
+<span class="nc" id="L355">        }</span>
+<span class="nc" id="L356">    }</span>
+
+    private void showAlert(String title, String message) {
+<span class="nc" id="L359">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L360">        alert.setTitle(title);</span>
+<span class="nc" id="L361">        alert.setHeaderText(null);</span>
+<span class="nc" id="L362">        alert.setContentText(message);</span>
+<span class="nc" id="L363">        alert.showAndWait();</span>
+<span class="nc" id="L364">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

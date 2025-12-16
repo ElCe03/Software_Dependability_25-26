@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">LoginController.java</span></div><h1>LoginController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import entite.Users;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
+import service.UserService;
+import entite.CaptchaGenerator;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+<span class="nc" id="L23">public class LoginController {</span>
+
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private CheckBox rememberMeCheckBox;
+    @FXML private Label errorLabel;
+    @FXML private Button loginButton;
+    @FXML private ImageView captchaImageView;
+    @FXML private TextField captchaInputField;
+
+    private String correctCaptcha;
+
+<span class="nc" id="L35">    private final UserService userService = new UserService();</span>
+
+    private static final String EMAIL_REGEX = &quot;^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$&quot;;
+<span class="nc" id="L38">    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L42">        generateNewCaptcha();</span>
+<span class="nc" id="L43">    }</span>
+
+    private void generateNewCaptcha() {
+        try {
+<span class="nc" id="L47">            correctCaptcha = CaptchaGenerator.generateCaptchaText();</span>
+<span class="nc" id="L48">            captchaImageView.setImage(CaptchaGenerator.getCaptchaImage(correctCaptcha));</span>
+<span class="nc" id="L49">        } catch (IOException e) {</span>
+<span class="nc" id="L50">            errorLabel.setText(&quot;Erreur lors de la génération du CAPTCHA : &quot; + e.getMessage());</span>
+<span class="nc" id="L51">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L52">            e.printStackTrace();</span>
+<span class="nc" id="L53">        }</span>
+<span class="nc" id="L54">    }</span>
+
+    @FXML
+    private void refreshCaptcha() {
+<span class="nc" id="L58">        generateNewCaptcha();</span>
+<span class="nc" id="L59">    }</span>
+
+    @FXML
+    private void handleLogin() {
+<span class="nc" id="L63">        String email = emailField.getText().trim();</span>
+<span class="nc" id="L64">        String password = passwordField.getText();</span>
+<span class="nc" id="L65">        String userCaptcha = captchaInputField.getText().trim();</span>
+
+<span class="nc" id="L67">        errorLabel.setText(&quot;&quot;);</span>
+<span class="nc" id="L68">        errorLabel.setVisible(false);</span>
+
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (email.isEmpty()) {</span>
+<span class="nc" id="L71">            errorLabel.setText(&quot;Veuillez entrer votre email.&quot;);</span>
+<span class="nc" id="L72">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L73">            return;</span>
+        }
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (!EMAIL_PATTERN.matcher(email).matches()) {</span>
+<span class="nc" id="L76">            errorLabel.setText(&quot;Veuillez entrer un email valide.&quot;);</span>
+<span class="nc" id="L77">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L78">            return;</span>
+        }
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (password.isEmpty()) {</span>
+<span class="nc" id="L81">            errorLabel.setText(&quot;Veuillez entrer votre mot de passe.&quot;);</span>
+<span class="nc" id="L82">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L83">            return;</span>
+        }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (userCaptcha.isEmpty()) {</span>
+<span class="nc" id="L86">            errorLabel.setText(&quot;Veuillez entrer le code CAPTCHA.&quot;);</span>
+<span class="nc" id="L87">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L88">            return;</span>
+        }
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (!userCaptcha.equals(correctCaptcha)) {</span>
+<span class="nc" id="L92">            errorLabel.setText(&quot;Le CAPTCHA est incorrect.&quot;);</span>
+<span class="nc" id="L93">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L94">            generateNewCaptcha();</span>
+<span class="nc" id="L95">            return;</span>
+        }
+
+        try {
+<span class="nc" id="L99">            Users user = userService.authenticate(email, password);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            if (user == null) {</span>
+<span class="nc" id="L101">                errorLabel.setText(&quot;Email ou mot de passe incorrect !&quot;);</span>
+<span class="nc" id="L102">                errorLabel.setVisible(true);</span>
+<span class="nc" id="L103">                generateNewCaptcha();</span>
+<span class="nc" id="L104">                return;</span>
+            }
+
+<span class="nc" id="L107">            String dashboardFxml = getDashboardFxmlByRole(user);</span>
+<span class="nc" id="L108">            FXMLLoader loader = new FXMLLoader(getClass().getResource(dashboardFxml));</span>
+<span class="nc" id="L109">            Parent root = loader.load();</span>
+<span class="nc" id="L110">            Stage stage = (Stage) loginButton.getScene().getWindow();</span>
+<span class="nc" id="L111">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L112">            stage.setTitle(getDashboardTitleByRole(user));</span>
+<span class="nc" id="L113">            stage.show();</span>
+
+<span class="nc" id="L115">        } catch (SQLException | JsonProcessingException e) {</span>
+<span class="nc" id="L116">            errorLabel.setText(&quot;Erreur lors de l'authentification : &quot; + e.getMessage());</span>
+<span class="nc" id="L117">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L118">            generateNewCaptcha();</span>
+<span class="nc" id="L119">        } catch (IOException e) {</span>
+<span class="nc" id="L120">            errorLabel.setText(&quot;Erreur lors de la redirection : &quot; + e.getMessage());</span>
+<span class="nc" id="L121">            errorLabel.setVisible(true);</span>
+<span class="nc" id="L122">            generateNewCaptcha();</span>
+<span class="nc" id="L123">        }</span>
+<span class="nc" id="L124">    }</span>
+
+    private String getDashboardFxmlByRole(Users user) {
+<span class="nc" id="L127">        List&lt;String&gt; roles = user.getRoles();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (roles.contains(&quot;ROLE_ADMIN&quot;)) {</span>
+<span class="nc" id="L129">            return &quot;/interface.fxml&quot;;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_USER&quot;)) {</span>
+<span class="nc" id="L131">            return &quot;/interface.fxml&quot;;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_PATIENT&quot;)) {</span>
+<span class="nc" id="L133">            return &quot;/front.fxml&quot;;</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_PHARMACIEN&quot;)) {</span>
+<span class="nc" id="L135">            return &quot;/DashboardPharmacien.fxml&quot;;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_MEDECIN&quot;)) {</span>
+<span class="nc" id="L137">            return &quot;/DashboardMedecin.fxml&quot;;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_STAFF&quot;)) {</span>
+<span class="nc" id="L139">            return &quot;/DashboardStaff.fxml&quot;;</span>
+        }
+<span class="nc" id="L141">        return &quot;/Home.fxml&quot;;</span>
+    }
+
+    private String getDashboardTitleByRole(Users user) {
+<span class="nc" id="L145">        List&lt;String&gt; roles = user.getRoles();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (roles.contains(&quot;ROLE_ADMIN&quot;)) {</span>
+<span class="nc" id="L147">            return &quot;Tableau de bord - Administrateur&quot;;</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_PATIENT&quot;)) {</span>
+<span class="nc" id="L149">            return &quot;Tableau de bord - Patient&quot;;</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_PHARMACIEN&quot;)) {</span>
+<span class="nc" id="L151">            return &quot;Tableau de bord - Pharmacien&quot;;</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_MEDECIN&quot;)) {</span>
+<span class="nc" id="L153">            return &quot;Tableau de bord - Médecin&quot;;</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        } else if (roles.contains(&quot;ROLE_STAFF&quot;)) {</span>
+<span class="nc" id="L155">            return &quot;Tableau de bord - Staff&quot;;</span>
+        }
+<span class="nc" id="L157">        return &quot;Accueil&quot;;</span>
+    }
+
+    @FXML
+    void ForgetPsswdButtonOnAction(ActionEvent event) {
+<span class="nc" id="L162">        ouvrirInterface(&quot;ForgetPassword.fxml&quot;, &quot;🔑 Réinitialisation du mot de passe&quot;, event);</span>
+<span class="nc" id="L163">    }</span>
+
+    private void ouvrirInterface(String fxmlFile, String title, ActionEvent event) {
+        try {
+<span class="nc" id="L167">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/&quot; + fxmlFile));</span>
+<span class="nc" id="L168">            Parent root = loader.load();</span>
+
+<span class="nc" id="L170">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L171">            stage.setTitle(title);</span>
+<span class="nc" id="L172">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L173">            stage.show();</span>
+<span class="nc" id="L174">        } catch (IOException e) {</span>
+<span class="nc" id="L175">            showAlert(Alert.AlertType.ERROR, &quot;❌ Erreur&quot;, &quot;Impossible d'ouvrir l'interface : &quot; + fxmlFile);</span>
+<span class="nc" id="L176">            e.printStackTrace();</span>
+<span class="nc" id="L177">        }</span>
+<span class="nc" id="L178">    }</span>
+
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+<span class="nc" id="L181">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L182">        alert.setTitle(title);</span>
+<span class="nc" id="L183">        alert.setHeaderText(null);</span>
+<span class="nc" id="L184">        alert.setContentText(message);</span>
+<span class="nc" id="L185">        alert.showAndWait();</span>
+<span class="nc" id="L186">    }</span>
+
+    @FXML
+    private void loadCreateCompteScene(ActionEvent event) {
+        try {
+<span class="nc" id="L191">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/ajouter_utilisateur.fxml&quot;));</span>
+<span class="nc" id="L192">            Stage currentStage = (Stage) ((Node)event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L193">            currentStage.setScene(new Scene(root));</span>
+<span class="nc" id="L194">            boolean wasMaximized = currentStage.isMaximized();</span>
+<span class="nc" id="L195">            currentStage.setMaximized(wasMaximized);</span>
+<span class="nc" id="L196">            currentStage.setTitle(&quot;Medical Services&quot;);</span>
+<span class="nc" id="L197">        } catch (IOException e) {</span>
+<span class="nc" id="L198">            showErrorAlert(&quot;Navigation Error&quot;,</span>
+<span class="nc" id="L199">                    &quot;Could not load this interface: &quot; + e.getMessage());</span>
+<span class="nc" id="L200">        }</span>
+<span class="nc" id="L201">    }</span>
+
+    private void showErrorAlert(String header, String content) {
+<span class="nc" id="L204">        Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L205">        alert.setTitle(&quot;Navigation Error&quot;);</span>
+<span class="nc" id="L206">        alert.setHeaderText(header);</span>
+<span class="nc" id="L207">        alert.setContentText(content);</span>
+<span class="nc" id="L208">        alert.showAndWait();</span>
+<span class="nc" id="L209">    }</span>
+
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

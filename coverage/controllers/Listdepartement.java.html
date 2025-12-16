@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Listdepartement.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">Listdepartement.java</span></div><h1>Listdepartement.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.departement;
+import entite.etage;
+import entite.salle;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.web.WebView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import org.json.JSONObject;
+import service.DepartemntService;
+import service.EtageService;
+import service.SalleService;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Properties;
+
+<span class="nc" id="L37">public class Listdepartement {</span>
+
+<span class="nc" id="L39">    private final DepartemntService departementService = new DepartemntService();</span>
+<span class="nc" id="L40">    private final EtageService etageService = new EtageService();</span>
+<span class="nc" id="L41">    private final SalleService salleService = new SalleService();</span>
+
+    private String googleMapsApiKey;
+
+    @FXML private FlowPane departementContainer;
+    @FXML private TextField searchBar;
+    @FXML private Button moreInfoButton;
+    @FXML private Button backButton;
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L52">        Properties props = loadConfig();</span>
+<span class="nc" id="L53">        this.googleMapsApiKey = props.getProperty(&quot;google.maps.api.key&quot;);</span>
+
+<span class="nc bnc" id="L55" title="All 4 branches missed.">        if (this.googleMapsApiKey == null || this.googleMapsApiKey.isEmpty()) {</span>
+<span class="nc" id="L56">            System.err.println(&quot;Can't find google api key&quot;);</span>
+        }
+
+<span class="nc" id="L59">        loadAllDepartments();</span>
+<span class="nc" id="L60">        searchBar.textProperty().addListener((obs, oldVal, newVal) -&gt; searchDepartments(newVal));</span>
+
+<span class="nc" id="L62">        departementContainer.setHgap(20);</span>
+<span class="nc" id="L63">        departementContainer.setVgap(20);</span>
+<span class="nc" id="L64">        departementContainer.setPadding(new Insets(15));</span>
+
+        // Handle More Info Button (Chatbot)
+<span class="nc" id="L67">        moreInfoButton.setOnAction(e -&gt; showChatbotDialog());</span>
+<span class="nc" id="L68">    }</span>
+
+    private Properties loadConfig() {
+<span class="nc" id="L71">        Properties props = new Properties();</span>
+<span class="nc" id="L72">        try (InputStream input = getClass().getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            if (input != null) {</span>
+<span class="nc" id="L74">                props.load(input);</span>
+            }
+<span class="nc" id="L76">        } catch (IOException e) {</span>
+<span class="nc" id="L77">            System.err.println(&quot;Error loading config: &quot; + e.getMessage());</span>
+<span class="nc" id="L78">        }</span>
+<span class="nc" id="L79">        return props;</span>
+    }
+
+    private void loadAllDepartments() {
+<span class="nc" id="L83">        departementContainer.getChildren().clear();</span>
+<span class="nc" id="L84">        List&lt;departement&gt; allDepartments = departementService.getAllDepartements();</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (departement dept : allDepartments) {</span>
+<span class="nc" id="L86">            departementContainer.getChildren().add(createDepartmentCard(dept));</span>
+<span class="nc" id="L87">        }</span>
+<span class="nc" id="L88">    }</span>
+
+    private Node createDepartmentCard(departement department) {
+<span class="nc" id="L91">        VBox container = new VBox(10);</span>
+<span class="nc" id="L92">        container.setAlignment(Pos.CENTER_LEFT);</span>
+
+        // Modern Card Design
+<span class="nc" id="L95">        VBox card = new VBox(10);</span>
+<span class="nc" id="L96">        card.getStyleClass().add(&quot;department-card&quot;);</span>
+<span class="nc" id="L97">        card.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L98">        card.setPrefWidth(300);</span>
+<span class="nc" id="L99">        card.setPadding(new Insets(15));</span>
+<span class="nc" id="L100">        card.setEffect(new javafx.scene.effect.DropShadow(10, 0, 5, javafx.scene.paint.Color.gray(0.5)));</span>
+
+        // Image
+<span class="nc" id="L103">        ImageView imageView = new ImageView();</span>
+<span class="nc" id="L104">        loadDepartmentImage(imageView, department.getImage());</span>
+<span class="nc" id="L105">        imageView.setFitWidth(270);</span>
+<span class="nc" id="L106">        imageView.setFitHeight(150);</span>
+<span class="nc" id="L107">        imageView.setStyle(&quot;-fx-background-radius: 10;&quot;);</span>
+
+        // Title
+<span class="nc" id="L110">        Label title = new Label(department.getNom());</span>
+<span class="nc" id="L111">        title.getStyleClass().add(&quot;department-card-title&quot;);</span>
+
+        // Details
+<span class="nc" id="L114">        int floorCount = etageService.getEtagesByDepartement(department.getId()).size();</span>
+<span class="nc" id="L115">        Label details = new Label(String.format(&quot;%d étages • %s&quot;, floorCount, department.getAdresse()));</span>
+<span class="nc" id="L116">        details.getStyleClass().add(&quot;department-card-details&quot;);</span>
+
+        // Voir détails Button
+<span class="nc" id="L119">        Button detailsButton = new Button(&quot;Voir détails&quot;);</span>
+<span class="nc" id="L120">        detailsButton.getStyleClass().add(&quot;details-button&quot;);</span>
+<span class="nc" id="L121">        detailsButton.setOnAction(e -&gt; showDetailsDialog(department));</span>
+
+        // Floors Container
+<span class="nc" id="L124">        VBox floorsContainerForThisDepartment = new VBox(10);</span>
+<span class="nc" id="L125">        floorsContainerForThisDepartment.setPadding(new Insets(10, 20, 10, 50));</span>
+<span class="nc" id="L126">        floorsContainerForThisDepartment.setVisible(false);</span>
+
+        // Card Click for Floors
+<span class="nc" id="L129">        card.setOnMouseClicked(e -&gt; {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (floorsContainerForThisDepartment.isVisible()) {</span>
+<span class="nc" id="L131">                floorsContainerForThisDepartment.setVisible(false);</span>
+<span class="nc" id="L132">                floorsContainerForThisDepartment.getChildren().clear();</span>
+            } else {
+<span class="nc" id="L134">                floorsContainerForThisDepartment.setVisible(true);</span>
+<span class="nc" id="L135">                showFloorsUnderDepartment(department, floorsContainerForThisDepartment);</span>
+            }
+<span class="nc" id="L137">        });</span>
+
+<span class="nc" id="L139">        card.getChildren().addAll(imageView, title, details, detailsButton);</span>
+<span class="nc" id="L140">        container.getChildren().addAll(card, floorsContainerForThisDepartment);</span>
+<span class="nc" id="L141">        return container;</span>
+    }
+
+    private double[] geocodeAddress(String address) {
+        try {
+<span class="nc" id="L146">            String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);</span>
+
+<span class="nc" id="L148">            String urlString = &quot;https://maps.googleapis.com/maps/api/geocode/json?address=&quot;</span>
+                    + encodedAddress + &quot;&amp;key=&quot; + this.googleMapsApiKey;
+
+<span class="nc" id="L151">            URL url = new URL(urlString);</span>
+<span class="nc" id="L152">            HttpURLConnection conn = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L153">            conn.setRequestMethod(&quot;GET&quot;);</span>
+
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            if (conn.getResponseCode() == 200) {</span>
+<span class="nc" id="L156">                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));</span>
+<span class="nc" id="L157">                StringBuilder response = new StringBuilder();</span>
+                String inputLine;
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                while ((inputLine = in.readLine()) != null) {</span>
+<span class="nc" id="L161">                    response.append(inputLine);</span>
+                }
+<span class="nc" id="L163">                in.close();</span>
+
+                // Parse JSON response
+<span class="nc" id="L166">                JSONObject jsonResponse = new JSONObject(response.toString());</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">                if (jsonResponse.has(&quot;results&quot;) &amp;&amp; jsonResponse.getJSONArray(&quot;results&quot;).length() &gt; 0) {</span>
+<span class="nc" id="L168">                    JSONObject location = jsonResponse.getJSONArray(&quot;results&quot;)</span>
+<span class="nc" id="L169">                            .getJSONObject(0)</span>
+<span class="nc" id="L170">                            .getJSONObject(&quot;geometry&quot;)</span>
+<span class="nc" id="L171">                            .getJSONObject(&quot;location&quot;);</span>
+
+<span class="nc" id="L173">                    return new double[]{</span>
+<span class="nc" id="L174">                            location.getDouble(&quot;lat&quot;),</span>
+<span class="nc" id="L175">                            location.getDouble(&quot;lng&quot;)</span>
+                    };
+                }
+            }
+<span class="nc" id="L179">        } catch (Exception e) {</span>
+<span class="nc" id="L180">            e.printStackTrace();</span>
+<span class="nc" id="L181">        }</span>
+<span class="nc" id="L182">        return null; // Retourne null si le géocodage échoue</span>
+    }
+
+    private void showDetailsDialog(departement department) {
+<span class="nc" id="L186">        Stage dialog = new Stage();</span>
+<span class="nc" id="L187">        dialog.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L188">        dialog.setTitle(&quot;Détails de &quot; + department.getNom());</span>
+<span class="nc" id="L189">        dialog.setWidth(800);</span>
+<span class="nc" id="L190">        dialog.setHeight(600);</span>
+
+<span class="nc" id="L192">        BorderPane layout = new BorderPane();</span>
+<span class="nc" id="L193">        layout.setPadding(new Insets(10));</span>
+
+        // Details Section (inchangé)
+<span class="nc" id="L196">        VBox detailsBox = new VBox(10);</span>
+<span class="nc" id="L197">        detailsBox.setPadding(new Insets(10));</span>
+<span class="nc" id="L198">        detailsBox.setStyle(&quot;-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #e0e0e0; -fx-border-width: 1;&quot;);</span>
+
+<span class="nc" id="L200">        Label nameLabel = new Label(&quot;Nom: &quot; + department.getNom());</span>
+<span class="nc" id="L201">        nameLabel.setStyle(&quot;-fx-font-size: 16px; -fx-font-weight: bold;&quot;);</span>
+
+<span class="nc" id="L203">        int floorCount = etageService.getEtagesByDepartement(department.getId()).size();</span>
+<span class="nc" id="L204">        Label floorsLabel = new Label(&quot;Nombre d'étages: &quot; + floorCount);</span>
+<span class="nc" id="L205">        floorsLabel.setStyle(&quot;-fx-font-size: 14px;&quot;);</span>
+
+<span class="nc" id="L207">        Label addressLabel = new Label(&quot;Adresse: &quot; + department.getAdresse());</span>
+<span class="nc" id="L208">        addressLabel.setStyle(&quot;-fx-font-size: 14px;&quot;);</span>
+
+<span class="nc" id="L210">        detailsBox.getChildren().addAll(nameLabel, floorsLabel, addressLabel);</span>
+<span class="nc" id="L211">        layout.setLeft(detailsBox);</span>
+
+        // Google Maps Section
+<span class="nc" id="L214">        WebView mapView = new WebView();</span>
+<span class="nc" id="L215">        mapView.setPrefSize(500, 500);</span>
+
+<span class="nc" id="L217">        double[] coordinates = geocodeAddress(department.getAdresse());</span>
+        String htmlContent;
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (coordinates != null) {</span>
+<span class="nc" id="L220">            double lat = coordinates[0];</span>
+<span class="nc" id="L221">            double lng = coordinates[1];</span>
+<span class="nc" id="L222">            String sanitizedDeptName = department.getNom()</span>
+<span class="nc" id="L223">                    .replace(&quot;'&quot;, &quot;\\'&quot;)</span>
+<span class="nc" id="L224">                    .replace(&quot;\&quot;&quot;, &quot;\\\&quot;&quot;);</span>
+
+            // UTILIZZO DELLA VARIABILE SICURA (passata come 4° argomento a .formatted)
+<span class="nc" id="L227">            htmlContent = &quot;&quot;&quot;</span>
+            &lt;!DOCTYPE html&gt;
+            &lt;html&gt;
+            &lt;head&gt;
+                &lt;title&gt;Google Maps&lt;/title&gt;
+                &lt;style&gt;
+                    #map { height: 100%; width: 100%; }
+                    body { margin: 0; padding: 0; }
+                &lt;/style&gt;
+            &lt;/head&gt;
+            &lt;body&gt;
+                &lt;div id=&quot;map&quot;&gt;&lt;/div&gt;
+                &lt;script&gt;
+                    function initMap() {
+                        var location = { lat: %f, lng: %f };
+                        var map = new google.maps.Map(document.getElementById('map'), {
+                            zoom: 15,
+                            center: location
+                        });
+                        var marker = new google.maps.Marker({
+                            position: location,
+                            map: map,
+                            title: '%s'
+                        });
+                    }
+                &lt;/script&gt;
+                &lt;script async defer
+                    src=&quot;https://maps.googleapis.com/maps/api/js?key=%s&amp;callback=initMap&quot;&gt;
+                &lt;/script&gt;
+            &lt;/body&gt;
+            &lt;/html&gt;
+<span class="nc" id="L258">            &quot;&quot;&quot;.formatted(lat, lng, sanitizedDeptName, this.googleMapsApiKey);</span>
+<span class="nc" id="L259">        } else {</span>
+<span class="nc" id="L260">            htmlContent = &quot;&quot;&quot;</span>
+            &lt;html&gt;&lt;body&gt;
+                &lt;p style='color:red;padding:20px;'&gt;
+                    Impossible de charger la carte pour l'adresse: %s
+                &lt;/p&gt;
+            &lt;/body&gt;&lt;/html&gt;
+<span class="nc" id="L266">            &quot;&quot;&quot;.formatted(department.getAdresse().replace(&quot;'&quot;, &quot;\\'&quot;));</span>
+        }
+
+<span class="nc" id="L269">        mapView.getEngine().loadContent(htmlContent);</span>
+
+        // Error handling
+<span class="nc" id="L272">        mapView.getEngine().setOnError(event -&gt; {</span>
+<span class="nc" id="L273">            System.err.println(&quot;Map loading error: &quot; + event.getMessage());</span>
+<span class="nc" id="L274">        });</span>
+
+<span class="nc" id="L276">        layout.setCenter(mapView);</span>
+
+        // Close Button (inchangé)
+<span class="nc" id="L279">        Button closeButton = new Button(&quot;Fermer&quot;);</span>
+<span class="nc" id="L280">        closeButton.setStyle(&quot;-fx-background-color: #4a90e2; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20;&quot;);</span>
+<span class="nc" id="L281">        closeButton.setOnAction(e -&gt; dialog.close());</span>
+
+<span class="nc" id="L283">        HBox buttonBox = new HBox(closeButton);</span>
+<span class="nc" id="L284">        buttonBox.setAlignment(Pos.CENTER_RIGHT);</span>
+<span class="nc" id="L285">        buttonBox.setPadding(new Insets(10));</span>
+<span class="nc" id="L286">        layout.setBottom(buttonBox);</span>
+
+<span class="nc" id="L288">        javafx.scene.Scene scene = new javafx.scene.Scene(layout);</span>
+<span class="nc" id="L289">        dialog.setScene(scene);</span>
+<span class="nc" id="L290">        dialog.showAndWait();</span>
+<span class="nc" id="L291">    }</span>
+
+    private void showChatbotDialog() {
+        // Create a new stage for the chatbot
+<span class="nc" id="L295">        Stage dialog = new Stage();</span>
+<span class="nc" id="L296">        dialog.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L297">        dialog.setTitle(&quot;Informations&quot;);</span>
+<span class="nc" id="L298">        dialog.setWidth(600);</span>
+<span class="nc" id="L299">        dialog.setHeight(700);</span>
+
+        // Create WebView to load the chatbot
+<span class="nc" id="L302">        WebView webView = new WebView();</span>
+<span class="nc" id="L303">        webView.getEngine().load(&quot;https://www.chatbase.co/chatbot-iframe/mqDWyeqN2lfN8X8xHVULD&quot;);</span>
+
+        // Layout for the dialog
+<span class="nc" id="L306">        VBox layout = new VBox(10);</span>
+<span class="nc" id="L307">        layout.setPadding(new Insets(10));</span>
+<span class="nc" id="L308">        layout.getChildren().add(webView);</span>
+
+        // Scene and Stage
+<span class="nc" id="L311">        javafx.scene.Scene scene = new javafx.scene.Scene(layout);</span>
+<span class="nc" id="L312">        dialog.setScene(scene);</span>
+<span class="nc" id="L313">        dialog.showAndWait();</span>
+<span class="nc" id="L314">    }</span>
+
+    private void showFloorsUnderDepartment(departement department, VBox floorsContainer) {
+<span class="nc" id="L317">        floorsContainer.getChildren().clear();</span>
+<span class="nc" id="L318">        List&lt;etage&gt; floors = etageService.getEtagesByDepartement(department.getId());</span>
+
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (floors.isEmpty()) {</span>
+<span class="nc" id="L321">            Label noFloorsLabel = new Label(&quot;Ce département n'a pas encore d'étages&quot;);</span>
+<span class="nc" id="L322">            noFloorsLabel.setStyle(&quot;-fx-text-fill: #666; -fx-font-size: 14px;&quot;);</span>
+<span class="nc" id="L323">            floorsContainer.getChildren().add(noFloorsLabel);</span>
+<span class="nc" id="L324">        } else {</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">            for (etage floor : floors) {</span>
+<span class="nc" id="L326">                VBox floorContainer = new VBox(5);</span>
+
+<span class="nc" id="L328">                Node floorCard = createFloorCard(floor);</span>
+<span class="nc" id="L329">                VBox roomsContainer = new VBox(5);</span>
+<span class="nc" id="L330">                roomsContainer.setPadding(new Insets(5, 20, 5, 50));</span>
+<span class="nc" id="L331">                roomsContainer.setVisible(false);</span>
+
+<span class="nc" id="L333">                floorCard.setOnMouseClicked(event -&gt; {</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                    if (roomsContainer.isVisible()) {</span>
+<span class="nc" id="L335">                        roomsContainer.setVisible(false);</span>
+<span class="nc" id="L336">                        roomsContainer.getChildren().clear();</span>
+                    } else {
+<span class="nc" id="L338">                        roomsContainer.setVisible(true);</span>
+<span class="nc" id="L339">                        loadRoomsUnderFloor(floor, roomsContainer);</span>
+                    }
+<span class="nc" id="L341">                });</span>
+
+<span class="nc" id="L343">                floorContainer.getChildren().addAll(floorCard, roomsContainer);</span>
+<span class="nc" id="L344">                floorsContainer.getChildren().add(floorContainer);</span>
+<span class="nc" id="L345">            }</span>
+        }
+<span class="nc" id="L347">    }</span>
+
+    private void loadRoomsUnderFloor(etage floor, VBox roomsContainer) {
+<span class="nc" id="L350">        roomsContainer.getChildren().clear();</span>
+<span class="nc" id="L351">        List&lt;salle&gt; rooms = salleService.getAll().stream()</span>
+<span class="nc bnc" id="L352" title="All 4 branches missed.">                .filter(r -&gt; r.getEtage() != null &amp;&amp; r.getEtage().getId() == floor.getId())</span>
+<span class="nc" id="L353">                .toList();</span>
+
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        if (rooms.isEmpty()) {</span>
+<span class="nc" id="L356">            Label noRoomsLabel = new Label(&quot;Aucune salle sur cet étage&quot;);</span>
+<span class="nc" id="L357">            noRoomsLabel.setStyle(&quot;-fx-text-fill: #999; -fx-font-size: 13px;&quot;);</span>
+<span class="nc" id="L358">            roomsContainer.getChildren().add(noRoomsLabel);</span>
+<span class="nc" id="L359">        } else {</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">            for (salle room : rooms) {</span>
+<span class="nc" id="L361">                roomsContainer.getChildren().add(createRoomCard(room));</span>
+<span class="nc" id="L362">            }</span>
+        }
+<span class="nc" id="L364">    }</span>
+
+    private Node createFloorCard(etage floor) {
+<span class="nc" id="L367">        VBox card = new VBox(8);</span>
+<span class="nc" id="L368">        card.getStyleClass().add(&quot;floor-card&quot;);</span>
+<span class="nc" id="L369">        card.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L370">        card.setPrefWidth(200);</span>
+
+<span class="nc" id="L372">        SVGPath icon = new SVGPath();</span>
+<span class="nc" id="L373">        icon.setContent(&quot;M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M19,19H5V5h14V19z&quot;);</span>
+<span class="nc" id="L374">        icon.setStyle(&quot;-fx-fill: #4a90e2;&quot;);</span>
+
+<span class="nc" id="L376">        Label title = new Label(&quot;Étage &quot; + floor.getNumero());</span>
+<span class="nc" id="L377">        title.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 14px;&quot;);</span>
+
+<span class="nc" id="L379">        long roomCount = salleService.getAll().stream()</span>
+<span class="nc bnc" id="L380" title="All 4 branches missed.">                .filter(r -&gt; r.getEtage() != null &amp;&amp; r.getEtage().getId() == floor.getId())</span>
+<span class="nc" id="L381">                .count();</span>
+
+<span class="nc bnc" id="L383" title="All 2 branches missed.">        Label details = new Label(roomCount + (roomCount &gt; 1 ? &quot; salles&quot; : &quot; salle&quot;));</span>
+<span class="nc" id="L384">        details.setStyle(&quot;-fx-text-fill: #6c757d; -fx-font-size: 13px;&quot;);</span>
+
+<span class="nc" id="L386">        card.getChildren().addAll(icon, title, details);</span>
+<span class="nc" id="L387">        return card;</span>
+    }
+
+    private Node createRoomCard(salle room) {
+<span class="nc" id="L391">        VBox card = new VBox(5);</span>
+<span class="nc" id="L392">        card.getStyleClass().add(&quot;room-card&quot;);</span>
+<span class="nc" id="L393">        card.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L394">        card.setPrefWidth(150);</span>
+
+<span class="nc" id="L396">        ImageView imageView = new ImageView();</span>
+<span class="nc" id="L397">        loadRoomImage(imageView, room.getImage());</span>
+<span class="nc" id="L398">        imageView.setFitWidth(120);</span>
+<span class="nc" id="L399">        imageView.setFitHeight(80);</span>
+
+<span class="nc" id="L401">        Label title = new Label(room.getNom());</span>
+<span class="nc" id="L402">        title.setStyle(&quot;-fx-font-weight: bold; -fx-text-alignment: center;&quot;);</span>
+
+<span class="nc" id="L404">        Label details = new Label(</span>
+<span class="nc" id="L405">                String.format(&quot;%s\n%d places\n%s&quot;,</span>
+<span class="nc" id="L406">                        room.getType_salle(),</span>
+<span class="nc" id="L407">                        room.getCapacite(),</span>
+<span class="nc" id="L408">                        room.getStatus())</span>
+        );
+<span class="nc" id="L410">        details.setStyle(&quot;-fx-text-fill: #6c757d; -fx-font-size: 12px; -fx-text-alignment: center;&quot;);</span>
+
+<span class="nc" id="L412">        card.getChildren().addAll(imageView, title, details);</span>
+<span class="nc" id="L413">        return card;</span>
+    }
+
+    private void loadDepartmentImage(ImageView imageView, String imageName) {
+        try {
+<span class="nc" id="L418">            InputStream is = getClass().getResourceAsStream(&quot;/images/&quot; + imageName);</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">            if (is != null) {</span>
+<span class="nc" id="L420">                imageView.setImage(new Image(is, 270, 150, true, true));</span>
+<span class="nc" id="L421">                return;</span>
+            }
+<span class="nc" id="L423">            InputStream defaultIs = getClass().getResourceAsStream(&quot;/images/default_dept.png&quot;);</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">            if (defaultIs != null) {</span>
+<span class="nc" id="L425">                imageView.setImage(new Image(defaultIs, 270, 150, true, true));</span>
+            }
+<span class="nc" id="L427">        } catch (Exception e) {</span>
+<span class="nc" id="L428">            e.printStackTrace();</span>
+<span class="nc" id="L429">        }</span>
+<span class="nc" id="L430">    }</span>
+
+    private void loadRoomImage(ImageView imageView, String imageName) {
+        try {
+<span class="nc" id="L434">            InputStream is = getClass().getResourceAsStream(&quot;/images/&quot; + imageName);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">            if (is != null) {</span>
+<span class="nc" id="L436">                imageView.setImage(new Image(is, 120, 80, true, true));</span>
+<span class="nc" id="L437">                return;</span>
+            }
+<span class="nc" id="L439">            InputStream defaultIs = getClass().getResourceAsStream(&quot;/images/default_room.png&quot;);</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">            if (defaultIs != null) {</span>
+<span class="nc" id="L441">                imageView.setImage(new Image(defaultIs, 120, 80, true, true));</span>
+            }
+<span class="nc" id="L443">        } catch (Exception e) {</span>
+<span class="nc" id="L444">            e.printStackTrace();</span>
+<span class="nc" id="L445">        }</span>
+<span class="nc" id="L446">    }</span>
+
+    private void searchDepartments(String searchTerm) {
+<span class="nc" id="L449">        departementContainer.getChildren().clear();</span>
+<span class="nc bnc" id="L450" title="All 4 branches missed.">        List&lt;departement&gt; results = (searchTerm == null || searchTerm.isEmpty())</span>
+<span class="nc" id="L451">                ? departementService.getAllDepartements()</span>
+<span class="nc" id="L452">                : departementService.searchDepartements(searchTerm);</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">        for (departement dept : results) {</span>
+<span class="nc" id="L454">            departementContainer.getChildren().add(createDepartmentCard(dept));</span>
+<span class="nc" id="L455">        }</span>
+<span class="nc" id="L456">    }</span>
+
+    @FXML
+    private void handleBackButton() {
+        try {
+<span class="nc" id="L461">            Stage stage = (Stage) backButton.getScene().getWindow();</span>
+<span class="nc" id="L462">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/front.fxml&quot;));</span>
+<span class="nc" id="L463">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L464">            stage.setScene(scene);</span>
+<span class="nc" id="L465">            stage.show();</span>
+<span class="nc" id="L466">        } catch (Exception e) {</span>
+<span class="nc" id="L467">            e.printStackTrace();</span>
+<span class="nc" id="L468">            showAlert(&quot;Error&quot;, &quot;Could not load the dashboard&quot;);</span>
+<span class="nc" id="L469">        }</span>
+<span class="nc" id="L470">    }</span>
+
+    private void showAlert(String title, String message) {
+<span class="nc" id="L473">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L474">        alert.setTitle(title);</span>
+<span class="nc" id="L475">        alert.setHeaderText(null);</span>
+<span class="nc" id="L476">        alert.setContentText(message);</span>
+<span class="nc" id="L477">        alert.showAndWait();</span>
+<span class="nc" id="L478">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DossierDetailController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">DossierDetailController.java</span></div><h1>DossierDetailController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import entite.DossierMedicale;
+import entite.Sejour;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.*;
+import service.DossierMedicaleService;
+import service.SejourService;
+import util.AlertUtil;
+import util.ImageUploadUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+<span class="nc" id="L42">public class DossierDetailController implements Initializable {</span>
+    
+    @FXML
+    private Label lblId;
+    
+    @FXML
+    private Label lblDateCreation;
+    
+    @FXML
+    private Label lblPatient;
+    
+    @FXML
+    private Label lblMedecin;
+    
+    @FXML
+    private Label lblStatut;
+    
+    @FXML
+    private Label lblHistoriqueMaladies;
+    
+    @FXML
+    private Label lblOperationsPassees;
+    
+    @FXML
+    private Label lblConsultationsPassees;
+    
+    @FXML
+    private Label lblNotes;
+    
+    @FXML
+    private ImageView imageView;
+    
+    @FXML
+    private TableView&lt;Sejour&gt; sejourTable;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colDateEntree;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colDateSortie;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colTypeSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, Double&gt; colFraisSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colStatutPaiement;
+    
+    @FXML
+    private FontAwesomeIconView placeholderIcon;
+    
+    @FXML
+    private Button btnFullscreenImage;
+    
+    private DossierMedicale dossier;
+    private ObservableList&lt;Sejour&gt; sejourList;
+    private SejourService sejourService;
+    private DossierMedicaleService dossierService;
+    
+<span class="nc" id="L103">    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+<span class="nc" id="L104">    private static final Logger logger = Logger.getLogger(DossierDetailController.class.getName());</span>
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Initialize services
+<span class="nc" id="L109">        sejourService = new SejourService();</span>
+<span class="nc" id="L110">        dossierService = new DossierMedicaleService();</span>
+        
+        // Initialize list
+<span class="nc" id="L113">        sejourList = FXCollections.observableArrayList();</span>
+        
+        // Set up séjour table columns
+<span class="nc" id="L116">        colDateEntree.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L117">            Sejour sejour = cellData.getValue();</span>
+<span class="nc" id="L118">            LocalDateTime date = sejour.getDateEntree();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            return new SimpleStringProperty(date != null ? date.format(DATE_FORMATTER) : &quot;&quot;);</span>
+        });
+<span class="nc" id="L121">        colDateSortie.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L122">            Sejour sejour = cellData.getValue();</span>
+<span class="nc" id="L123">            LocalDateTime date = sejour.getDateSortie();</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            return new SimpleStringProperty(date != null ? date.format(DATE_FORMATTER) : &quot;&quot;);</span>
+        });
+<span class="nc" id="L126">        colTypeSejour.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;typeSejour&quot;));</span>
+<span class="nc" id="L127">        colFraisSejour.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;fraisSejour&quot;));</span>
+<span class="nc" id="L128">        colStatutPaiement.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;statutPaiement&quot;));</span>
+        
+        // Add double-click handler for séjour details
+<span class="nc" id="L131">        sejourTable.setOnMouseClicked(event -&gt; {</span>
+<span class="nc bnc" id="L132" title="All 4 branches missed.">            if (event.getClickCount() == 2 &amp;&amp; sejourTable.getSelectionModel().getSelectedItem() != null) {</span>
+<span class="nc" id="L133">                handleVoirSejour(new ActionEvent(sejourTable, null));</span>
+            }
+<span class="nc" id="L135">        });</span>
+<span class="nc" id="L136">    }</span>
+    
+    public void setDossier(DossierMedicale dossier) {
+<span class="nc" id="L139">        this.dossier = dossier;</span>
+<span class="nc" id="L140">        displayDossierDetails();</span>
+<span class="nc" id="L141">        loadSejours();</span>
+<span class="nc" id="L142">    }</span>
+    
+    private void displayDossierDetails() {
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (dossier == null) {</span>
+<span class="nc" id="L146">            System.err.println(&quot;Error: dossier is null in displayDossierDetails&quot;);</span>
+<span class="nc" id="L147">            return;</span>
+        }
+        
+        // For debugging
+<span class="nc" id="L151">        System.out.println(&quot;Displaying dossier details for ID: &quot; + dossier.getId());</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        System.out.println(&quot;Historique: &quot; + (dossier.getHistoriqueDesMaladies() != null ? dossier.getHistoriqueDesMaladies() : &quot;null&quot;));</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        System.out.println(&quot;Operations: &quot; + (dossier.getOperationsPassees() != null ? dossier.getOperationsPassees() : &quot;null&quot;));</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        System.out.println(&quot;Consultations: &quot; + (dossier.getConsultationsPassees() != null ? dossier.getConsultationsPassees() : &quot;null&quot;));</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        System.out.println(&quot;Notes: &quot; + (dossier.getNotes() != null ? dossier.getNotes() : &quot;null&quot;));</span>
+        
+<span class="nc" id="L157">        lblId.setText(String.valueOf(dossier.getId()));</span>
+        
+<span class="nc" id="L159">        LocalDateTime dateCreation = dossier.getDateDeCreation();</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        lblDateCreation.setText(dateCreation != null ? dateCreation.format(DATE_FORMATTER) : &quot;Non défini&quot;);</span>
+        
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (dossier.getPatient() != null) {</span>
+<span class="nc" id="L163">            lblPatient.setText(dossier.getPatient().getPrenom() + &quot; &quot; + dossier.getPatient().getNom());</span>
+        } else {
+<span class="nc" id="L165">            lblPatient.setText(&quot;Non défini&quot;);</span>
+        }
+        
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (dossier.getMedecin() != null) {</span>
+<span class="nc" id="L169">            lblMedecin.setText(dossier.getMedecin().getPrenom() + &quot; &quot; + dossier.getMedecin().getNom());</span>
+        } else {
+<span class="nc" id="L171">            lblMedecin.setText(&quot;Non défini&quot;);</span>
+        }
+        
+        // Use a default text for empty fields
+<span class="nc" id="L175">        String defaultText = &quot;Aucune information&quot;;</span>
+        
+        // Handle statut
+<span class="nc" id="L178">        String statut = dossier.getStatutDossier();</span>
+<span class="nc bnc" id="L179" title="All 4 branches missed.">        lblStatut.setText(statut != null &amp;&amp; !statut.trim().isEmpty() ? statut : &quot;Non défini&quot;);</span>
+        
+        // Handle historique
+<span class="nc" id="L182">        String historique = dossier.getHistoriqueDesMaladies();</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">        lblHistoriqueMaladies.setText(historique != null &amp;&amp; !historique.trim().isEmpty() ? historique : defaultText);</span>
+        
+        // Handle operations
+<span class="nc" id="L186">        String operations = dossier.getOperationsPassees();</span>
+<span class="nc bnc" id="L187" title="All 4 branches missed.">        lblOperationsPassees.setText(operations != null &amp;&amp; !operations.trim().isEmpty() ? operations : defaultText);</span>
+        
+        // Handle consultations
+<span class="nc" id="L190">        String consultations = dossier.getConsultationsPassees();</span>
+<span class="nc bnc" id="L191" title="All 4 branches missed.">        lblConsultationsPassees.setText(consultations != null &amp;&amp; !consultations.trim().isEmpty() ? consultations : defaultText);</span>
+        
+        // Handle notes
+<span class="nc" id="L194">        String notes = dossier.getNotes();</span>
+<span class="nc bnc" id="L195" title="All 4 branches missed.">        lblNotes.setText(notes != null &amp;&amp; !notes.trim().isEmpty() ? notes : defaultText);</span>
+        
+        // Display image if available
+<span class="nc" id="L198">        displayImage(dossier.getImage());</span>
+<span class="nc" id="L199">    }</span>
+    
+    private void displayImage(String filename) {
+<span class="nc" id="L202">        boolean hasImage = false;</span>
+        
+<span class="nc bnc" id="L204" title="All 4 branches missed.">        if (filename != null &amp;&amp; !filename.isEmpty()) {</span>
+<span class="nc" id="L205">            String imagePath = null;</span>
+            
+            // Check if the file is a direct path or needs to be loaded from the upload directory
+<span class="nc bnc" id="L208" title="All 2 branches missed.">            if (ImageUploadUtil.imageExists(filename)) {</span>
+<span class="nc" id="L209">                imagePath = ImageUploadUtil.getImagePath(filename);</span>
+            } else {
+                // Check if it's a direct path
+<span class="nc" id="L212">                File directFile = new File(filename);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                if (directFile.exists()) {</span>
+<span class="nc" id="L214">                    imagePath = filename;</span>
+                }
+            }
+            
+<span class="nc bnc" id="L218" title="All 2 branches missed.">            if (imagePath != null) {</span>
+                try {
+<span class="nc" id="L220">                    Image image = new Image(new File(imagePath).toURI().toString());</span>
+<span class="nc" id="L221">                    imageView.setImage(image);</span>
+<span class="nc" id="L222">                    imageView.setPreserveRatio(true);</span>
+<span class="nc" id="L223">                    imageView.setFitWidth(400);</span>
+<span class="nc" id="L224">                    hasImage = true;</span>
+                    
+                    // Hide placeholder
+<span class="nc bnc" id="L227" title="All 2 branches missed.">                    if (placeholderIcon != null) {</span>
+<span class="nc" id="L228">                        placeholderIcon.setVisible(false);</span>
+                    }
+                    
+                    // Show fullscreen button when image is available
+<span class="nc bnc" id="L232" title="All 2 branches missed.">                    if (btnFullscreenImage != null) {</span>
+<span class="nc" id="L233">                        btnFullscreenImage.setVisible(true);</span>
+                    }
+                    
+<span class="nc" id="L236">                    System.out.println(&quot;Successfully loaded image: &quot; + imagePath);</span>
+<span class="nc" id="L237">                } catch (Exception e) {</span>
+<span class="nc" id="L238">                    System.err.println(&quot;Error loading image: &quot; + e.getMessage());</span>
+<span class="nc" id="L239">                    imageView.setImage(null);</span>
+<span class="nc" id="L240">                }</span>
+            }
+        }
+        
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        if (!hasImage) {</span>
+<span class="nc" id="L245">            imageView.setImage(null);</span>
+            
+            // Show placeholder
+<span class="nc bnc" id="L248" title="All 2 branches missed.">            if (placeholderIcon != null) {</span>
+<span class="nc" id="L249">                placeholderIcon.setVisible(true);</span>
+            }
+            
+            // Hide fullscreen button when no image
+<span class="nc bnc" id="L253" title="All 2 branches missed.">            if (btnFullscreenImage != null) {</span>
+<span class="nc" id="L254">                btnFullscreenImage.setVisible(false);</span>
+            }
+            
+<span class="nc" id="L257">            System.out.println(&quot;No image available to display&quot;);</span>
+        }
+<span class="nc" id="L259">    }</span>
+    
+    private void loadSejours() {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (dossier != null) {</span>
+<span class="nc" id="L263">            sejourList.setAll(dossier.getSejours());</span>
+<span class="nc" id="L264">            sejourTable.setItems(sejourList);</span>
+        }
+<span class="nc" id="L266">    }</span>
+    
+    @FXML
+    private void handleAjouterSejour(ActionEvent event) {
+        try {
+<span class="nc" id="L271">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/sejour_form.fxml&quot;));</span>
+<span class="nc" id="L272">            Parent root = loader.load();</span>
+            
+<span class="nc" id="L274">            SejourController controller = loader.getController();</span>
+<span class="nc" id="L275">            controller.initNewSejour(dossier);</span>
+            
+<span class="nc" id="L277">            Stage stage = new Stage();</span>
+<span class="nc" id="L278">            stage.setTitle(&quot;Ajouter un Séjour&quot;);</span>
+<span class="nc" id="L279">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L280">            stage.initModality(Modality.WINDOW_MODAL);</span>
+<span class="nc" id="L281">            stage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
+<span class="nc" id="L282">            stage.setOnHidden(e -&gt; refreshSejours());</span>
+<span class="nc" id="L283">            stage.show();</span>
+<span class="nc" id="L284">        } catch (IOException e) {</span>
+<span class="nc" id="L285">            e.printStackTrace();</span>
+<span class="nc" id="L286">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Impossible d'ouvrir le formulaire de séjour.&quot;);
+<span class="nc" id="L288">        }</span>
+<span class="nc" id="L289">    }</span>
+    
+    @FXML
+    private void handleVoirSejour(ActionEvent event) {
+<span class="nc" id="L293">        Sejour selectedSejour = sejourTable.getSelectionModel().getSelectedItem();</span>
+        
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (selectedSejour == null) {</span>
+<span class="nc" id="L296">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Veuillez sélectionner un séjour à visualiser.&quot;);
+<span class="nc" id="L298">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L302">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/sejour_detail.fxml&quot;));</span>
+<span class="nc" id="L303">            Parent root = loader.load();</span>
+            
+<span class="nc" id="L305">            SejourDetailController controller = loader.getController();</span>
+<span class="nc" id="L306">            controller.setSejour(selectedSejour);</span>
+            
+<span class="nc" id="L308">            Stage stage = new Stage();</span>
+<span class="nc" id="L309">            stage.setTitle(&quot;Détails du Séjour #&quot; + selectedSejour.getId());</span>
+<span class="nc" id="L310">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L311">            stage.initModality(Modality.WINDOW_MODAL);</span>
+<span class="nc" id="L312">            stage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
+<span class="nc" id="L313">            stage.show();</span>
+<span class="nc" id="L314">        } catch (IOException e) {</span>
+<span class="nc" id="L315">            e.printStackTrace();</span>
+<span class="nc" id="L316">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Impossible d'ouvrir la vue détaillée du séjour.&quot;);
+<span class="nc" id="L318">        }</span>
+<span class="nc" id="L319">    }</span>
+    
+    @FXML
+    private void handleFermer(ActionEvent event) {
+<span class="nc" id="L323">        ((Stage) ((Node) event.getSource()).getScene().getWindow()).close();</span>
+<span class="nc" id="L324">    }</span>
+    
+    @FXML
+    private void handleUpdateImage(ActionEvent event) {
+<span class="nc" id="L328">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L329">        fileChooser.setTitle(&quot;Sélectionner une image&quot;);</span>
+<span class="nc" id="L330">        fileChooser.getExtensionFilters().addAll(</span>
+            new FileChooser.ExtensionFilter(&quot;Images&quot;, &quot;*.png&quot;, &quot;*.jpg&quot;, &quot;*.jpeg&quot;, &quot;*.gif&quot;)
+        );
+        
+<span class="nc" id="L334">        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L335">        File selectedFile = fileChooser.showOpenDialog(stage);</span>
+        
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (selectedFile != null) {</span>
+            try {
+                // Save the new image and get the filename
+<span class="nc" id="L340">                String newImageFilename = ImageUploadUtil.saveImage(selectedFile, selectedFile.getName());</span>
+                
+<span class="nc bnc" id="L342" title="All 2 branches missed.">                if (newImageFilename != null) {</span>
+                    // If there's an existing image, delete it
+<span class="nc bnc" id="L344" title="All 4 branches missed.">                    if (dossier.getImage() != null &amp;&amp; !dossier.getImage().isEmpty()) {</span>
+<span class="nc" id="L345">                        ImageUploadUtil.deleteImage(dossier.getImage());</span>
+                    }
+                    
+                    // Update the dossier with the new image filename
+<span class="nc" id="L349">                    dossier.setImage(newImageFilename);</span>
+                    
+                    // Update the dossier in the database
+<span class="nc" id="L352">                    boolean updated = dossierService.modifierDossier(dossier);</span>
+                    
+<span class="nc bnc" id="L354" title="All 2 branches missed.">                    if (updated) {</span>
+                        // Display the new image
+<span class="nc" id="L356">                        displayImage(newImageFilename);</span>
+<span class="nc" id="L357">                        AlertUtil.showInformation(stage, &quot;Succès&quot;, &quot;L'image a été mise à jour avec succès.&quot;);</span>
+                    } else {
+<span class="nc" id="L359">                        AlertUtil.showError(stage, &quot;Erreur&quot;, &quot;Impossible de mettre à jour l'image dans la base de données.&quot;);</span>
+                    }
+<span class="nc" id="L361">                } else {</span>
+<span class="nc" id="L362">                    AlertUtil.showError(stage, &quot;Erreur&quot;, &quot;Impossible de sauvegarder l'image.&quot;);</span>
+                }
+<span class="nc" id="L364">            } catch (Exception e) {</span>
+<span class="nc" id="L365">                logger.log(Level.SEVERE, &quot;Erreur lors de la mise à jour de l'image&quot;, e);</span>
+<span class="nc" id="L366">                AlertUtil.showError(stage, &quot;Erreur&quot;, &quot;Une erreur est survenue lors de la mise à jour de l'image: &quot; + e.getMessage());</span>
+<span class="nc" id="L367">            }</span>
+        }
+<span class="nc" id="L369">    }</span>
+    
+    @FXML
+    private void handleFullscreenImage(ActionEvent event) {
+<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (imageView.getImage() == null) {</span>
+<span class="nc" id="L374">            return;</span>
+        }
+        
+        try {
+            // Create a new stage for fullscreen display
+<span class="nc" id="L379">            Stage fullscreenStage = new Stage();</span>
+<span class="nc" id="L380">            fullscreenStage.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L381">            fullscreenStage.initStyle(StageStyle.UNDECORATED);</span>
+            
+            // Create a new ImageView with the same image
+<span class="nc" id="L384">            ImageView fullImageView = new ImageView(imageView.getImage());</span>
+<span class="nc" id="L385">            fullImageView.setPreserveRatio(true);</span>
+            
+            // Calculate dimensions to fit screen
+<span class="nc" id="L388">            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();</span>
+<span class="nc" id="L389">            double maxWidth = screenBounds.getWidth() * 0.9;</span>
+<span class="nc" id="L390">            double maxHeight = screenBounds.getHeight() * 0.9;</span>
+            
+<span class="nc bnc" id="L392" title="All 4 branches missed.">            if (imageView.getImage().getWidth() &gt; maxWidth || imageView.getImage().getHeight() &gt; maxHeight) {</span>
+<span class="nc bnc" id="L393" title="All 2 branches missed.">                if (imageView.getImage().getWidth() / maxWidth &gt; imageView.getImage().getHeight() / maxHeight) {</span>
+<span class="nc" id="L394">                    fullImageView.setFitWidth(maxWidth);</span>
+                } else {
+<span class="nc" id="L396">                    fullImageView.setFitHeight(maxHeight);</span>
+                }
+            } else {
+                // If image is smaller than screen, show at original size
+<span class="nc" id="L400">                fullImageView.setFitWidth(imageView.getImage().getWidth());</span>
+<span class="nc" id="L401">                fullImageView.setFitHeight(imageView.getImage().getHeight());</span>
+            }
+            
+            // Create a BorderPane to hold the image and a close button
+<span class="nc" id="L405">            BorderPane root = new BorderPane();</span>
+<span class="nc" id="L406">            root.setStyle(&quot;-fx-background-color: rgba(0, 0, 0, 0.9);&quot;);</span>
+<span class="nc" id="L407">            root.setCenter(fullImageView);</span>
+            
+            // Add a close button
+<span class="nc" id="L410">            Button closeButton = new Button(&quot;Fermer&quot;);</span>
+<span class="nc" id="L411">            closeButton.setStyle(&quot;-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-family: 'Segoe UI';&quot;);</span>
+<span class="nc" id="L412">            closeButton.setOnAction(e -&gt; fullscreenStage.close());</span>
+            
+<span class="nc" id="L414">            HBox bottomBox = new HBox(closeButton);</span>
+<span class="nc" id="L415">            bottomBox.setAlignment(javafx.geometry.Pos.CENTER);</span>
+<span class="nc" id="L416">            bottomBox.setPadding(new Insets(20));</span>
+<span class="nc" id="L417">            bottomBox.setStyle(&quot;-fx-background-color: rgba(0, 0, 0, 0.7);&quot;);</span>
+            
+<span class="nc" id="L419">            root.setBottom(bottomBox);</span>
+            
+            // Allow closing on click
+<span class="nc" id="L422">            root.setOnMouseClicked(e -&gt; fullscreenStage.close());</span>
+            
+            // Create scene and show
+<span class="nc" id="L425">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L426">            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);</span>
+            
+<span class="nc" id="L428">            fullscreenStage.setScene(scene);</span>
+<span class="nc" id="L429">            fullscreenStage.setMaximized(true);</span>
+<span class="nc" id="L430">            fullscreenStage.show();</span>
+            
+<span class="nc" id="L432">        } catch (Exception e) {</span>
+<span class="nc" id="L433">            logger.log(Level.SEVERE, &quot;Erreur lors de l'affichage en plein écran&quot;, e);</span>
+<span class="nc" id="L434">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+<span class="nc" id="L435">                    &quot;Erreur&quot;, &quot;Impossible d'afficher l'image en plein écran: &quot; + e.getMessage());</span>
+<span class="nc" id="L436">        }</span>
+<span class="nc" id="L437">    }</span>
+    
+    private void refreshSejours() {
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        if (dossier != null) {</span>
+            // Refresh the dossier to get updated séjours
+<span class="nc" id="L442">            sejourList.setAll(sejourService.recupererSejoursParDossier(dossier.getId()));</span>
+<span class="nc" id="L443">            sejourTable.setItems(sejourList);</span>
+        }
+<span class="nc" id="L445">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

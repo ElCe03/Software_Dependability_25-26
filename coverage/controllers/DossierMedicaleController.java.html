@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DossierMedicaleController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">DossierMedicaleController.java</span></div><h1>DossierMedicaleController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.DossierMedicale;
+import entite.Sejour;
+import entite.User;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+import service.DossierMedicaleService;
+import service.SejourService;
+import service.UserServiceE;
+import util.AlertUtil;
+import util.DossierMedicaleValidator;
+import util.ImageUploadUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+
+<span class="nc" id="L40">public class DossierMedicaleController implements Initializable {</span>
+    
+    @FXML
+    private TableView&lt;DossierMedicale&gt; dossierTable;
+    
+    @FXML
+    private TableColumn&lt;DossierMedicale, Integer&gt; colId;
+    
+    @FXML
+    private TableColumn&lt;DossierMedicale, String&gt; colDateCreation;
+    
+    @FXML
+    private TableColumn&lt;DossierMedicale, String&gt; colPatient;
+    
+    @FXML
+    private TableColumn&lt;DossierMedicale, String&gt; colMedecin;
+    
+    @FXML
+    private TableColumn&lt;DossierMedicale, String&gt; colStatut;
+    
+    @FXML
+    private Button btnAjouter;
+    
+    @FXML
+    private Button btnModifier;
+    
+    @FXML
+    private Button btnSupprimer;
+    
+    @FXML
+    private Button btnVoir;
+    
+    @FXML
+    private DatePicker dateCreationPicker;
+    
+    @FXML
+    private TextArea txtHistoriqueMaladies;
+    
+    @FXML
+    private TextArea txtOperationsPassees;
+    
+    @FXML
+    private TextArea txtConsultationsPassees;
+    
+    @FXML
+    private ComboBox&lt;String&gt; comboStatutDossier;
+    
+    @FXML
+    private TextArea txtNotes;
+    
+    @FXML
+    private ComboBox&lt;User&gt; comboPatient;
+    
+    @FXML
+    private ComboBox&lt;User&gt; comboMedecin;
+    
+    @FXML
+    private Button btnChooseImage;
+    
+    @FXML
+    private ImageView imagePreview;
+    
+    @FXML
+    private TableView&lt;Sejour&gt; sejourTable;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colDateEntree;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colDateSortie;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colTypeSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, Double&gt; colFraisSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colStatutPaiement;
+    
+    @FXML
+    private Label lblImagePath;
+    
+    @FXML
+    private Label lblValidationError;
+    
+    private DossierMedicaleService dossierService;
+    private SejourService sejourService;
+    private UserServiceE userServiceE;
+    
+    private ObservableList&lt;DossierMedicale&gt; dossierList;
+    private ObservableList&lt;Sejour&gt; sejourList;
+    
+    private DossierMedicale currentDossier;
+    private File selectedImageFile;
+    private String currentImageFilename;
+    
+<span class="nc" id="L137">    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+<span class="nc" id="L138">    private static final String[] STATUT_OPTIONS = {&quot;Actif&quot;, &quot;Archivé&quot;, &quot;En attente&quot;};</span>
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Initialize services
+<span class="nc" id="L143">        dossierService = new DossierMedicaleService();</span>
+<span class="nc" id="L144">        sejourService = new SejourService();</span>
+<span class="nc" id="L145">        userServiceE = new UserServiceE();</span>
+        
+        // Set up circular references
+<span class="nc" id="L148">        dossierService.setSejourService(sejourService);</span>
+<span class="nc" id="L149">        sejourService.setDossierService(dossierService);</span>
+        
+        // Initialize lists
+<span class="nc" id="L152">        dossierList = FXCollections.observableArrayList();</span>
+<span class="nc" id="L153">        sejourList = FXCollections.observableArrayList();</span>
+        
+        // Set up dossier table columns
+<span class="nc" id="L156">        colId.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;id&quot;));</span>
+<span class="nc" id="L157">        colDateCreation.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L158">            DossierMedicale dossier = cellData.getValue();</span>
+<span class="nc" id="L159">            LocalDateTime date = dossier.getDateDeCreation();</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            return new SimpleStringProperty(date != null ? date.format(DATE_FORMATTER) : &quot;&quot;);</span>
+        });
+<span class="nc" id="L162">        colPatient.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L163">            DossierMedicale dossier = cellData.getValue();</span>
+<span class="nc" id="L164">            User patient = dossier.getPatient();</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            return new SimpleStringProperty(patient != null ? patient.getPrenom() + &quot; &quot; + patient.getNom() : &quot;&quot;);</span>
+        });
+<span class="nc" id="L167">        colMedecin.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L168">            DossierMedicale dossier = cellData.getValue();</span>
+<span class="nc" id="L169">            User medecin = dossier.getMedecin();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            return new SimpleStringProperty(medecin != null ? medecin.getPrenom() + &quot; &quot; + medecin.getNom() : &quot;&quot;);</span>
+        });
+<span class="nc" id="L172">        colStatut.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;statutDossier&quot;));</span>
+        
+        // Set up séjour table columns
+<span class="nc" id="L175">        colDateEntree.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L176">            Sejour sejour = cellData.getValue();</span>
+<span class="nc" id="L177">            LocalDateTime date = sejour.getDateEntree();</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">            return new SimpleStringProperty(date != null ? date.format(DATE_FORMATTER) : &quot;&quot;);</span>
+        });
+<span class="nc" id="L180">        colDateSortie.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L181">            Sejour sejour = cellData.getValue();</span>
+<span class="nc" id="L182">            LocalDateTime date = sejour.getDateSortie();</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">            return new SimpleStringProperty(date != null ? date.format(DATE_FORMATTER) : &quot;&quot;);</span>
+        });
+<span class="nc" id="L185">        colTypeSejour.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;typeSejour&quot;));</span>
+<span class="nc" id="L186">        colFraisSejour.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;fraisSejour&quot;));</span>
+<span class="nc" id="L187">        colStatutPaiement.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;statutPaiement&quot;));</span>
+        
+        // Important: set the items for the sejour table
+<span class="nc" id="L190">        sejourTable.setItems(sejourList);</span>
+<span class="nc" id="L191">        dossierTable.setItems(dossierList);</span>
+        
+        // Set up status options
+<span class="nc" id="L194">        comboStatutDossier.setItems(FXCollections.observableArrayList(STATUT_OPTIONS));</span>
+        
+        // Initialize text formatters for input validation
+<span class="nc" id="L197">        initializeTextFormatters();</span>
+        
+        // Load users for combo boxes
+<span class="nc" id="L200">        loadUsers();</span>
+        
+        // Load dossiers
+<span class="nc" id="L203">        loadDossiers();</span>
+        
+        // Add selection listener to the dossier table
+<span class="nc" id="L206">        dossierTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -&gt; {</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (newSelection != null) {</span>
+<span class="nc" id="L208">                currentDossier = newSelection;</span>
+<span class="nc" id="L209">                loadSejoursForCurrentDossier();</span>
+<span class="nc" id="L210">                displayDossierDetails(newSelection);</span>
+<span class="nc" id="L211">                enableDossierButtons(true);</span>
+            } else {
+<span class="nc" id="L213">                currentDossier = null;</span>
+<span class="nc" id="L214">                sejourList.clear();</span>
+<span class="nc" id="L215">                clearDossierForm();</span>
+<span class="nc" id="L216">                enableDossierButtons(false);</span>
+            }
+<span class="nc" id="L218">        });</span>
+        
+        // Initialize buttons as disabled
+<span class="nc" id="L221">        enableDossierButtons(false);</span>
+<span class="nc" id="L222">    }</span>
+    
+    private void initializeTextFormatters() {
+        // Formatter pour les notes (limite à 500 caractères et caractères autorisés)
+<span class="nc" id="L226">        TextFormatter&lt;String&gt; notesFormatter = new TextFormatter&lt;&gt;(change -&gt; {</span>
+<span class="nc" id="L227">            String newText = change.getControlNewText();</span>
+<span class="nc bnc" id="L228" title="All 4 branches missed.">            if (newText.length() &lt;= 500 &amp;&amp; newText.matches(&quot;^[\\p{L}\\p{N}\\p{P}\\p{Z}\\s]*$&quot;)) {</span>
+<span class="nc" id="L229">                return change;</span>
+            }
+<span class="nc" id="L231">            return null;</span>
+        });
+<span class="nc" id="L233">        txtNotes.setTextFormatter(notesFormatter);</span>
+
+        // Ajouter un listener pour la validation en temps réel
+<span class="nc" id="L236">        txtNotes.textProperty().addListener((obs, oldVal, newVal) -&gt; {</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">            if (newVal != null) {</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">                if (newVal.length() &gt; 500) {</span>
+<span class="nc" id="L239">                    txtNotes.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L240">                    lblValidationError.setText(&quot;❌ Les notes ne peuvent pas dépasser 500 caractères&quot;);</span>
+<span class="nc" id="L241">                    lblValidationError.setVisible(true);</span>
+<span class="nc bnc" id="L242" title="All 4 branches missed.">                } else if (newVal.contains(&quot;&lt;script&gt;&quot;) || newVal.contains(&quot;javascript:&quot;)) {</span>
+<span class="nc" id="L243">                    txtNotes.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L244">                    lblValidationError.setText(&quot;❌ Les notes contiennent du code malveillant&quot;);</span>
+<span class="nc" id="L245">                    lblValidationError.setVisible(true);</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">                } else if (!newVal.matches(&quot;^[\\p{L}\\p{N}\\p{P}\\p{Z}\\s]*$&quot;)) {</span>
+<span class="nc" id="L247">                    txtNotes.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L248">                    lblValidationError.setText(&quot;❌ Les notes contiennent des caractères non autorisés&quot;);</span>
+<span class="nc" id="L249">                    lblValidationError.setVisible(true);</span>
+                } else {
+<span class="nc" id="L251">                    txtNotes.setStyle(&quot;&quot;);</span>
+<span class="nc" id="L252">                    lblValidationError.setVisible(false);</span>
+                }
+            }
+<span class="nc" id="L255">        });</span>
+
+        // Formatter pour l'historique des maladies (limite à 1000 caractères)
+<span class="nc" id="L258">        TextFormatter&lt;String&gt; historiqueFormatter = new TextFormatter&lt;&gt;(change -&gt; {</span>
+<span class="nc" id="L259">            String newText = change.getControlNewText();</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            if (newText.length() &lt;= 1000) {</span>
+<span class="nc" id="L261">                return change;</span>
+            }
+<span class="nc" id="L263">            return null;</span>
+        });
+<span class="nc" id="L265">        txtHistoriqueMaladies.setTextFormatter(historiqueFormatter);</span>
+
+        // Formatter pour les opérations passées (limite à 1000 caractères)
+<span class="nc" id="L268">        TextFormatter&lt;String&gt; operationsFormatter = new TextFormatter&lt;&gt;(change -&gt; {</span>
+<span class="nc" id="L269">            String newText = change.getControlNewText();</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            if (newText.length() &lt;= 1000) {</span>
+<span class="nc" id="L271">                return change;</span>
+            }
+<span class="nc" id="L273">            return null;</span>
+        });
+<span class="nc" id="L275">        txtOperationsPassees.setTextFormatter(operationsFormatter);</span>
+
+        // Formatter pour les consultations passées (limite à 1000 caractères)
+<span class="nc" id="L278">        TextFormatter&lt;String&gt; consultationsFormatter = new TextFormatter&lt;&gt;(change -&gt; {</span>
+<span class="nc" id="L279">            String newText = change.getControlNewText();</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">            if (newText.length() &lt;= 1000) {</span>
+<span class="nc" id="L281">                return change;</span>
+            }
+<span class="nc" id="L283">            return null;</span>
+        });
+<span class="nc" id="L285">        txtConsultationsPassees.setTextFormatter(consultationsFormatter);</span>
+<span class="nc" id="L286">    }</span>
+    
+    private void loadUsers() {
+        // Debug: Get ALL users to check their types
+<span class="nc" id="L290">        List&lt;User&gt; allUsers = userServiceE.recupererTousUsers();</span>
+<span class="nc" id="L291">        System.out.println(&quot;Total users in database: &quot; + allUsers.size());</span>
+<span class="nc" id="L292">        System.out.println(&quot;User types in database:&quot;);</span>
+        
+        // Count users by type
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        for (User user : allUsers) {</span>
+<span class="nc" id="L296">            System.out.println(&quot;User ID: &quot; + user.getId() + </span>
+<span class="nc" id="L297">                             &quot;, Name: &quot; + user.getPrenom() + &quot; &quot; + user.getNom() + </span>
+<span class="nc" id="L298">                             &quot;, Type: &quot; + user.getType() +</span>
+<span class="nc" id="L299">                             &quot;, Specialite: &quot; + user.getSpecialite() +</span>
+<span class="nc" id="L300">                             &quot;, IsMedecin: &quot; + user.isMedecin());</span>
+<span class="nc" id="L301">        }</span>
+        
+        // Load patients using the type field
+<span class="nc" id="L304">        List&lt;User&gt; patients = userServiceE.recupererUsersParRole(&quot;patient&quot;);</span>
+<span class="nc" id="L305">        System.out.println(&quot;Retrieved &quot; + patients.size() + &quot; patients from database&quot;);</span>
+<span class="nc" id="L306">        comboPatient.setItems(FXCollections.observableArrayList(patients));</span>
+        
+        // Load doctors - try both spellings
+<span class="nc" id="L309">        List&lt;User&gt; medecins = new ArrayList&lt;&gt;();</span>
+        
+        // Try with &quot;medecin&quot;
+<span class="nc" id="L312">        List&lt;User&gt; medecins1 = userServiceE.recupererUsersParRole(&quot;medecin&quot;);</span>
+<span class="nc" id="L313">        System.out.println(&quot;Found &quot; + medecins1.size() + &quot; doctors with type 'medecin'&quot;);</span>
+<span class="nc" id="L314">        medecins.addAll(medecins1);</span>
+        
+        // Try with &quot;medcin&quot;
+<span class="nc" id="L317">        List&lt;User&gt; medecins2 = userServiceE.recupererUsersParRole(&quot;medcin&quot;);</span>
+<span class="nc" id="L318">        System.out.println(&quot;Found &quot; + medecins2.size() + &quot; doctors with type 'medcin'&quot;);</span>
+<span class="nc" id="L319">        medecins.addAll(medecins2);</span>
+        
+        // If still no doctors found, look for users with specialite
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (medecins.isEmpty()) {</span>
+<span class="nc" id="L323">            System.out.println(&quot;No doctors found by type, looking for users with specialite&quot;);</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">            for (User user : allUsers) {</span>
+<span class="nc bnc" id="L325" title="All 4 branches missed.">                if (user.getSpecialite() != null &amp;&amp; !user.getSpecialite().isEmpty() &amp;&amp;</span>
+<span class="nc bnc" id="L326" title="All 2 branches missed.">                    !user.getType().equals(&quot;patient&quot;)) {</span>
+<span class="nc" id="L327">                    System.out.println(&quot;Found potential doctor: &quot; + user.getPrenom() + &quot; &quot; + user.getNom() + </span>
+<span class="nc" id="L328">                                     &quot;, Type: &quot; + user.getType() + </span>
+<span class="nc" id="L329">                                     &quot;, Specialite: &quot; + user.getSpecialite());</span>
+<span class="nc" id="L330">                    medecins.add(user);</span>
+                }
+<span class="nc" id="L332">            }</span>
+        }
+        
+<span class="nc" id="L335">        System.out.println(&quot;Total doctors found: &quot; + medecins.size());</span>
+<span class="nc" id="L336">        comboMedecin.setItems(FXCollections.observableArrayList(medecins));</span>
+        
+        // Setup string converters for both combo boxes to display user names
+<span class="nc" id="L339">        javafx.util.StringConverter&lt;User&gt; userStringConverter = new javafx.util.StringConverter&lt;User&gt;() {</span>
+            @Override
+            public String toString(User user) {
+<span class="nc bnc" id="L342" title="All 2 branches missed.">                if (user == null) return &quot;&quot;;</span>
+<span class="nc" id="L343">                return user.getPrenom() + &quot; &quot; + user.getNom() + </span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">                       (user.getSpecialite() != null ? &quot; (&quot; + user.getSpecialite() + &quot;)&quot; : &quot;&quot;);</span>
+            }
+
+            @Override
+            public User fromString(String string) {
+                // This is not needed for our use case
+<span class="nc" id="L350">                return null;</span>
+            }
+        };
+        
+<span class="nc" id="L354">        comboPatient.setConverter(userStringConverter);</span>
+<span class="nc" id="L355">        comboMedecin.setConverter(userStringConverter);</span>
+<span class="nc" id="L356">    }</span>
+    
+    private void loadDossiers() {
+        try {
+<span class="nc" id="L360">            List&lt;DossierMedicale&gt; dossiers = dossierService.recupererTousDossiers();</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">            if (dossiers != null) {</span>
+<span class="nc" id="L362">                System.out.println(&quot;Loaded &quot; + dossiers.size() + &quot; dossiers&quot;);</span>
+<span class="nc" id="L363">                dossierList.clear();</span>
+<span class="nc" id="L364">                dossierList.addAll(dossiers);</span>
+<span class="nc" id="L365">                dossierTable.refresh();</span>
+            } else {
+<span class="nc" id="L367">                System.out.println(&quot;No dossiers loaded - returned null list&quot;);</span>
+<span class="nc" id="L368">                dossierList.clear();</span>
+            }
+<span class="nc" id="L370">        } catch (Exception e) {</span>
+<span class="nc" id="L371">            System.err.println(&quot;Error loading dossiers: &quot; + e.getMessage());</span>
+<span class="nc" id="L372">            e.printStackTrace();</span>
+<span class="nc" id="L373">        }</span>
+<span class="nc" id="L374">    }</span>
+    
+    private void loadSejoursForCurrentDossier() {
+<span class="nc" id="L377">        sejourList.clear();  // Always clear the list first</span>
+        
+<span class="nc bnc" id="L379" title="All 2 branches missed.">        if (currentDossier != null) {</span>
+            try {
+                // Set the items again to be safe
+<span class="nc" id="L382">                sejourTable.setItems(sejourList);</span>
+                
+<span class="nc" id="L384">                List&lt;Sejour&gt; sejours = sejourService.recupererSejoursParDossier(currentDossier.getId());</span>
+<span class="nc" id="L385">                System.out.println(&quot;Loading sejours for dossier ID: &quot; + currentDossier.getId() + </span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">                                   &quot; - Found: &quot; + (sejours != null ? sejours.size() : 0));</span>
+                
+<span class="nc bnc" id="L388" title="All 4 branches missed.">                if (sejours != null &amp;&amp; !sejours.isEmpty()) {</span>
+<span class="nc" id="L389">                    sejourList.addAll(sejours);</span>
+<span class="nc" id="L390">                    System.out.println(&quot;Added &quot; + sejours.size() + &quot; sejours to the observable list&quot;);</span>
+                }
+                
+                // Force a refresh
+<span class="nc" id="L394">                sejourTable.refresh();</span>
+<span class="nc" id="L395">            } catch (Exception e) {</span>
+<span class="nc" id="L396">                System.err.println(&quot;Error loading sejours for dossier: &quot; + e.getMessage());</span>
+<span class="nc" id="L397">                e.printStackTrace();</span>
+<span class="nc" id="L398">            }</span>
+        }
+<span class="nc" id="L400">    }</span>
+    
+    private void displayDossierDetails(DossierMedicale dossier) {
+<span class="nc bnc" id="L403" title="All 2 branches missed.">        if (dossier == null) {</span>
+<span class="nc" id="L404">            clearDossierForm();</span>
+<span class="nc" id="L405">            return;</span>
+        }
+        
+<span class="nc" id="L408">        LocalDateTime dateCreation = dossier.getDateDeCreation();</span>
+        // TODO: Set date picker value when implemented
+        
+<span class="nc" id="L411">        txtHistoriqueMaladies.setText(dossier.getHistoriqueDesMaladies());</span>
+<span class="nc" id="L412">        txtOperationsPassees.setText(dossier.getOperationsPassees());</span>
+<span class="nc" id="L413">        txtConsultationsPassees.setText(dossier.getConsultationsPassees());</span>
+<span class="nc" id="L414">        comboStatutDossier.setValue(dossier.getStatutDossier());</span>
+<span class="nc" id="L415">        txtNotes.setText(dossier.getNotes());</span>
+<span class="nc" id="L416">        comboPatient.setValue(dossier.getPatient());</span>
+<span class="nc" id="L417">        comboMedecin.setValue(dossier.getMedecin());</span>
+        
+        // Display image if available
+<span class="nc" id="L420">        currentImageFilename = dossier.getImage();</span>
+<span class="nc" id="L421">        displayImage(currentImageFilename);</span>
+<span class="nc" id="L422">    }</span>
+    
+    private void clearDossierForm() {
+<span class="nc" id="L425">        dateCreationPicker.setValue(null);</span>
+<span class="nc" id="L426">        txtHistoriqueMaladies.clear();</span>
+<span class="nc" id="L427">        txtOperationsPassees.clear();</span>
+<span class="nc" id="L428">        txtConsultationsPassees.clear();</span>
+<span class="nc" id="L429">        comboStatutDossier.setValue(null);</span>
+<span class="nc" id="L430">        txtNotes.clear();</span>
+<span class="nc" id="L431">        comboPatient.setValue(null);</span>
+<span class="nc" id="L432">        comboMedecin.setValue(null);</span>
+<span class="nc" id="L433">        imagePreview.setImage(null);</span>
+<span class="nc" id="L434">        currentImageFilename = null;</span>
+<span class="nc" id="L435">        selectedImageFile = null;</span>
+<span class="nc" id="L436">    }</span>
+    
+    private void enableDossierButtons(boolean enable) {
+<span class="nc bnc" id="L439" title="All 2 branches missed.">        btnModifier.setDisable(!enable);</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        btnSupprimer.setDisable(!enable);</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">        btnVoir.setDisable(!enable);</span>
+<span class="nc" id="L442">    }</span>
+    
+    private void displayImage(String filename) {
+<span class="nc bnc" id="L445" title="All 6 branches missed.">        if (filename != null &amp;&amp; !filename.isEmpty() &amp;&amp; ImageUploadUtil.imageExists(filename)) {</span>
+<span class="nc" id="L446">            String imagePath = ImageUploadUtil.getImagePath(filename);</span>
+<span class="nc bnc" id="L447" title="All 2 branches missed.">            if (imagePath != null) {</span>
+                try {
+<span class="nc" id="L449">                    Image image = new Image(new File(imagePath).toURI().toString());</span>
+<span class="nc" id="L450">                    imagePreview.setImage(image);</span>
+<span class="nc" id="L451">                    imagePreview.setPreserveRatio(true);</span>
+<span class="nc" id="L452">                    imagePreview.setFitWidth(200);</span>
+<span class="nc" id="L453">                } catch (Exception e) {</span>
+<span class="nc" id="L454">                    System.err.println(&quot;Error loading image: &quot; + e.getMessage());</span>
+<span class="nc" id="L455">                    imagePreview.setImage(null);</span>
+<span class="nc" id="L456">                }</span>
+            }
+<span class="nc" id="L458">        } else {</span>
+<span class="nc" id="L459">            imagePreview.setImage(null);</span>
+        }
+<span class="nc" id="L461">    }</span>
+    
+    @FXML
+    private void handleChooseImage(ActionEvent event) {
+<span class="nc" id="L465">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L466">        fileChooser.setTitle(&quot;Sélectionner une image&quot;);</span>
+<span class="nc" id="L467">        fileChooser.getExtensionFilters().addAll(</span>
+                new FileChooser.ExtensionFilter(&quot;Images&quot;, &quot;*.png&quot;, &quot;*.jpg&quot;, &quot;*.jpeg&quot;, &quot;*.gif&quot;)
+        );
+        
+<span class="nc" id="L471">        Window owner = ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L472">        selectedImageFile = fileChooser.showOpenDialog(owner);</span>
+        
+<span class="nc bnc" id="L474" title="All 2 branches missed.">        if (selectedImageFile != null) {</span>
+            try {
+<span class="nc" id="L476">                Image image = new Image(selectedImageFile.toURI().toString());</span>
+<span class="nc" id="L477">                imagePreview.setImage(image);</span>
+<span class="nc" id="L478">                imagePreview.setPreserveRatio(true);</span>
+<span class="nc" id="L479">                imagePreview.setFitWidth(200);</span>
+<span class="nc" id="L480">            } catch (Exception e) {</span>
+<span class="nc" id="L481">                AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Impossible de charger l'image sélectionnée.&quot;);</span>
+<span class="nc" id="L482">            }</span>
+        }
+<span class="nc" id="L484">    }</span>
+    
+    @FXML
+    private void handleAjouter(ActionEvent event) {
+        // Réinitialiser les styles et messages
+<span class="nc" id="L489">        comboPatient.setStyle(&quot;&quot;);</span>
+<span class="nc" id="L490">        comboMedecin.setStyle(&quot;&quot;);</span>
+<span class="nc" id="L491">        comboStatutDossier.setStyle(&quot;&quot;);</span>
+<span class="nc" id="L492">        lblValidationError.setText(&quot;&quot;);</span>
+<span class="nc" id="L493">        lblValidationError.setVisible(false);</span>
+
+        // Vérification initiale des champs obligatoires
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        if (!validateRequiredFields()) {</span>
+<span class="nc" id="L497">            return; // Arrêter si la validation échoue</span>
+        }
+
+        try {
+            // Créer le dossier seulement si la validation est passée
+<span class="nc" id="L502">            DossierMedicale dossier = createDossier();</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">            if (dossier == null) {</span>
+<span class="nc" id="L504">                return; // Arrêter si la création du dossier échoue</span>
+            }
+
+            // Validation supplémentaire avec DossierMedicaleValidator
+<span class="nc" id="L508">            DossierMedicaleValidator.ValidationResult validationResult = DossierMedicaleValidator.validate(dossier);</span>
+<span class="nc bnc" id="L509" title="All 2 branches missed.">            if (!validationResult.isValid()) {</span>
+<span class="nc" id="L510">                lblValidationError.setText(validationResult.getErrorMessage());</span>
+<span class="nc" id="L511">                lblValidationError.setVisible(true);</span>
+<span class="nc" id="L512">                AlertUtil.showError(null, &quot;Erreur de validation&quot;, validationResult.getErrorMessage());</span>
+<span class="nc" id="L513">                return;</span>
+            }
+
+            // Sauvegarder le dossier
+<span class="nc" id="L517">            boolean success = dossierService.ajouterDossier(dossier);</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">            if (success) {</span>
+<span class="nc" id="L519">                AlertUtil.showInformation(null, &quot;Succès&quot;, &quot;Le dossier médical a été créé avec succès.&quot;);</span>
+<span class="nc" id="L520">                loadDossiers();</span>
+<span class="nc" id="L521">                clearDossierForm();</span>
+            } else {
+<span class="nc" id="L523">                AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Une erreur s'est produite lors de la création du dossier médical.&quot;);</span>
+            }
+<span class="nc" id="L525">        } catch (Exception e) {</span>
+<span class="nc" id="L526">            System.err.println(&quot;Error in handleAjouter: &quot; + e.getMessage());</span>
+<span class="nc" id="L527">            e.printStackTrace();</span>
+<span class="nc" id="L528">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Une erreur s'est produite lors de la création du dossier médical: &quot; + e.getMessage());</span>
+<span class="nc" id="L529">        }</span>
+<span class="nc" id="L530">    }</span>
+
+    private boolean validateRequiredFields() {
+<span class="nc" id="L533">        boolean isValid = true;</span>
+<span class="nc" id="L534">        StringBuilder errorMessage = new StringBuilder();</span>
+
+        // Vérification du patient
+<span class="nc bnc" id="L537" title="All 2 branches missed.">        if (comboPatient.getValue() == null) {</span>
+<span class="nc" id="L538">            errorMessage.append(&quot;❌ Le patient est obligatoire\n&quot;);</span>
+<span class="nc" id="L539">            comboPatient.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L540">            isValid = false;</span>
+        } else {
+<span class="nc" id="L542">            comboPatient.setStyle(&quot;&quot;);</span>
+        }
+
+        // Vérification du médecin
+<span class="nc bnc" id="L546" title="All 2 branches missed.">        if (comboMedecin.getValue() == null) {</span>
+<span class="nc" id="L547">            errorMessage.append(&quot;❌ Le médecin est obligatoire\n&quot;);</span>
+<span class="nc" id="L548">            comboMedecin.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L549">            isValid = false;</span>
+        } else {
+<span class="nc" id="L551">            comboMedecin.setStyle(&quot;&quot;);</span>
+        }
+
+        // Vérification du statut
+<span class="nc bnc" id="L555" title="All 4 branches missed.">        if (comboStatutDossier.getValue() == null || comboStatutDossier.getValue().trim().isEmpty()) {</span>
+<span class="nc" id="L556">            errorMessage.append(&quot;❌ Le statut du dossier est obligatoire\n&quot;);</span>
+<span class="nc" id="L557">            comboStatutDossier.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L558">            isValid = false;</span>
+        } else {
+<span class="nc" id="L560">            comboStatutDossier.setStyle(&quot;&quot;);</span>
+        }
+
+        // Vérification de l'historique des maladies
+<span class="nc" id="L564">        String historique = txtHistoriqueMaladies.getText();</span>
+<span class="nc bnc" id="L565" title="All 4 branches missed.">        if (historique == null || historique.trim().isEmpty()) {</span>
+<span class="nc" id="L566">            errorMessage.append(&quot;❌ L'historique des maladies est obligatoire\n&quot;);</span>
+<span class="nc" id="L567">            txtHistoriqueMaladies.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L568">            isValid = false;</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">        } else if (historique.length() &gt; 1000) {</span>
+<span class="nc" id="L570">            errorMessage.append(&quot;❌ L'historique des maladies ne peut pas dépasser 1000 caractères\n&quot;);</span>
+<span class="nc" id="L571">            txtHistoriqueMaladies.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L572">            isValid = false;</span>
+        } else {
+<span class="nc" id="L574">            txtHistoriqueMaladies.setStyle(&quot;&quot;);</span>
+        }
+
+        // Vérification des opérations passées
+<span class="nc" id="L578">        String operations = txtOperationsPassees.getText();</span>
+<span class="nc bnc" id="L579" title="All 4 branches missed.">        if (operations == null || operations.trim().isEmpty()) {</span>
+<span class="nc" id="L580">            errorMessage.append(&quot;❌ Les opérations passées sont obligatoires\n&quot;);</span>
+<span class="nc" id="L581">            txtOperationsPassees.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L582">            isValid = false;</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">        } else if (operations.length() &gt; 1000) {</span>
+<span class="nc" id="L584">            errorMessage.append(&quot;❌ Les opérations passées ne peuvent pas dépasser 1000 caractères\n&quot;);</span>
+<span class="nc" id="L585">            txtOperationsPassees.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L586">            isValid = false;</span>
+        } else {
+<span class="nc" id="L588">            txtOperationsPassees.setStyle(&quot;&quot;);</span>
+        }
+
+        // Vérification des consultations passées
+<span class="nc" id="L592">        String consultations = txtConsultationsPassees.getText();</span>
+<span class="nc bnc" id="L593" title="All 4 branches missed.">        if (consultations == null || consultations.trim().isEmpty()) {</span>
+<span class="nc" id="L594">            errorMessage.append(&quot;❌ Les consultations passées sont obligatoires\n&quot;);</span>
+<span class="nc" id="L595">            txtConsultationsPassees.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L596">            isValid = false;</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">        } else if (consultations.length() &gt; 1000) {</span>
+<span class="nc" id="L598">            errorMessage.append(&quot;❌ Les consultations passées ne peuvent pas dépasser 1000 caractères\n&quot;);</span>
+<span class="nc" id="L599">            txtConsultationsPassees.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L600">            isValid = false;</span>
+        } else {
+<span class="nc" id="L602">            txtConsultationsPassees.setStyle(&quot;&quot;);</span>
+        }
+
+        // Vérification des notes
+<span class="nc" id="L606">        String notes = txtNotes.getText();</span>
+<span class="nc bnc" id="L607" title="All 2 branches missed.">        if (notes != null) {</span>
+<span class="nc" id="L608">            notes = notes.trim();</span>
+<span class="nc bnc" id="L609" title="All 2 branches missed.">            if (notes.length() &gt; 500) {</span>
+<span class="nc" id="L610">                errorMessage.append(&quot;❌ Les notes ne peuvent pas dépasser 500 caractères\n&quot;);</span>
+<span class="nc" id="L611">                txtNotes.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L612">                isValid = false;</span>
+<span class="nc bnc" id="L613" title="All 4 branches missed.">            } else if (notes.contains(&quot;&lt;script&gt;&quot;) || notes.contains(&quot;javascript:&quot;)) {</span>
+<span class="nc" id="L614">                errorMessage.append(&quot;❌ Les notes contiennent du code malveillant\n&quot;);</span>
+<span class="nc" id="L615">                txtNotes.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L616">                isValid = false;</span>
+<span class="nc bnc" id="L617" title="All 2 branches missed.">            } else if (!notes.matches(&quot;^[\\p{L}\\p{N}\\p{P}\\p{Z}\\s]*$&quot;)) {</span>
+<span class="nc" id="L618">                errorMessage.append(&quot;❌ Les notes contiennent des caractères non autorisés\n&quot;);</span>
+<span class="nc" id="L619">                txtNotes.setStyle(&quot;-fx-border-color: red; -fx-border-width: 2;&quot;);</span>
+<span class="nc" id="L620">                isValid = false;</span>
+            } else {
+<span class="nc" id="L622">                txtNotes.setStyle(&quot;&quot;);</span>
+            }
+        }
+
+<span class="nc bnc" id="L626" title="All 2 branches missed.">        if (!isValid) {</span>
+            // Afficher les messages d'erreur
+<span class="nc" id="L628">            lblValidationError.setText(errorMessage.toString());</span>
+<span class="nc" id="L629">            lblValidationError.setStyle(&quot;-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10;&quot;);</span>
+<span class="nc" id="L630">            lblValidationError.setVisible(true);</span>
+
+            // Afficher une alerte
+<span class="nc" id="L633">            Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L634">            alert.setTitle(&quot;Erreur de validation&quot;);</span>
+<span class="nc" id="L635">            alert.setHeaderText(&quot;Champs obligatoires manquants&quot;);</span>
+<span class="nc" id="L636">            alert.setContentText(&quot;Veuillez remplir tous les champs obligatoires avant de créer le dossier.&quot;);</span>
+<span class="nc" id="L637">            alert.showAndWait();</span>
+        }
+
+<span class="nc" id="L640">        return isValid;</span>
+    }
+
+    private DossierMedicale createDossier() {
+        // Vérification finale avant la création
+<span class="nc bnc" id="L645" title="All 4 branches missed.">        if (comboPatient.getValue() == null || comboMedecin.getValue() == null || </span>
+<span class="nc bnc" id="L646" title="All 4 branches missed.">            comboStatutDossier.getValue() == null || comboStatutDossier.getValue().trim().isEmpty()) {</span>
+<span class="nc" id="L647">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Les données du dossier sont invalides. Veuillez remplir tous les champs obligatoires.&quot;);</span>
+<span class="nc" id="L648">            return null;</span>
+        }
+
+        try {
+<span class="nc" id="L652">            DossierMedicale dossier = new DossierMedicale();</span>
+<span class="nc" id="L653">            dossier.setDateDeCreation(LocalDateTime.now());</span>
+<span class="nc" id="L654">            dossier.setHistoriqueDesMaladies(txtHistoriqueMaladies.getText());</span>
+<span class="nc" id="L655">            dossier.setOperationsPassees(txtOperationsPassees.getText());</span>
+<span class="nc" id="L656">            dossier.setConsultationsPassees(txtConsultationsPassees.getText());</span>
+<span class="nc" id="L657">            dossier.setStatutDossier(comboStatutDossier.getValue());</span>
+<span class="nc" id="L658">            dossier.setNotes(txtNotes.getText());</span>
+<span class="nc" id="L659">            dossier.setPatient(comboPatient.getValue());</span>
+<span class="nc" id="L660">            dossier.setMedecin(comboMedecin.getValue());</span>
+
+            // Gestion de l'image
+<span class="nc bnc" id="L663" title="All 2 branches missed.">            if (selectedImageFile != null) {</span>
+<span class="nc" id="L664">                String newFilename = ImageUploadUtil.saveImage(selectedImageFile, selectedImageFile.getName());</span>
+<span class="nc bnc" id="L665" title="All 2 branches missed.">                if (newFilename != null) {</span>
+<span class="nc" id="L666">                    dossier.setImage(newFilename);</span>
+                }
+            }
+
+<span class="nc" id="L670">            return dossier;</span>
+<span class="nc" id="L671">        } catch (Exception e) {</span>
+<span class="nc" id="L672">            System.err.println(&quot;Error creating dossier: &quot; + e.getMessage());</span>
+<span class="nc" id="L673">            e.printStackTrace();</span>
+<span class="nc" id="L674">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Erreur lors de la création du dossier: &quot; + e.getMessage());</span>
+<span class="nc" id="L675">            return null;</span>
+        }
+    }
+    
+    @FXML
+    private void handleModifier(ActionEvent event) {
+<span class="nc bnc" id="L681" title="All 2 branches missed.">        if (currentDossier == null) {</span>
+<span class="nc" id="L682">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Veuillez sélectionner un dossier à modifier.&quot;);</span>
+<span class="nc" id="L683">            return;</span>
+        }
+        
+        // Update dossier
+<span class="nc" id="L687">        currentDossier.setHistoriqueDesMaladies(txtHistoriqueMaladies.getText());</span>
+<span class="nc" id="L688">        currentDossier.setOperationsPassees(txtOperationsPassees.getText());</span>
+<span class="nc" id="L689">        currentDossier.setConsultationsPassees(txtConsultationsPassees.getText());</span>
+<span class="nc" id="L690">        currentDossier.setStatutDossier(comboStatutDossier.getValue());</span>
+<span class="nc" id="L691">        currentDossier.setNotes(txtNotes.getText());</span>
+<span class="nc" id="L692">        currentDossier.setPatient(comboPatient.getValue());</span>
+<span class="nc" id="L693">        currentDossier.setMedecin(comboMedecin.getValue());</span>
+        
+        // Handle image upload
+<span class="nc bnc" id="L696" title="All 2 branches missed.">        if (selectedImageFile != null) {</span>
+<span class="nc" id="L697">            String newFilename = ImageUploadUtil.saveImage(selectedImageFile, selectedImageFile.getName());</span>
+<span class="nc bnc" id="L698" title="All 2 branches missed.">            if (newFilename != null) {</span>
+                // Delete old image if exists
+<span class="nc bnc" id="L700" title="All 4 branches missed.">                if (currentImageFilename != null &amp;&amp; !currentImageFilename.isEmpty()) {</span>
+<span class="nc" id="L701">                    ImageUploadUtil.deleteImage(currentImageFilename);</span>
+                }
+<span class="nc" id="L703">                currentDossier.setImage(newFilename);</span>
+            }
+        }
+        
+        // Validate dossier
+<span class="nc" id="L708">        DossierMedicaleValidator.ValidationResult validationResult = DossierMedicaleValidator.validate(currentDossier);</span>
+<span class="nc bnc" id="L709" title="All 2 branches missed.">        if (!validationResult.isValid()) {</span>
+<span class="nc" id="L710">            lblValidationError.setText(validationResult.getErrorMessage());</span>
+<span class="nc" id="L711">            lblValidationError.setVisible(true);</span>
+<span class="nc" id="L712">            return;</span>
+        }
+        
+        // Save dossier
+<span class="nc" id="L716">        boolean success = dossierService.modifierDossier(currentDossier);</span>
+        
+<span class="nc bnc" id="L718" title="All 2 branches missed.">        if (success) {</span>
+<span class="nc" id="L719">            AlertUtil.showInformation(null, &quot;Succès&quot;, &quot;Le dossier médical a été mis à jour avec succès.&quot;);</span>
+<span class="nc" id="L720">            loadDossiers();</span>
+<span class="nc" id="L721">            lblValidationError.setVisible(false);</span>
+        } else {
+<span class="nc" id="L723">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Une erreur s'est produite lors de la mise à jour du dossier médical.&quot;);</span>
+        }
+<span class="nc" id="L725">    }</span>
+    
+    @FXML
+    private void handleSupprimer(ActionEvent event) {
+<span class="nc" id="L729">        Window owner = ((Node) event.getSource()).getScene().getWindow();</span>
+        
+<span class="nc bnc" id="L731" title="All 2 branches missed.">        if (currentDossier == null) {</span>
+<span class="nc" id="L732">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Veuillez sélectionner un dossier à supprimer.&quot;);</span>
+<span class="nc" id="L733">            return;</span>
+        }
+        
+<span class="nc" id="L736">        boolean confirm = AlertUtil.showConfirmation(owner, &quot;Confirmation&quot;, </span>
+                &quot;Êtes-vous sûr de vouloir supprimer ce dossier médical ? Cette action est irréversible.&quot;);
+        
+<span class="nc bnc" id="L739" title="All 2 branches missed.">        if (!confirm) {</span>
+<span class="nc" id="L740">            return;</span>
+        }
+        
+        // Delete image if exists
+<span class="nc bnc" id="L744" title="All 4 branches missed.">        if (currentDossier.getImage() != null &amp;&amp; !currentDossier.getImage().isEmpty()) {</span>
+<span class="nc" id="L745">            ImageUploadUtil.deleteImage(currentDossier.getImage());</span>
+        }
+        
+        // Delete dossier
+<span class="nc" id="L749">        boolean success = dossierService.supprimerDossier(currentDossier.getId());</span>
+        
+<span class="nc bnc" id="L751" title="All 2 branches missed.">        if (success) {</span>
+<span class="nc" id="L752">            AlertUtil.showInformation(owner, &quot;Succès&quot;, &quot;Le dossier médical a été supprimé avec succès.&quot;);</span>
+<span class="nc" id="L753">            loadDossiers();</span>
+<span class="nc" id="L754">            clearDossierForm();</span>
+        } else {
+<span class="nc" id="L756">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Une erreur s'est produite lors de la suppression du dossier médical.&quot;);</span>
+        }
+<span class="nc" id="L758">    }</span>
+    
+    @FXML
+    private void handleVoir(ActionEvent event) {
+<span class="nc bnc" id="L762" title="All 2 branches missed.">        if (currentDossier == null) {</span>
+<span class="nc" id="L763">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Veuillez sélectionner un dossier à visualiser.&quot;);
+<span class="nc" id="L765">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L769">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/dossier_detail.fxml&quot;));</span>
+<span class="nc" id="L770">            Parent root = loader.load();</span>
+            
+<span class="nc" id="L772">            DossierDetailController controller = loader.getController();</span>
+<span class="nc" id="L773">            controller.setDossier(currentDossier);</span>
+            
+<span class="nc" id="L775">            Stage stage = new Stage();</span>
+<span class="nc" id="L776">            stage.setTitle(&quot;Détails du Dossier Médical #&quot; + currentDossier.getId());</span>
+<span class="nc" id="L777">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L778">            stage.initModality(Modality.WINDOW_MODAL);</span>
+<span class="nc" id="L779">            stage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
+<span class="nc" id="L780">            stage.show();</span>
+<span class="nc" id="L781">        } catch (IOException e) {</span>
+<span class="nc" id="L782">            e.printStackTrace();</span>
+<span class="nc" id="L783">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Impossible d'ouvrir la vue détaillée du dossier.&quot;);
+<span class="nc" id="L785">        }</span>
+<span class="nc" id="L786">    }</span>
+    
+    @FXML
+    private void handleAjouterSejour(ActionEvent event) {
+<span class="nc bnc" id="L790" title="All 2 branches missed.">        if (currentDossier == null) {</span>
+<span class="nc" id="L791">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Veuillez d'abord sélectionner un dossier médical.&quot;);
+<span class="nc" id="L793">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L797">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/sejour_form.fxml&quot;));</span>
+<span class="nc" id="L798">            Parent root = loader.load();</span>
+            
+<span class="nc" id="L800">            SejourController controller = loader.getController();</span>
+<span class="nc" id="L801">            controller.initNewSejour(currentDossier);</span>
+            
+<span class="nc" id="L803">            Stage stage = new Stage();</span>
+<span class="nc" id="L804">            stage.setTitle(&quot;Ajouter un Séjour&quot;);</span>
+<span class="nc" id="L805">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L806">            stage.initModality(Modality.WINDOW_MODAL);</span>
+<span class="nc" id="L807">            stage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
+<span class="nc" id="L808">            stage.setOnHidden(e -&gt; loadSejoursForCurrentDossier());</span>
+<span class="nc" id="L809">            stage.show();</span>
+<span class="nc" id="L810">        } catch (IOException e) {</span>
+<span class="nc" id="L811">            e.printStackTrace();</span>
+<span class="nc" id="L812">            AlertUtil.showError(((Node) event.getSource()).getScene().getWindow(), </span>
+                    &quot;Erreur&quot;, &quot;Impossible d'ouvrir le formulaire de séjour.&quot;);
+<span class="nc" id="L814">        }</span>
+<span class="nc" id="L815">    }</span>
+    
+    @FXML
+    private void handleRefresh(ActionEvent event) {
+<span class="nc" id="L819">        loadDossiers();</span>
+<span class="nc" id="L820">        clearDossierForm();</span>
+<span class="nc" id="L821">    }</span>
+    
+    @FXML
+    private void handleBackToHome(ActionEvent event) {
+        try {
+            // Load the interface.fxml
+<span class="nc" id="L827">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/interface.fxml&quot;));</span>
+<span class="nc" id="L828">            Parent root = loader.load();</span>
+            
+            // Get the current stage
+<span class="nc" id="L831">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+            
+            // Set the scene
+<span class="nc" id="L834">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L835">            stage.setScene(scene);</span>
+<span class="nc" id="L836">            stage.setTitle(&quot;Admin Dashboard&quot;);</span>
+<span class="nc" id="L837">            stage.show();</span>
+<span class="nc" id="L838">        } catch (IOException e) {</span>
+<span class="nc" id="L839">            e.printStackTrace();</span>
+<span class="nc" id="L840">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Erreur lors du retour à l'interface principale\n&quot; + e.getMessage());</span>
+<span class="nc" id="L841">        }</span>
+<span class="nc" id="L842">    }</span>
+    
+    /**
+     * Launch the QR code scanner
+     */
+    @FXML
+    private void handleOpenQRScanner(ActionEvent event) {
+        try {
+            // Load the QR code scanner FXML
+<span class="nc" id="L851">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/qr_code_scanner.fxml&quot;));</span>
+<span class="nc" id="L852">            Parent root = loader.load();</span>
+            
+            // Create and configure the stage
+<span class="nc" id="L855">            Stage qrScannerStage = new Stage();</span>
+<span class="nc" id="L856">            qrScannerStage.setTitle(&quot;Scanner de Code QR - Dossier Médical&quot;);</span>
+<span class="nc" id="L857">            qrScannerStage.setScene(new Scene(root));</span>
+<span class="nc" id="L858">            qrScannerStage.initModality(Modality.APPLICATION_MODAL);</span>
+            
+            // Show the QR code scanner
+<span class="nc" id="L861">            qrScannerStage.show();</span>
+            
+<span class="nc" id="L863">        } catch (IOException e) {</span>
+<span class="nc" id="L864">            AlertUtil.showError(null, &quot;Erreur&quot;, &quot;Erreur lors de l'ouverture du scanner de code QR: &quot; + e.getMessage());</span>
+<span class="nc" id="L865">        }</span>
+<span class="nc" id="L866">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

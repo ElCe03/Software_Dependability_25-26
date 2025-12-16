@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FrontController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">FrontController.java</span></div><h1>FrontController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.stage.Stage;
+import javafx.event.ActionEvent;
+
+import java.io.IOException;
+
+<span class="nc" id="L15">public class FrontController {</span>
+
+    @FXML
+    private Button servicesButton;
+
+    @FXML
+    private void loadInterfaceScene(ActionEvent event) {
+        try {
+            // Load interface.fxml from resources
+<span class="nc" id="L24">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/services_list.fxml&quot;));</span>
+
+            // Get current window
+<span class="nc" id="L27">            Stage currentStage = (Stage) servicesButton.getScene().getWindow();</span>
+
+            // Set new scene
+<span class="nc" id="L30">            currentStage.setScene(new Scene(root));</span>
+
+            // Maintain window state
+<span class="nc" id="L33">            boolean wasMaximized = currentStage.isMaximized();</span>
+<span class="nc" id="L34">            currentStage.setMaximized(wasMaximized);</span>
+
+            // Update title
+<span class="nc" id="L37">            currentStage.setTitle(&quot;Medical Services&quot;);</span>
+
+<span class="nc" id="L39">        } catch (IOException e) {</span>
+<span class="nc" id="L40">            showErrorAlert(&quot;Navigation Error&quot;,</span>
+                    &quot;Could not load services interface&quot;,
+<span class="nc" id="L42">                    e.getMessage());</span>
+<span class="nc" id="L43">        }</span>
+<span class="nc" id="L44">    }</span>
+
+
+
+    @FXML
+    private void handleAppointmentButton(ActionEvent event) {
+        try {
+            // Load the consultation.fxml file
+<span class="nc" id="L52">            Parent consultationRoot = FXMLLoader.load(getClass().getResource(&quot;/consultation.fxml&quot;));</span>
+
+            // Get the current stage
+<span class="nc" id="L55">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Set the new scene
+<span class="nc" id="L58">            Scene scene = new Scene(consultationRoot);</span>
+<span class="nc" id="L59">            stage.setScene(scene);</span>
+<span class="nc" id="L60">            stage.show();</span>
+<span class="nc" id="L61">        } catch (IOException e) {</span>
+<span class="nc" id="L62">            e.printStackTrace();</span>
+<span class="nc" id="L63">            showErrorAlert(&quot;Failed to load consultation page&quot;, &quot;Please try again later.&quot;);</span>
+<span class="nc" id="L64">        }</span>
+<span class="nc" id="L65">    }</span>
+    @FXML
+    private void handleLoginButton(ActionEvent event) {
+        try {
+            // Load the consultation.fxml file
+<span class="nc" id="L70">            Parent LoginRoot = FXMLLoader.load(getClass().getResource(&quot;/Login.fxml&quot;));</span>
+
+            // Get the current stage
+<span class="nc" id="L73">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Set the new scene
+<span class="nc" id="L76">            Scene scene = new Scene(LoginRoot);</span>
+<span class="nc" id="L77">            stage.setScene(scene);</span>
+<span class="nc" id="L78">            stage.show();</span>
+<span class="nc" id="L79">        } catch (IOException e) {</span>
+<span class="nc" id="L80">            e.printStackTrace();</span>
+<span class="nc" id="L81">            showErrorAlert(&quot;Failed to load Login page&quot;, &quot;Please try again later.&quot;);</span>
+<span class="nc" id="L82">        }</span>
+<span class="nc" id="L83">    }</span>
+    private void showErrorAlert(String header, String content) {
+<span class="nc" id="L85">        Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L86">        alert.setTitle(&quot;Navigation Error&quot;);</span>
+<span class="nc" id="L87">        alert.setHeaderText(header);</span>
+<span class="nc" id="L88">        alert.setContentText(content);</span>
+<span class="nc" id="L89">        alert.showAndWait();</span>
+<span class="nc" id="L90">    }</span>
+    @FXML
+    private void handleGetMedicineButton(ActionEvent event) {
+        try {
+            // Charge le fichier FXML de la liste des médicaments (par exemple : medicine_list.fxml)
+<span class="nc" id="L95">            Parent medicineRoot = FXMLLoader.load(getClass().getResource(&quot;/catalogue.fxml&quot;));</span>
+
+            // Récupère la fenêtre courante
+<span class="nc" id="L98">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Définit la nouvelle scène
+<span class="nc" id="L101">            Scene scene = new Scene(medicineRoot);</span>
+<span class="nc" id="L102">            stage.setScene(scene);</span>
+<span class="nc" id="L103">            stage.setTitle(&quot;Available Medicines&quot;);</span>
+<span class="nc" id="L104">            stage.show();</span>
+
+<span class="nc" id="L106">        } catch (IOException e) {</span>
+<span class="nc" id="L107">            showErrorAlert(&quot;Failed to load medicine page&quot;, &quot;Please try again later.&quot;);</span>
+<span class="nc" id="L108">            e.printStackTrace();</span>
+<span class="nc" id="L109">        }</span>
+<span class="nc" id="L110">    }</span>
+
+
+    @FXML
+    private void handlePatientDashboardButton(ActionEvent event) {
+        try {
+            // Load patient_dashboard.fxml from resources
+<span class="nc" id="L117">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/patient_dashboard.fxml&quot;));</span>
+
+            // Get current window
+<span class="nc" id="L120">            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Set new scene
+<span class="nc" id="L123">            currentStage.setScene(new Scene(root));</span>
+
+            // Maintain window state
+<span class="nc" id="L126">            boolean wasMaximized = currentStage.isMaximized();</span>
+<span class="nc" id="L127">            currentStage.setMaximized(wasMaximized);</span>
+
+            // Update title
+<span class="nc" id="L130">            currentStage.setTitle(&quot;Patient Dashboard&quot;);</span>
+
+<span class="nc" id="L132">        } catch (IOException e) {</span>
+<span class="nc" id="L133">            showErrorAlert(&quot;Navigation Error&quot;,</span>
+                    &quot;Could not load patient dashboard&quot;,
+<span class="nc" id="L135">                    e.getMessage());</span>
+<span class="nc" id="L136">        }</span>
+<span class="nc" id="L137">    }</span>
+
+    public void handleDOSSIERMEDICAL(ActionEvent event) {
+        try {
+            // Load patient_dashboard.fxml from resources
+<span class="nc" id="L142">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/interface.fxml&quot;));</span>
+
+            // Get current window
+<span class="nc" id="L145">            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Set new scene
+<span class="nc" id="L148">            currentStage.setScene(new Scene(root));</span>
+
+            // Maintain window state
+<span class="nc" id="L151">            boolean wasMaximized = currentStage.isMaximized();</span>
+<span class="nc" id="L152">            currentStage.setMaximized(wasMaximized);</span>
+
+            // Update title
+<span class="nc" id="L155">            currentStage.setTitle(&quot;Patient Dashboard&quot;);</span>
+
+<span class="nc" id="L157">        } catch (IOException e) {</span>
+<span class="nc" id="L158">            showErrorAlert(&quot;Navigation Error&quot;,</span>
+                    &quot;Could not load patient dashboard&quot;,
+<span class="nc" id="L160">                    e.getMessage());</span>
+<span class="nc" id="L161">        }</span>
+<span class="nc" id="L162">    }</span>
+
+
+    @FXML
+    private void handleInfrastructureButton(ActionEvent event) {
+        try {
+            // Load listdepartement.fxml from resources
+<span class="nc" id="L169">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/listedepartement.fxml&quot;));</span>
+
+            // Get current window
+<span class="nc" id="L172">            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+
+            // Set new scene
+<span class="nc" id="L175">            currentStage.setScene(new Scene(root));</span>
+
+            // Maintain window state
+<span class="nc" id="L178">            boolean wasMaximized = currentStage.isMaximized();</span>
+<span class="nc" id="L179">            currentStage.setMaximized(wasMaximized);</span>
+
+            // Update title
+<span class="nc" id="L182">            currentStage.setTitle(&quot;Department List&quot;);</span>
+
+<span class="nc" id="L184">        } catch (IOException e) {</span>
+<span class="nc" id="L185">            showErrorAlert(&quot;Navigation Error&quot;,</span>
+                    &quot;Could not load department list&quot;,
+<span class="nc" id="L187">                    e.getMessage());</span>
+<span class="nc" id="L188">        }</span>
+<span class="nc" id="L189">    }</span>
+
+    // Utility method for showing error alerts
+    private void showErrorAlert(String title, String header, String content) {
+<span class="nc" id="L193">        Alert alert = new Alert(Alert.AlertType.ERROR);</span>
+<span class="nc" id="L194">        alert.setTitle(title);</span>
+<span class="nc" id="L195">        alert.setHeaderText(header);</span>
+<span class="nc" id="L196">        alert.setContentText(content);</span>
+<span class="nc" id="L197">        alert.showAndWait();</span>
+<span class="nc" id="L198">    }</span>
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

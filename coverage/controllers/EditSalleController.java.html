@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EditSalleController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">EditSalleController.java</span></div><h1>EditSalleController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.etage;
+import entite.salle;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import service.EtageService;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+
+<span class="nc" id="L21">public class EditSalleController {</span>
+    @FXML private TextField nomField;
+    @FXML private TextField capaciteField;
+    @FXML private ComboBox&lt;String&gt; typeCombo;
+    @FXML private ComboBox&lt;String&gt; statusCombo;
+    @FXML private Spinner&lt;Integer&gt; prioriteSpinner;
+    @FXML private ComboBox&lt;etage&gt; etageCombo;
+    @FXML private TextField imageField;
+    @FXML private ImageView imagePreview;
+
+    private salle salle;
+    private String imagePath;
+    private static final String IMAGE_DIR = &quot;src/main/resources/images/&quot;;
+<span class="nc" id="L34">    private final EtageService etageService = new EtageService();</span>
+
+    @FXML
+    public void initialize() {
+        // Initialisation des ComboBox
+<span class="nc" id="L39">        typeCombo.getItems().addAll(&quot;Consultation&quot;, &quot;Bloc opératoire&quot;, &quot;Réanimation&quot;, &quot;Chambre&quot;);</span>
+<span class="nc" id="L40">        statusCombo.getItems().addAll(&quot;Disponible&quot;, &quot;Occupée&quot;, &quot;En maintenance&quot;);</span>
+
+        // Configuration du Spinner
+<span class="nc" id="L43">        prioriteSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));</span>
+
+        // Chargement des étages
+<span class="nc" id="L46">        List&lt;etage&gt; etages = etageService.getAllEtages();</span>
+<span class="nc" id="L47">        etageCombo.getItems().addAll(etages);</span>
+<span class="nc" id="L48">    }</span>
+
+    public void setSalleData(salle salle) {
+<span class="nc" id="L51">        this.salle = salle;</span>
+<span class="nc" id="L52">        nomField.setText(salle.getNom());</span>
+<span class="nc" id="L53">        capaciteField.setText(String.valueOf(salle.getCapacite()));</span>
+<span class="nc" id="L54">        typeCombo.setValue(salle.getType_salle());</span>
+<span class="nc" id="L55">        statusCombo.setValue(salle.getStatus());</span>
+<span class="nc" id="L56">        prioriteSpinner.getValueFactory().setValue(salle.getPriorite());</span>
+<span class="nc" id="L57">        etageCombo.setValue(salle.getEtage());</span>
+<span class="nc" id="L58">        imageField.setText(salle.getImage());</span>
+<span class="nc" id="L59">        this.imagePath = salle.getImage();</span>
+
+<span class="nc bnc" id="L61" title="All 4 branches missed.">        if (salle.getImage() != null &amp;&amp; !salle.getImage().isEmpty()) {</span>
+<span class="nc" id="L62">            File imageFile = new File(IMAGE_DIR + salle.getImage());</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (imageFile.exists()) {</span>
+<span class="nc" id="L64">                imagePreview.setImage(new Image(imageFile.toURI().toString()));</span>
+            }
+        }
+<span class="nc" id="L67">    }</span>
+
+    @FXML
+    private void handleBrowseImage() {
+<span class="nc" id="L71">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L72">        fileChooser.setTitle(&quot;Choisir une image&quot;);</span>
+<span class="nc" id="L73">        fileChooser.getExtensionFilters().addAll(</span>
+                new FileChooser.ExtensionFilter(&quot;Images&quot;, &quot;*.png&quot;, &quot;*.jpg&quot;, &quot;*.jpeg&quot;, &quot;*.gif&quot;)
+        );
+
+<span class="nc" id="L77">        File selectedFile = fileChooser.showOpenDialog(null);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (selectedFile != null) {</span>
+            try {
+<span class="nc" id="L80">                String fileName = System.currentTimeMillis() + &quot;_&quot; + selectedFile.getName();</span>
+<span class="nc" id="L81">                File destFile = new File(IMAGE_DIR + fileName);</span>
+<span class="nc" id="L82">                Files.copy(selectedFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
+
+<span class="nc" id="L84">                imagePath = fileName;</span>
+<span class="nc" id="L85">                imageField.setText(fileName);</span>
+<span class="nc" id="L86">                imagePreview.setImage(new Image(destFile.toURI().toString()));</span>
+<span class="nc" id="L87">            } catch (IOException e) {</span>
+<span class="nc" id="L88">                e.printStackTrace();</span>
+<span class="nc" id="L89">            }</span>
+        }
+<span class="nc" id="L91">    }</span>
+
+    public salle getUpdatedSalle() {
+<span class="nc" id="L94">        salle.setNom(nomField.getText());</span>
+<span class="nc" id="L95">        salle.setCapacite(Integer.parseInt(capaciteField.getText()));</span>
+<span class="nc" id="L96">        salle.setType_salle(typeCombo.getValue());</span>
+<span class="nc" id="L97">        salle.setStatus(statusCombo.getValue());</span>
+<span class="nc" id="L98">        salle.setPriorite(prioriteSpinner.getValue());</span>
+<span class="nc" id="L99">        salle.setEtage(etageCombo.getValue());</span>
+<span class="nc" id="L100">        salle.setImage(imagePath);</span>
+<span class="nc" id="L101">        return salle;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Translator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">Translator.java</span></div><h1>Translator.java</h1><pre class="source lang-java linenums">package controllers;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.util.concurrent.CompletableFuture;
+
+<span class="nc" id="L10">public class Translator {</span>
+    private static final String API_URL = &quot;https://libretranslate.de/translate&quot;;
+<span class="nc" id="L12">    private static final HttpClient httpClient = HttpClient.newHttpClient();</span>
+    private static final int MAX_RETRIES = 2;
+    private static final long RETRY_DELAY_MS = 500;
+<span class="nc" id="L15">    private static boolean apiDisabled = false;</span>
+<span class="nc" id="L16">    private static int consecutiveFailures = 0;</span>
+    private static final int FAILURE_THRESHOLD = 3;
+
+    public static void resetFailures() {
+<span class="nc" id="L20">        consecutiveFailures = 0;</span>
+<span class="nc" id="L21">        apiDisabled = false;</span>
+<span class="nc" id="L22">    }</span>
+
+    public static CompletableFuture&lt;String&gt; translateAsync(String text, String sourceLang, String targetLang) {
+<span class="nc bnc" id="L25" title="All 6 branches missed.">        if (text == null || text.trim().isEmpty() || sourceLang.equals(targetLang)) {</span>
+<span class="nc" id="L26">            return CompletableFuture.completedFuture(text);</span>
+        }
+
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if (apiDisabled) {</span>
+<span class="nc" id="L30">            System.err.println(&quot;API disabled due to repeated failures, using fallback&quot;);</span>
+<span class="nc" id="L31">            return CompletableFuture.completedFuture(text);</span>
+        }
+<span class="nc" id="L33">        return tryTranslate(text, sourceLang, targetLang, 0);</span>
+    }
+
+    private static CompletableFuture&lt;String&gt; tryTranslate(String text, String sourceLang, String targetLang, int attempt) {
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (attempt &gt;= MAX_RETRIES) {</span>
+<span class="nc" id="L38">            System.err.println(&quot;Translation failed after &quot; + MAX_RETRIES + &quot; attempts&quot;);</span>
+<span class="nc" id="L39">            consecutiveFailures++;</span>
+<span class="nc" id="L40">            checkFailureThreshold();</span>
+<span class="nc" id="L41">            return CompletableFuture.completedFuture(text);</span>
+        }
+
+        try {
+<span class="nc" id="L45">            String escapedText = text.replace(&quot;\&quot;&quot;, &quot;\\\&quot;&quot;).replace(&quot;\n&quot;, &quot;\\n&quot;);</span>
+<span class="nc" id="L46">            String jsonBody = String.format(</span>
+                    &quot;{\&quot;q\&quot;:\&quot;%s\&quot;,\&quot;source\&quot;:\&quot;%s\&quot;,\&quot;target\&quot;:\&quot;%s\&quot;}&quot;,
+                    escapedText, sourceLang, targetLang
+            );
+
+<span class="nc" id="L51">            HttpRequest request = HttpRequest.newBuilder()</span>
+<span class="nc" id="L52">                    .uri(URI.create(API_URL))</span>
+<span class="nc" id="L53">                    .header(&quot;Content-Type&quot;, &quot;application/json&quot;)</span>
+<span class="nc" id="L54">                    .POST(BodyPublishers.ofString(jsonBody))</span>
+<span class="nc" id="L55">                    .build();</span>
+
+<span class="nc" id="L57">            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())</span>
+<span class="nc" id="L58">                    .thenApply(response -&gt; {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                        if (response.statusCode() != 200) {</span>
+<span class="nc" id="L60">                            System.err.println(&quot;API returned status &quot; + response.statusCode());</span>
+<span class="nc" id="L61">                            consecutiveFailures++;</span>
+<span class="nc" id="L62">                            checkFailureThreshold();</span>
+<span class="nc" id="L63">                            return text;</span>
+                        }
+<span class="nc" id="L65">                        String responseBody = response.body();</span>
+                        try {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                            if (!responseBody.contains(&quot;\&quot;translatedText\&quot;&quot;)) {</span>
+<span class="nc" id="L68">                                System.err.println(&quot;Invalid API response&quot;);</span>
+<span class="nc" id="L69">                                consecutiveFailures++;</span>
+<span class="nc" id="L70">                                checkFailureThreshold();</span>
+<span class="nc" id="L71">                                return text;</span>
+                            }
+<span class="nc" id="L73">                            consecutiveFailures = 0;</span>
+<span class="nc" id="L74">                            return responseBody.split(&quot;\&quot;translatedText\&quot;:\&quot;&quot;)[1].split(&quot;\&quot;&quot;)[0];</span>
+<span class="nc" id="L75">                        } catch (Exception e) {</span>
+<span class="nc" id="L76">                            System.err.println(&quot;Failed to parse response&quot;);</span>
+<span class="nc" id="L77">                            consecutiveFailures++;</span>
+<span class="nc" id="L78">                            checkFailureThreshold();</span>
+<span class="nc" id="L79">                            return text;</span>
+                        }
+                    })
+<span class="nc" id="L82">                    .exceptionally(throwable -&gt; {</span>
+<span class="nc" id="L83">                        System.err.println(&quot;Translation attempt &quot; + (attempt + 1) + &quot; failed&quot;);</span>
+<span class="nc" id="L84">                        consecutiveFailures++;</span>
+<span class="nc" id="L85">                        checkFailureThreshold();</span>
+                        try {
+<span class="nc" id="L87">                            Thread.sleep(RETRY_DELAY_MS);</span>
+<span class="nc" id="L88">                        } catch (InterruptedException e) {</span>
+<span class="nc" id="L89">                            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L90">                        }</span>
+<span class="nc" id="L91">                        return tryTranslate(text, sourceLang, targetLang, attempt + 1).join();</span>
+                    });
+<span class="nc" id="L93">        } catch (Exception e) {</span>
+<span class="nc" id="L94">            System.err.println(&quot;Translation setup failed&quot;);</span>
+<span class="nc" id="L95">            consecutiveFailures++;</span>
+<span class="nc" id="L96">            checkFailureThreshold();</span>
+<span class="nc" id="L97">            return CompletableFuture.completedFuture(text);</span>
+        }
+    }
+
+    private static void checkFailureThreshold() {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (consecutiveFailures &gt;= FAILURE_THRESHOLD) {</span>
+<span class="nc" id="L103">            apiDisabled = true;</span>
+<span class="nc" id="L104">            System.err.println(&quot;Disabling API calls due to &quot; + consecutiveFailures + &quot; consecutive failures&quot;);</span>
+        }
+<span class="nc" id="L106">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

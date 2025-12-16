@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicamentFormController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">MedicamentFormController.java</span></div><h1>MedicamentFormController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Medicament;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import service.MedicamentService;
+import test.MainFx;
+
+import java.time.LocalDate;
+
+<span class="nc" id="L13">public class MedicamentFormController {</span>
+
+<span class="nc" id="L15">    private final MedicamentService medicamentService = new MedicamentService();</span>
+<span class="nc" id="L16">    private final MedicamentAPIService apiService = new MedicamentAPIService();</span>
+
+    // Form components
+    @FXML private TextField medicamentName;
+    @FXML private TextArea medicamentDescription;
+    @FXML private Spinner&lt;Integer&gt; stockSpinner;
+    @FXML private Spinner&lt;Double&gt; prixSpinner;
+    @FXML private DatePicker dateEntreePicker;
+    @FXML private DatePicker dateExpirationPicker;
+    @FXML private ComboBox&lt;String&gt; typeComboBox;
+
+    // Error labels
+    @FXML private Label nameError;
+    @FXML private Label descriptionError;
+    @FXML private Label stockError;
+    @FXML private Label prixError;
+    @FXML private Label dateError;
+
+    @FXML
+    private void initialize() {
+<span class="nc" id="L36">        configureSpinners();</span>
+<span class="nc" id="L37">        configureTypeComboBox();</span>
+
+        // Ajout d'un gestionnaire d'événement pour la touche Entrée
+<span class="nc" id="L40">        medicamentName.setOnAction(event -&gt; handleSearchFromAPI());</span>
+<span class="nc" id="L41">    }</span>
+
+    private void configureSpinners() {
+<span class="nc" id="L44">        stockSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 1));</span>
+<span class="nc" id="L45">        prixSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 10000.0, 10.0, 0.5));</span>
+<span class="nc" id="L46">    }</span>
+
+    private void configureTypeComboBox() {
+<span class="nc" id="L49">        typeComboBox.getItems().addAll(&quot;Comprimé &quot;, &quot;Capsule&quot;, &quot;Sirops&quot;, &quot;Poudre&quot; , &quot;Solutions buvables &quot; , &quot;Ampoule&quot; , &quot;Seringue&quot; , &quot;Aérosol&quot; , &quot;Crème&quot; , &quot;Lotion&quot; ,&quot;Suppositoire &quot;);</span>
+<span class="nc" id="L50">    }</span>
+
+    @FXML
+    private void handleAddMedicament() {
+<span class="nc" id="L54">        clearErrors();</span>
+
+<span class="nc" id="L56">        String name = medicamentName.getText().trim();</span>
+<span class="nc" id="L57">        String description = medicamentDescription.getText().trim();</span>
+<span class="nc" id="L58">        String type = typeComboBox.getValue();</span>
+<span class="nc" id="L59">        int stock = stockSpinner.getValue();</span>
+<span class="nc" id="L60">        double prix = prixSpinner.getValue();</span>
+<span class="nc" id="L61">        LocalDate dateEntree = dateEntreePicker.getValue();</span>
+<span class="nc" id="L62">        LocalDate dateExpiration = dateExpirationPicker.getValue();</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (!validateForm(name, description, type, stock, prix, dateEntree, dateExpiration)) return;</span>
+
+<span class="nc" id="L66">        Medicament m = new Medicament(name, description, type, prix, stock, dateEntree, dateExpiration);</span>
+<span class="nc" id="L67">        medicamentService.create(m);</span>
+<span class="nc" id="L68">        showAlert(&quot;Succès&quot;, &quot;Médicament ajouté avec succès !&quot;);</span>
+<span class="nc" id="L69">        MainFx.loadPage(&quot;medicament_list.fxml&quot;);</span>
+<span class="nc" id="L70">    }</span>
+
+    @FXML
+    private void handleBackButton() {
+<span class="nc" id="L74">        MainFx.loadPage(&quot;DashboardPharmacien.fxml&quot;);</span>
+<span class="nc" id="L75">    }</span>
+
+    private boolean validateForm(String name, String description, String type,
+                                 int stock, double prix, LocalDate dateEntree,
+                                 LocalDate dateExpiration) {
+<span class="nc" id="L80">        boolean valid = true;</span>
+
+<span class="nc bnc" id="L82" title="All 6 branches missed.">        if (name.isEmpty() || name.length() &lt; 2 || !name.matches(&quot;[a-zA-ZÀ-ÿ\\s]+&quot;)) {</span>
+<span class="nc" id="L83">            nameError.setText(&quot;Le nom doit contenir uniquement des lettres (min 2 caractères).&quot;);</span>
+<span class="nc" id="L84">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        if (description.isEmpty()) {</span>
+<span class="nc" id="L88">            descriptionError.setText(&quot;La description est requise.&quot;);</span>
+<span class="nc" id="L89">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L92" title="All 4 branches missed.">        if (type == null || type.isEmpty()) {</span>
+<span class="nc" id="L93">            dateError.setText(&quot;Le type est requis.&quot;);</span>
+<span class="nc" id="L94">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (stock &lt;= 0) {</span>
+<span class="nc" id="L98">            stockError.setText(&quot;La quantité en stock doit être supérieure à 0.&quot;);</span>
+<span class="nc" id="L99">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (prix &lt;= 0) {</span>
+<span class="nc" id="L103">            prixError.setText(&quot;Le prix doit être supérieur à 0.&quot;);</span>
+<span class="nc" id="L104">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L107" title="All 4 branches missed.">        if (dateEntree == null || dateExpiration == null) {</span>
+<span class="nc" id="L108">            dateError.setText(&quot;Les deux dates sont requises.&quot;);</span>
+<span class="nc" id="L109">            valid = false;</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        } else if (!dateEntree.isBefore(dateExpiration)) {</span>
+<span class="nc" id="L111">            dateError.setText(&quot;La date d'entrée doit précéder la date d'expiration.&quot;);</span>
+<span class="nc" id="L112">            valid = false;</span>
+        }
+
+<span class="nc" id="L115">        return valid;</span>
+    }
+
+    private void clearErrors() {
+<span class="nc" id="L119">        nameError.setText(&quot;&quot;);</span>
+<span class="nc" id="L120">        descriptionError.setText(&quot;&quot;);</span>
+<span class="nc" id="L121">        stockError.setText(&quot;&quot;);</span>
+<span class="nc" id="L122">        prixError.setText(&quot;&quot;);</span>
+<span class="nc" id="L123">        dateError.setText(&quot;&quot;);</span>
+<span class="nc" id="L124">    }</span>
+
+    private void showAlert(String title, String message) {
+<span class="nc" id="L127">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L128">        alert.setTitle(title);</span>
+<span class="nc" id="L129">        alert.setHeaderText(null);</span>
+<span class="nc" id="L130">        alert.setContentText(message);</span>
+<span class="nc" id="L131">        alert.showAndWait();</span>
+<span class="nc" id="L132">    }</span>
+
+    @FXML
+    public void handleSearchFromAPI() {
+<span class="nc" id="L136">        String nomMedicament = medicamentName.getText().trim();</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (nomMedicament.isEmpty()) {</span>
+<span class="nc" id="L138">            showAlert(&quot;Erreur&quot;, &quot;Veuillez d'abord saisir un nom de médicament.&quot;);</span>
+<span class="nc" id="L139">            return;</span>
+        }
+
+<span class="nc" id="L142">        medicamentDescription.setText(&quot;Recherche en cours...&quot;);</span>
+
+        // Essayer d'abord la première méthode
+<span class="nc" id="L145">        boolean success = processAPISearch(nomMedicament);</span>
+
+        // Si la première méthode échoue, essayer la méthode alternative
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (!success) {</span>
+<span class="nc" id="L149">            medicamentDescription.setText(&quot;Premier essai échoué. Tentative alternative...&quot;);</span>
+<span class="nc" id="L150">            processAlternativeAPISearch(nomMedicament);</span>
+        }
+<span class="nc" id="L152">    }</span>
+
+    private boolean processAPISearch(String nomMedicament) {
+        try {
+            // Utilisation du service API
+<span class="nc" id="L157">            String responseData = apiService.chercherMedicament(nomMedicament);</span>
+
+            // Vérifier si la réponse contient une erreur
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            if (responseData.contains(&quot;\&quot;error\&quot;:&quot;)) {</span>
+<span class="nc" id="L161">                JSONObject errorObj = new JSONObject(responseData);</span>
+<span class="nc" id="L162">                String errorMessage = errorObj.getString(&quot;error&quot;);</span>
+<span class="nc" id="L163">                System.out.println(&quot;Erreur API: &quot; + errorMessage);</span>
+
+                // Ne pas afficher d'alerte ici, on va essayer la méthode alternative
+<span class="nc" id="L166">                return false;</span>
+            }
+
+            // Analyser et afficher les résultats
+<span class="nc" id="L170">            return parseAndDisplayResults(responseData);</span>
+
+<span class="nc" id="L172">        } catch (Exception e) {</span>
+<span class="nc" id="L173">            e.printStackTrace();</span>
+<span class="nc" id="L174">            medicamentDescription.setText(&quot;&quot;);</span>
+<span class="nc" id="L175">            showAlert(&quot;Erreur&quot;, &quot;Une erreur s'est produite: &quot; + e.getMessage());</span>
+<span class="nc" id="L176">            return false;</span>
+        }
+    }
+
+    private boolean processAlternativeAPISearch(String nomMedicament) {
+        try {
+            // Utiliser la méthode alternative simplifiée
+<span class="nc" id="L183">            String responseData = apiService.chercherMedicamentSimple(nomMedicament);</span>
+
+            // Vérifier si la réponse contient une erreur
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            if (responseData.contains(&quot;\&quot;error\&quot;:&quot;)) {</span>
+<span class="nc" id="L187">                JSONObject errorObj = new JSONObject(responseData);</span>
+<span class="nc" id="L188">                String errorMessage = errorObj.getString(&quot;error&quot;);</span>
+<span class="nc" id="L189">                medicamentDescription.setText(&quot;&quot;);</span>
+<span class="nc" id="L190">                showAlert(&quot;Erreur&quot;, &quot;Impossible de trouver des informations: &quot; + errorMessage);</span>
+<span class="nc" id="L191">                return false;</span>
+            }
+
+            // Analyser et afficher les résultats
+<span class="nc" id="L195">            return parseAndDisplayResults(responseData);</span>
+
+<span class="nc" id="L197">        } catch (Exception e) {</span>
+<span class="nc" id="L198">            e.printStackTrace();</span>
+<span class="nc" id="L199">            medicamentDescription.setText(&quot;&quot;);</span>
+<span class="nc" id="L200">            showAlert(&quot;Erreur&quot;, &quot;Une erreur s'est produite: &quot; + e.getMessage());</span>
+<span class="nc" id="L201">            return false;</span>
+        }
+    }
+
+    private boolean parseAndDisplayResults(String responseData) {
+        try {
+            // Analyse JSON
+<span class="nc" id="L208">            JSONObject json = new JSONObject(responseData);</span>
+
+            // Vérifier si des résultats ont été trouvés
+<span class="nc bnc" id="L211" title="All 4 branches missed.">            if (!json.has(&quot;results&quot;) || json.getJSONArray(&quot;results&quot;).length() == 0) {</span>
+<span class="nc" id="L212">                medicamentDescription.setText(&quot;&quot;);</span>
+<span class="nc" id="L213">                showAlert(&quot;Information&quot;, &quot;Aucun médicament trouvé dans la base FDA.&quot;);</span>
+<span class="nc" id="L214">                return false;</span>
+            }
+
+<span class="nc" id="L217">            JSONArray results = json.getJSONArray(&quot;results&quot;);</span>
+<span class="nc" id="L218">            JSONObject medInfo = results.getJSONObject(0);</span>
+
+            // Extraction des informations pour la description
+<span class="nc" id="L221">            StringBuilder description = new StringBuilder();</span>
+
+            // Essayer différents champs pour obtenir des informations utiles
+<span class="nc" id="L224">            extractField(medInfo, &quot;description&quot;, &quot;Description&quot;, description);</span>
+<span class="nc" id="L225">            extractField(medInfo, &quot;indications_and_usage&quot;, &quot;Indications et usage&quot;, description);</span>
+<span class="nc" id="L226">            extractField(medInfo, &quot;dosage_and_administration&quot;, &quot;Dosage et administration&quot;, description);</span>
+<span class="nc" id="L227">            extractField(medInfo, &quot;purpose&quot;, &quot;Objectif&quot;, description);</span>
+<span class="nc" id="L228">            extractField(medInfo, &quot;warnings&quot;, &quot;Avertissements&quot;, description);</span>
+
+            // Informations supplémentaires si disponibles dans openfda
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            if (medInfo.has(&quot;openfda&quot;)) {</span>
+<span class="nc" id="L232">                JSONObject openfda = medInfo.getJSONObject(&quot;openfda&quot;);</span>
+
+<span class="nc" id="L234">                extractOpenFDAField(openfda, &quot;generic_name&quot;, &quot;Nom générique&quot;, description);</span>
+<span class="nc" id="L235">                extractOpenFDAField(openfda, &quot;brand_name&quot;, &quot;Marque&quot;, description);</span>
+<span class="nc" id="L236">                extractOpenFDAField(openfda, &quot;manufacturer_name&quot;, &quot;Fabricant&quot;, description);</span>
+<span class="nc" id="L237">                extractOpenFDAField(openfda, &quot;route&quot;, &quot;Voie d'administration&quot;, description);</span>
+
+                // Mise à jour du type de médicament
+<span class="nc bnc" id="L240" title="All 2 branches missed.">                if (openfda.has(&quot;dosage_form&quot;)) {</span>
+                    try {
+<span class="nc" id="L242">                        JSONArray dosageArray = openfda.getJSONArray(&quot;dosage_form&quot;);</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">                        if (dosageArray.length() &gt; 0) {</span>
+<span class="nc" id="L244">                            String dosageForm = dosageArray.getString(0);</span>
+<span class="nc" id="L245">                            setClosestType(dosageForm);</span>
+<span class="nc" id="L246">                            description.append(&quot;\nForme: &quot;).append(dosageForm);</span>
+                        }
+<span class="nc" id="L248">                    } catch (Exception e) {</span>
+                        // Ignorer cette erreur spécifique
+<span class="nc" id="L250">                    }</span>
+                }
+            }
+
+            // Si aucune information utile n'a été trouvée
+<span class="nc bnc" id="L255" title="All 2 branches missed.">            if (description.length() == 0) {</span>
+<span class="nc" id="L256">                description.append(&quot;Médicament trouvé dans la base FDA, mais sans description détaillée disponible.&quot;);</span>
+            }
+
+            // Afficher la description
+<span class="nc" id="L260">            medicamentDescription.setText(description.toString());</span>
+
+            // Notification de succès
+<span class="nc" id="L263">            showAlert(&quot;Succès&quot;, &quot;Informations chargées depuis l'API FDA !&quot;);</span>
+<span class="nc" id="L264">            return true;</span>
+
+<span class="nc" id="L266">        } catch (Exception e) {</span>
+<span class="nc" id="L267">            e.printStackTrace();</span>
+<span class="nc" id="L268">            medicamentDescription.setText(&quot;&quot;);</span>
+<span class="nc" id="L269">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'analyse des données: &quot; + e.getMessage());</span>
+<span class="nc" id="L270">            return false;</span>
+        }
+    }
+
+    private void extractField(JSONObject json, String fieldName, String displayName, StringBuilder builder) {
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (json.has(fieldName)) {</span>
+            try {
+<span class="nc" id="L277">                Object field = json.get(fieldName);</span>
+                String value;
+
+<span class="nc bnc" id="L280" title="All 2 branches missed.">                if (field instanceof JSONArray) {</span>
+<span class="nc" id="L281">                    JSONArray array = (JSONArray) field;</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">                    if (array.length() &gt; 0) {</span>
+<span class="nc" id="L283">                        value = array.getString(0);</span>
+                    } else {
+<span class="nc" id="L285">                        return;</span>
+                    }
+<span class="nc" id="L287">                } else {</span>
+<span class="nc" id="L288">                    value = field.toString();</span>
+                }
+
+                // Limiter la longueur du texte pour éviter des descriptions trop longues
+<span class="nc bnc" id="L292" title="All 2 branches missed.">                if (value.length() &gt; 200) {</span>
+<span class="nc" id="L293">                    value = value.substring(0, 197) + &quot;...&quot;;</span>
+                }
+
+<span class="nc bnc" id="L296" title="All 2 branches missed.">                if (builder.length() &gt; 0) {</span>
+<span class="nc" id="L297">                    builder.append(&quot;\n\n&quot;);</span>
+                }
+
+<span class="nc" id="L300">                builder.append(displayName).append(&quot;: &quot;).append(value);</span>
+<span class="nc" id="L301">            } catch (Exception e) {</span>
+                // Ignorer les erreurs lors de l'extraction
+<span class="nc" id="L303">            }</span>
+        }
+<span class="nc" id="L305">    }</span>
+
+    private void extractOpenFDAField(JSONObject openfda, String fieldName, String displayName, StringBuilder builder) {
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        if (openfda.has(fieldName)) {</span>
+            try {
+<span class="nc" id="L310">                JSONArray array = openfda.getJSONArray(fieldName);</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">                if (array.length() &gt; 0) {</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">                    if (builder.length() &gt; 0) {</span>
+<span class="nc" id="L313">                        builder.append(&quot;\n&quot;);</span>
+                    }
+<span class="nc" id="L315">                    builder.append(displayName).append(&quot;: &quot;).append(array.getString(0));</span>
+                }
+<span class="nc" id="L317">            } catch (Exception e) {</span>
+                // Ignorer les erreurs lors de l'extraction
+<span class="nc" id="L319">            }</span>
+        }
+<span class="nc" id="L321">    }</span>
+
+    // Méthode pour trouver le type de médicament le plus proche dans la liste
+    private void setClosestType(String apiDosageForm) {
+        // Conversion en minuscule pour faciliter la comparaison
+<span class="nc" id="L326">        String dosageFormLower = apiDosageForm.toLowerCase();</span>
+
+        // Correspondances possibles
+<span class="nc bnc" id="L329" title="All 4 branches missed.">        if (dosageFormLower.contains(&quot;tablet&quot;) || dosageFormLower.contains(&quot;comprimé&quot;)) {</span>
+<span class="nc" id="L330">            typeComboBox.setValue(&quot;Comprimé&quot;);</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">        } else if (dosageFormLower.contains(&quot;capsule&quot;)) {</span>
+<span class="nc" id="L332">            typeComboBox.setValue(&quot;Capsule&quot;);</span>
+<span class="nc bnc" id="L333" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;syrup&quot;) || dosageFormLower.contains(&quot;sirop&quot;)) {</span>
+<span class="nc" id="L334">            typeComboBox.setValue(&quot;Sirops&quot;);</span>
+<span class="nc bnc" id="L335" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;powder&quot;) || dosageFormLower.contains(&quot;poudre&quot;)) {</span>
+<span class="nc" id="L336">            typeComboBox.setValue(&quot;Poudre&quot;);</span>
+<span class="nc bnc" id="L337" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;solution&quot;) || dosageFormLower.contains(&quot;liquid&quot;)) {</span>
+<span class="nc" id="L338">            typeComboBox.setValue(&quot;Solutions buvables&quot;);</span>
+<span class="nc bnc" id="L339" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;ampule&quot;) || dosageFormLower.contains(&quot;ampoule&quot;)) {</span>
+<span class="nc" id="L340">            typeComboBox.setValue(&quot;Ampoule&quot;);</span>
+<span class="nc bnc" id="L341" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;injection&quot;) || dosageFormLower.contains(&quot;syringe&quot;)) {</span>
+<span class="nc" id="L342">            typeComboBox.setValue(&quot;Seringue&quot;);</span>
+<span class="nc bnc" id="L343" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;aerosol&quot;) || dosageFormLower.contains(&quot;spray&quot;)) {</span>
+<span class="nc" id="L344">            typeComboBox.setValue(&quot;Aérosol&quot;);</span>
+<span class="nc bnc" id="L345" title="All 4 branches missed.">        } else if (dosageFormLower.contains(&quot;cream&quot;) || dosageFormLower.contains(&quot;crème&quot;)) {</span>
+<span class="nc" id="L346">            typeComboBox.setValue(&quot;Crème&quot;);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        } else if (dosageFormLower.contains(&quot;lotion&quot;)) {</span>
+<span class="nc" id="L348">            typeComboBox.setValue(&quot;Lotion&quot;);</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">        } else if (dosageFormLower.contains(&quot;suppository&quot;)) {</span>
+<span class="nc" id="L350">            typeComboBox.setValue(&quot;Suppositoire&quot;);</span>
+        }
+<span class="nc" id="L352">    }</span>
+    @FXML
+    private void openChatbot() {
+<span class="nc" id="L355">        MainFx.loadPage(&quot;chatbot_medicament.fxml&quot;);</span>
+<span class="nc" id="L356">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

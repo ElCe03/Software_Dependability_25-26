@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicamentListController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">MedicamentListController.java</span></div><h1>MedicamentListController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Medicament;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
+import service.MedicamentService;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+<span class="nc" id="L26">public class MedicamentListController {</span>
+
+<span class="nc" id="L28">    private final MedicamentService medicamentService = new MedicamentService();</span>
+<span class="nc" id="L29">    private final ObservableList&lt;Medicament&gt; medicamentData = FXCollections.observableArrayList();</span>
+    private FilteredList&lt;Medicament&gt; filteredData;
+    @FXML private TableView&lt;Medicament&gt; medicamentTable;
+    @FXML private TableColumn&lt;Medicament, String&gt; nameColumn;
+    @FXML private TableColumn&lt;Medicament, String&gt; descriptionColumn;
+    @FXML private TableColumn&lt;Medicament, String&gt; typeColumn;
+    @FXML private TableColumn&lt;Medicament, Integer&gt; stockColumn;
+    @FXML private TableColumn&lt;Medicament, Double&gt; prixColumn;
+    @FXML private TableColumn&lt;Medicament, String&gt; dateEntreeColumn;
+    @FXML private TableColumn&lt;Medicament, String&gt; dateExpirationColumn;
+    @FXML private TableColumn&lt;Medicament, Void&gt; modifyColumn;
+    @FXML private TableColumn&lt;Medicament, Void&gt; deleteColumn;
+    @FXML private TextField searchField;
+    @FXML private ComboBox&lt;String&gt; sortComboBox;
+    @FXML private Pagination pagination;
+    @FXML private ComboBox&lt;Integer&gt; itemsPerPageCombo;
+    @FXML private PieChart typePieChart;
+    @FXML private Label expirationAlertLabel;
+
+<span class="nc" id="L48">    private ObservableList&lt;Medicament&gt; allMedicaments = FXCollections.observableArrayList();</span>
+<span class="nc" id="L49">    private ObservableList&lt;Medicament&gt; medicamentsProchesExpiration = FXCollections.observableArrayList();</span>
+    private static final int DEFAULT_ITEMS_PER_PAGE = 10;
+
+    @FXML
+    private void initialize() {
+<span class="nc" id="L54">        configureTableColumns();</span>
+<span class="nc" id="L55">        addTableButtons();</span>
+<span class="nc" id="L56">        refreshTableData();</span>
+<span class="nc" id="L57">        filteredData = new FilteredList&lt;&gt;(medicamentData, p -&gt; true);</span>
+<span class="nc" id="L58">        medicamentTable.setItems(filteredData);</span>
+<span class="nc" id="L59">        setupSearch();</span>
+<span class="nc" id="L60">        setupSorting();</span>
+<span class="nc" id="L61">        setupPagination();</span>
+<span class="nc" id="L62">        configureItemsPerPage();</span>
+<span class="nc" id="L63">        String css = &quot;.table-view .scroll-bar:vertical, .table-view .scroll-bar:horizontal { -fx-opacity: 0; -fx-pref-width: 0; }&quot;;</span>
+<span class="nc" id="L64">        medicamentTable.setStyle(css);</span>
+<span class="nc" id="L65">        loadPieChartStats();</span>
+<span class="nc" id="L66">        highlightExpiringMedications();</span>
+
+<span class="nc" id="L68">    }</span>
+
+    private void configureTableColumns() {
+<span class="nc" id="L71">        nameColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom_medicament&quot;));</span>
+<span class="nc" id="L72">        descriptionColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;description_medicament&quot;));</span>
+<span class="nc" id="L73">        typeColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;type_medicament&quot;));</span>
+<span class="nc" id="L74">        stockColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;quantite_stock&quot;));</span>
+<span class="nc" id="L75">        prixColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;prix_medicament&quot;));</span>
+<span class="nc" id="L76">        dateEntreeColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;date_entree&quot;));</span>
+<span class="nc" id="L77">        dateExpirationColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;date_expiration&quot;));</span>
+<span class="nc" id="L78">    }</span>
+
+    private void addTableButtons() {
+<span class="nc" id="L81">        addModifyButtonToTable();</span>
+<span class="nc" id="L82">        addDeleteButtonToTable();</span>
+<span class="nc" id="L83">    }</span>
+
+    private void addModifyButtonToTable() {
+<span class="nc" id="L86">        modifyColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L87">            private final Button modifyBtn = new Button(&quot;Modify&quot;);</span>
+
+            {
+<span class="nc" id="L90">                modifyBtn.setStyle(&quot;-fx-background-color: blue; -fx-text-fill: white;&quot;); // Set the button color to blue with white text</span>
+<span class="nc" id="L91">                modifyBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L92">                    Medicament m = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L93">                    handleModify(m);</span>
+<span class="nc" id="L94">                });</span>
+<span class="nc" id="L95">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L99">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                setGraphic(empty ? null : modifyBtn);</span>
+<span class="nc" id="L101">            }</span>
+        });
+<span class="nc" id="L103">    }</span>
+
+    private void addDeleteButtonToTable() {
+<span class="nc" id="L106">        deleteColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L107">            private final Button deleteBtn = new Button(&quot;Delete&quot;);</span>
+
+            {
+                // Set the Delete button's style to red with white text
+<span class="nc" id="L111">                deleteBtn.setStyle(&quot;-fx-background-color: red; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L112">                deleteBtn.setOnAction(e -&gt; {</span>
+<span class="nc" id="L113">                    Medicament m = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L114">                    handleDeleteConfirmation(m);</span>
+<span class="nc" id="L115">                });</span>
+<span class="nc" id="L116">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L120">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                setGraphic(empty ? null : deleteBtn);</span>
+<span class="nc" id="L122">            }</span>
+        });
+<span class="nc" id="L124">    }</span>
+
+    @FXML
+    private void handleNewMedicament() {
+        try {
+            // Charger la nouvelle vue
+<span class="nc" id="L130">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/medicament.fxml&quot;));</span>
+<span class="nc" id="L131">            Stage stage = (Stage) medicamentTable.getScene().getWindow();</span>
+<span class="nc" id="L132">            stage.setScene(new Scene(root));</span>
+
+            // Ajouter un listener pour quand la fenêtre se ferme
+<span class="nc" id="L135">            stage.setOnHidden(e -&gt; refreshTableData());</span>
+
+<span class="nc" id="L137">            stage.show();</span>
+<span class="nc" id="L138">        } catch (IOException e) {</span>
+<span class="nc" id="L139">            e.printStackTrace();</span>
+<span class="nc" id="L140">        }</span>
+<span class="nc" id="L141">    }</span>
+
+    private void handleModify(Medicament m) {
+        try {
+<span class="nc" id="L145">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/medicament_update.fxml&quot;));</span>
+<span class="nc" id="L146">            Parent root = loader.load();</span>
+
+            // Get controller instance and inject the selected Medicament
+<span class="nc" id="L149">            MedicamentUpdateController controller = loader.getController();</span>
+<span class="nc" id="L150">            controller.setMedicament(m);</span>
+
+            // Show new scene
+<span class="nc" id="L153">            Stage stage = (Stage) medicamentTable.getScene().getWindow();</span>
+<span class="nc" id="L154">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L155">            stage.setOnHidden(e -&gt; refreshTableData());</span>
+<span class="nc" id="L156">            stage.show();</span>
+
+<span class="nc" id="L158">        } catch (IOException e) {</span>
+<span class="nc" id="L159">            e.printStackTrace();</span>
+<span class="nc" id="L160">        }</span>
+<span class="nc" id="L161">    }</span>
+
+
+    private void handleDeleteConfirmation(Medicament m) {
+<span class="nc" id="L165">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L166">        alert.setTitle(&quot;Delete Confirmation&quot;);</span>
+<span class="nc" id="L167">        alert.setHeaderText(&quot;Delete &quot; + m.getNom_medicament() + &quot;?&quot;);</span>
+<span class="nc" id="L168">        alert.setContentText(&quot;This action cannot be undone.&quot;);</span>
+
+<span class="nc" id="L170">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
+<span class="nc bnc" id="L171" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L172">            medicamentService.delete(m);</span>
+<span class="nc" id="L173">            refreshTableData();</span>
+        }
+<span class="nc" id="L175">    }</span>
+
+    private void refreshTableData() {
+<span class="nc" id="L178">        medicamentData.setAll(medicamentService.readAll());</span>
+<span class="nc" id="L179">        medicamentTable.setItems(filteredData);</span>
+<span class="nc" id="L180">        updatePieChart();</span>
+<span class="nc" id="L181">    }</span>
+
+    private void configureTable() {
+<span class="nc" id="L184">        nameColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom_medicament&quot;));</span>
+<span class="nc" id="L185">        descriptionColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;description_medicament&quot;));</span>
+<span class="nc" id="L186">        typeColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;type_medicament&quot;));</span>
+<span class="nc" id="L187">        prixColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;prix_medicament&quot;));</span>
+<span class="nc" id="L188">        stockColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;quantite_stock&quot;));</span>
+<span class="nc" id="L189">        dateEntreeColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;date_entree&quot;));</span>
+<span class="nc" id="L190">        dateExpirationColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;date_expiration&quot;));</span>
+
+<span class="nc" id="L192">        medicamentData.setAll(medicamentService.readAll());</span>
+<span class="nc" id="L193">        filteredData = new FilteredList&lt;&gt;(medicamentData, p -&gt; true);</span>
+<span class="nc" id="L194">    }</span>
+
+    private void setupSearch() {
+<span class="nc" id="L197">        searchField.textProperty().addListener((obs, oldVal, newVal) -&gt; {</span>
+<span class="nc" id="L198">            filteredData.setPredicate(medicament -&gt; {</span>
+<span class="nc bnc" id="L199" title="All 4 branches missed.">                if (newVal == null || newVal.isEmpty()) return true;</span>
+<span class="nc" id="L200">                return medicament.getNom_medicament().toLowerCase().contains(newVal.toLowerCase());</span>
+            });
+<span class="nc" id="L202">            updatePagination();</span>
+<span class="nc" id="L203">        });</span>
+<span class="nc" id="L204">    }</span>
+
+    private void setupSorting() {
+<span class="nc" id="L207">        sortComboBox.getItems().addAll(</span>
+                &quot;Nom (A-Z)&quot;,
+                &quot;Nom (Z-A)&quot;,
+                &quot;Date entrée récente&quot;,
+                &quot;Date expiration proche&quot;
+        );
+
+<span class="nc" id="L214">        sortComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -&gt; {</span>
+<span class="nc" id="L215">            Comparator&lt;Medicament&gt; comparator = null;</span>
+<span class="nc bnc" id="L216" title="All 5 branches missed.">            switch(newVal) {</span>
+                case &quot;Nom (A-Z)&quot;:
+<span class="nc" id="L218">                    comparator = Comparator.comparing(Medicament::getNom_medicament);</span>
+<span class="nc" id="L219">                    break;</span>
+                case &quot;Nom (Z-A)&quot;:
+<span class="nc" id="L221">                    comparator = Comparator.comparing(Medicament::getNom_medicament).reversed();</span>
+<span class="nc" id="L222">                    break;</span>
+                case &quot;Date entrée récente&quot;:
+<span class="nc" id="L224">                    comparator = Comparator.comparing(Medicament::getDate_entree).reversed();</span>
+<span class="nc" id="L225">                    break;</span>
+                case &quot;Date expiration proche&quot;:
+<span class="nc" id="L227">                    comparator = Comparator.comparing(Medicament::getDate_expiration);</span>
+                    break;
+            }
+<span class="nc bnc" id="L230" title="All 2 branches missed.">            if (comparator != null) {</span>
+<span class="nc" id="L231">                FXCollections.sort(medicamentData, comparator);</span>
+            }
+<span class="nc" id="L233">        });</span>
+<span class="nc" id="L234">    }</span>
+
+    private void setupPagination() {
+<span class="nc" id="L237">        pagination.setPageCount(calculatePageCount());</span>
+<span class="nc" id="L238">        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -&gt; {</span>
+<span class="nc" id="L239">            int itemsPerPage = getItemsPerPage(); // Conversion en int</span>
+<span class="nc" id="L240">            int from = newIndex.intValue() * itemsPerPage; // Maintenant int * int</span>
+<span class="nc" id="L241">            int to = Math.min(from + itemsPerPage, filteredData.size());</span>
+<span class="nc" id="L242">            medicamentTable.setItems(FXCollections.observableArrayList(filteredData.subList(from, to)));</span>
+<span class="nc" id="L243">        });</span>
+<span class="nc" id="L244">    }</span>
+
+    private void configureItemsPerPage() {
+<span class="nc" id="L247">        itemsPerPageCombo.getItems().addAll(5, 10, 20, 50);</span>
+<span class="nc" id="L248">        itemsPerPageCombo.setValue(DEFAULT_ITEMS_PER_PAGE);</span>
+<span class="nc" id="L249">        itemsPerPageCombo.valueProperty().addListener((obs, oldVal, newVal) -&gt; updatePagination());</span>
+<span class="nc" id="L250">    }</span>
+
+    private int getItemsPerPage() {
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        return itemsPerPageCombo.getValue() != null ?</span>
+<span class="nc" id="L254">                itemsPerPageCombo.getValue().intValue() : // Conversion explicite en int</span>
+<span class="nc" id="L255">                DEFAULT_ITEMS_PER_PAGE;</span>
+    }
+
+    private int calculatePageCount() {
+<span class="nc" id="L259">        return (int) Math.ceil((double) filteredData.size() / getItemsPerPage());</span>
+    }
+
+    private void updatePagination() {
+<span class="nc" id="L263">        pagination.setPageCount(calculatePageCount());</span>
+<span class="nc" id="L264">        pagination.setCurrentPageIndex(0);</span>
+<span class="nc" id="L265">    }</span>
+
+    private void loadPieChartStats() {
+<span class="nc" id="L268">        Map&lt;String, Integer&gt; stats = medicamentService.getTypeCounts();</span>
+<span class="nc" id="L269">        ObservableList&lt;PieChart.Data&gt; pieChartData = FXCollections.observableArrayList();</span>
+
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        for (Entry&lt;String, Integer&gt; entry : stats.entrySet()) {</span>
+<span class="nc" id="L272">            pieChartData.add(new PieChart.Data(entry.getKey(), entry.getValue()));</span>
+<span class="nc" id="L273">        }</span>
+
+<span class="nc" id="L275">        typePieChart.setData(pieChartData);</span>
+<span class="nc" id="L276">        typePieChart.setTitle(&quot;Types de Médicaments&quot;);</span>
+<span class="nc" id="L277">    }</span>
+    private void chargerMedicaments() {
+<span class="nc" id="L279">        allMedicaments.setAll(medicamentService.readAll()); // Récupère tous les médicaments</span>
+<span class="nc" id="L280">        filtrerMedicamentsProchesExpiration();</span>
+<span class="nc" id="L281">    }</span>
+
+    private void filtrerMedicamentsProchesExpiration() {
+<span class="nc" id="L284">        LocalDate today = LocalDate.now();</span>
+<span class="nc" id="L285">        LocalDate dans30Jours = today.plusDays(30);</span>
+
+<span class="nc" id="L287">        List&lt;Medicament&gt; filtrés = allMedicaments.stream()</span>
+<span class="nc" id="L288">                .filter(m -&gt; {</span>
+<span class="nc" id="L289">                    LocalDate expiration = m.getDate_expiration();</span>
+<span class="nc bnc" id="L290" title="All 6 branches missed.">                    return expiration != null &amp;&amp; !expiration.isBefore(today) &amp;&amp; !expiration.isAfter(dans30Jours);</span>
+                })
+<span class="nc" id="L292">                .collect(Collectors.toList());</span>
+
+<span class="nc" id="L294">        medicamentsProchesExpiration.setAll(filtrés);</span>
+<span class="nc" id="L295">    }</span>
+
+    private void highlightExpiringMedications() {
+<span class="nc" id="L298">        LocalDate today = LocalDate.now();</span>
+<span class="nc" id="L299">        LocalDate limitDate = today.plusDays(30);</span>
+
+<span class="nc" id="L301">        List&lt;Medicament&gt; expiringSoon = medicamentService.readAll().stream()</span>
+<span class="nc" id="L302">                .filter(m -&gt; {</span>
+<span class="nc" id="L303">                    LocalDate expiration = m.getDate_expiration();</span>
+<span class="nc bnc" id="L304" title="All 6 branches missed.">                    return expiration != null &amp;&amp; !expiration.isBefore(today) &amp;&amp; !expiration.isAfter(limitDate);</span>
+                })
+<span class="nc" id="L306">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        if (!expiringSoon.isEmpty()) {</span>
+<span class="nc" id="L309">            Alert alert = new Alert(Alert.AlertType.WARNING);</span>
+<span class="nc" id="L310">            alert.setTitle(&quot;Alerte d'expiration&quot;);</span>
+<span class="nc" id="L311">            alert.setHeaderText(&quot;Médicaments proches de l'expiration&quot;);</span>
+<span class="nc" id="L312">            String content = expiringSoon.stream()</span>
+<span class="nc" id="L313">                    .map(m -&gt; &quot;- &quot; + m.getNom_medicament() + &quot; (expire le &quot; + m.getDate_expiration() + &quot;)&quot;)</span>
+<span class="nc" id="L314">                    .collect(Collectors.joining(&quot;\n&quot;));</span>
+<span class="nc" id="L315">            alert.setContentText(content);</span>
+<span class="nc" id="L316">            alert.show();</span>
+        }
+<span class="nc" id="L318">    }</span>
+    private void updatePieChart() {
+        // Calculer les nouvelles statistiques
+<span class="nc" id="L321">        Map&lt;String, Integer&gt; stats = medicamentService.readAll().stream()</span>
+<span class="nc" id="L322">                .collect(Collectors.groupingBy(</span>
+                        Medicament::getType_medicament,
+<span class="nc" id="L324">                        Collectors.summingInt(m -&gt; 1)</span>
+                ));
+
+        // Mettre à jour les données du PieChart
+<span class="nc" id="L328">        ObservableList&lt;PieChart.Data&gt; pieChartData = FXCollections.observableArrayList();</span>
+<span class="nc" id="L329">        stats.forEach((type, count) -&gt;</span>
+<span class="nc" id="L330">                pieChartData.add(new PieChart.Data(type + &quot; (&quot; + count + &quot;)&quot;, count))</span>
+        );
+
+        // Appliquer les nouvelles données
+<span class="nc" id="L334">        typePieChart.setData(pieChartData);</span>
+<span class="nc" id="L335">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

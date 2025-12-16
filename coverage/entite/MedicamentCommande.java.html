@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicamentCommande.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">MedicamentCommande.java</span></div><h1>MedicamentCommande.java</h1><pre class="source lang-java linenums">package entite;
+
+public class MedicamentCommande {
+
+    /*@ spec_public non_null @*/
+    private Commande commande;
+
+    /*@ spec_public non_null @*/
+    private Medicament medicament;
+    
+    /*@ spec_public @*/
+    private int quantite;
+
+    /*@ public invariant commande != null; @*/
+    /*@ public invariant medicament != null; @*/
+    /*@ public invariant quantite &gt; 0; @*/
+
+    /*@ 
+      @ requires commande != null;
+      @ requires medicament != null;
+      @ requires quantite &gt; 0;
+      @ 
+      @ ensures this.commande == commande;
+      @ ensures this.medicament == medicament;
+      @ ensures this.quantite == quantite;
+      @*/
+<span class="fc" id="L27">    public MedicamentCommande(Commande commande, Medicament medicament, int quantite) {</span>
+<span class="fc" id="L28">        this.commande = commande;</span>
+<span class="fc" id="L29">        this.medicament = medicament;</span>
+<span class="fc" id="L30">        this.quantite = quantite;</span>
+
+<span class="fc" id="L32">    }</span>
+
+    // Getters/Setters
+
+    /*@ ensures \result == commande; ensures \result != null; pure @*/
+<span class="nc" id="L37">    public Commande getCommande() { return commande; }</span>
+    /*@ ensures \result == medicament; ensures \result != null; pure @*/
+<span class="fc" id="L39">    public Medicament getMedicament() { return medicament; }</span>
+    /*@ ensures \result == quantite; ensures \result &gt; 0; pure @*/
+<span class="fc" id="L41">    public int getQuantite() { return quantite; }</span>
+    /*@ 
+      @ requires commande != null;
+      @ assignable this.commande;
+      @ ensures this.commande == commande;
+      @*/
+    public void setCommande(Commande commande) {
+<span class="nc" id="L48">        this.commande = commande;</span>
+<span class="nc" id="L49">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

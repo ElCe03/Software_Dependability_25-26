@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>reservation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">reservation.java</span></div><h1>reservation.java</h1><pre class="source lang-java linenums">package entite;
+
+import java.sql.Timestamp;
+
+public class reservation {
+
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private salle salle;
+    /*@ spec_public nullable @*/ private Timestamp date_debut;
+    /*@ spec_public nullable @*/ private Timestamp date_fin;
+
+    /*@ public invariant id &gt;= 0; @*/
+    /*@ public invariant (date_debut != null &amp;&amp; date_fin != null) ==&gt; date_debut.before(date_fin); @*/
+
+    /*@ 
+      @ requires date_debut != null;
+      @ requires date_fin != null;
+      @ requires date_debut.before(date_fin);
+      @ 
+      @ requires id &gt;= 0;
+      @ 
+      @ ensures this.id == id;
+      @ ensures this.salle == salle;
+      @ ensures this.date_debut == date_debut;
+      @ ensures this.date_fin == date_fin;
+      @*/
+    // Constructors
+<span class="nc" id="L28">    public reservation(int id, salle salle, Timestamp date_debut, Timestamp date_fin) {</span>
+<span class="nc" id="L29">        this.id = id;</span>
+<span class="nc" id="L30">        this.salle = salle;</span>
+<span class="nc" id="L31">        this.date_debut = date_debut;</span>
+<span class="nc" id="L32">        this.date_fin = date_fin;</span>
+<span class="nc" id="L33">    }</span>
+
+    /*@ 
+      @ ensures id == 0;
+      @ ensures date_debut == null;
+      @ ensures date_fin == null;
+      @ ensures salle == null;
+      @*/
+<span class="fc" id="L41">    public reservation() {}</span>
+
+
+    // Getters and setters
+
+    /*@ ensures \result == id; pure @*/
+<span class="fc" id="L47">    public int getId() { return id; }</span>
+    
+    /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
+<span class="fc" id="L50">    public void setId(int id) { this.id = id; }</span>
+
+    /*@ ensures \result == salle; pure @*/
+<span class="fc" id="L53">    public salle getSalle() { return salle; }</span>
+
+    /*@ assignable this.salle; ensures this.salle == salle; @*/
+<span class="fc" id="L56">    public void setSalle(salle salle) { this.salle = salle; }</span>
+
+    /*@ ensures \result == date_debut; pure @*/
+<span class="fc" id="L59">    public Timestamp getDate_debut() { return date_debut; }</span>
+
+    /*@
+      @ requires (this.date_fin != null &amp;&amp; date_debut != null) ==&gt; date_debut.before(this.date_fin);
+      @ assignable this.date_debut;
+      @ ensures this.date_debut == date_debut;
+      @*/
+<span class="fc" id="L66">    public void setDate_debut(Timestamp date_debut) { this.date_debut = date_debut; }</span>
+
+    /*@ ensures \result == date_fin; pure @*/
+<span class="fc" id="L69">    public Timestamp getDate_fin() { return date_fin; }</span>
+
+    /*@ 
+      @ requires (this.date_debut != null &amp;&amp; date_fin != null) ==&gt; this.date_debut.before(date_fin);
+      @ assignable this.date_fin;
+      @ ensures this.date_fin == date_fin;
+      @*/
+<span class="fc" id="L76">    public void setDate_fin(Timestamp date_fin) { this.date_fin = date_fin; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

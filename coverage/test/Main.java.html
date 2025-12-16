@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Main.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">test</a> &gt; <span class="el_source">Main.java</span></div><h1>Main.java</h1><pre class="source lang-java linenums">package test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import entite.Users;
+import entite.Users;
+import service.UserService;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Scanner;
+
+<span class="nc" id="L12">public class Main {</span>
+    public static void main(String[] args) {
+<span class="nc" id="L14">        UserService userService = new UserService();</span>
+
+        // Création d’un utilisateur
+<span class="nc" id="L17">        Users newUser = new Users();</span>
+<span class="nc" id="L18">        newUser.setNom(&quot;Guitouni&quot;);</span>
+<span class="nc" id="L19">        newUser.setPrenom(&quot;ala&quot;);</span>
+<span class="nc" id="L20">        newUser.setEmail(&quot;amine@example.com&quot;);</span>
+<span class="nc" id="L21">        newUser.setPassword(&quot;motdepasse123&quot;); // Le mot de passe sera hashé automatiquement</span>
+
+        // Choisir un rôle valide
+<span class="nc" id="L24">        String type = &quot;medecin&quot;;</span>
+<span class="nc" id="L25">        List&lt;String&gt; rolesValides = List.of(&quot;medecin&quot;, &quot;patient&quot;, &quot;pharmacien&quot;, &quot;staff&quot;);</span>
+
+<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (!rolesValides.contains(type.toLowerCase())) {</span>
+<span class="nc" id="L28">            System.err.println(&quot;❌ Type de rôle invalide !&quot;);</span>
+<span class="nc" id="L29">            return;</span>
+        }
+
+        try {
+<span class="nc" id="L33">            userService.ajouterUtilisateur(newUser, type);</span>
+
+            // Affichage
+<span class="nc" id="L36">            System.out.println(&quot;✔ Utilisateur ajouté avec succès !&quot;);</span>
+<span class="nc" id="L37">            System.out.println(&quot;🆔 ID : &quot; + newUser.getId());</span>
+<span class="nc" id="L38">            System.out.println(&quot;📧 Email : &quot; + newUser.getEmail());</span>
+<span class="nc" id="L39">            System.out.println(&quot;🔐 Mot de passe hashé : &quot; + newUser.getPassword());</span>
+<span class="nc" id="L40">            System.out.println(&quot;👤 Rôles : &quot; + newUser.getRoles());</span>
+<span class="nc" id="L41">            System.out.println(&quot;👤 Type : &quot; + newUser.getType());</span>
+<span class="nc" id="L42">            newUser.setNom(&quot;Guitounii Updated&quot;);</span>
+<span class="nc" id="L43">            newUser.setPrenom(&quot;Alaa Updated&quot;);</span>
+<span class="nc" id="L44">            newUser.setEmail(&quot;elaa_updated@example.com&quot;);</span>
+<span class="nc" id="L45">            userService.updateUtilisateur(newUser);</span>
+<span class="nc" id="L46">            int userIdToDelete = newUser.getId(); // L'ID de l'utilisateur ajouté</span>
+<span class="nc" id="L47">            userService.supprimer(174); // Appel à la méthode de suppression</span>
+<span class="nc" id="L48">            System.out.println(&quot;✅ Suppression de l'utilisateur effectuée avec succès !&quot;);</span>
+<span class="nc" id="L49">            System.out.println(&quot;\n📋 Affichage de tous les utilisateurs restants :&quot;);</span>
+<span class="nc" id="L50">            List&lt;Users&gt; utilisateurs = userService.listerUtilisateurs();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            if (utilisateurs.isEmpty()) {</span>
+<span class="nc" id="L52">                System.out.println(&quot;⚠ Aucun utilisateur trouvé.&quot;);</span>
+            } else {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">                for (Users u : utilisateurs) {</span>
+<span class="nc" id="L55">                    System.out.println(&quot;────────────────────────────&quot;);</span>
+<span class="nc" id="L56">                    System.out.println(&quot;🆔 ID : &quot; + u.getId());</span>
+<span class="nc" id="L57">                    System.out.println(&quot;👤 Nom : &quot; + u.getNom());</span>
+<span class="nc" id="L58">                    System.out.println(&quot;👥 Prénom : &quot; + u.getPrenom());</span>
+<span class="nc" id="L59">                    System.out.println(&quot;📧 Email : &quot; + u.getEmail());</span>
+<span class="nc" id="L60">                    System.out.println(&quot;🔐 Rôles : &quot; + u.getRoles());</span>
+<span class="nc" id="L61">                    System.out.println(&quot;🏷 Type : &quot; + u.getType());</span>
+<span class="nc" id="L62">                }</span>
+<span class="nc" id="L63">                System.out.println(&quot;────────────────────────────&quot;);</span>
+<span class="nc" id="L64">                System.out.println(&quot;📦 Total : &quot; + utilisateurs.size() + &quot; utilisateur(s).&quot;);</span>
+            }
+
+
+<span class="nc" id="L68">        } catch (SQLException e) {</span>
+<span class="nc" id="L69">            System.err.println(&quot;❌ Erreur SQL : &quot; + e.getMessage());</span>
+<span class="nc" id="L70">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L71">            System.err.println(&quot;⚠ Erreur de validation : &quot; + e.getMessage());</span>
+<span class="nc" id="L72">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L73">            throw new RuntimeException(e);</span>
+<span class="nc" id="L74">        }</span>
+<span class="nc" id="L75">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConsultationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ConsultationController.java</span></div><h1>ConsultationController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Consultation;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import service.ConsultationService;
+import service.serviceservice;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.Callback;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
+
+import java.sql.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
+
+<span class="nc" id="L25">public class ConsultationController {</span>
+    // FXML injected fields
+    @FXML private TextField loginPatientIdField;
+    @FXML private GridPane consultationForm;
+    @FXML private HBox actionButtonsContainer;
+    @FXML private DatePicker datePicker;
+    @FXML private TextField patientIdField;
+    @FXML private TextField statusField;
+    @FXML private TextField phoneField;
+    @FXML private ComboBox&lt;String&gt; serviceCombo;
+    @FXML private TableView&lt;Consultation&gt; consultationTable;
+    @FXML private TableColumn&lt;Consultation, Integer&gt; idColumn;
+    @FXML private TableColumn&lt;Consultation, String&gt; serviceColumn;
+    @FXML private TableColumn&lt;Consultation, Date&gt; dateColumn;
+    @FXML private TableColumn&lt;Consultation, String&gt; statusColumn;
+    @FXML private TableColumn&lt;Consultation, String&gt; phoneColumn;
+    @FXML private TableColumn&lt;Consultation, Integer&gt; ratingColumn;
+    @FXML private Button addButton;
+    @FXML private Button updateButton;
+    @FXML private Button deleteButton;
+    @FXML private Button backButton;
+    @FXML private Button rateButton;
+
+    // Services and data
+<span class="nc" id="L49">    private final ConsultationService consultationService = new ConsultationService();</span>
+<span class="nc" id="L50">    private final serviceservice serviceService = new serviceservice();</span>
+<span class="nc" id="L51">    private final Map&lt;String, Integer&gt; serviceNameToIdMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L52">    private final Map&lt;Integer, Integer&gt; ratings = new HashMap&lt;&gt;(); // consultation ID -&gt; rating</span>
+    private String currentPatientId;
+<span class="nc" id="L54">    private Preferences prefs = Preferences.userNodeForPackage(ConsultationController.class);</span>
+
+    @FXML
+    public void initialize() {
+        // Initial UI state
+<span class="nc" id="L59">        consultationForm.setVisible(false);</span>
+<span class="nc" id="L60">        actionButtonsContainer.setVisible(false);</span>
+<span class="nc" id="L61">        consultationTable.setVisible(false);</span>
+<span class="nc" id="L62">        toggleActionButtons(false);</span>
+
+        // Configure status field
+<span class="nc" id="L65">        statusField.setText(&quot;En cours de traitement&quot;);</span>
+<span class="nc" id="L66">        statusField.setDisable(true);</span>
+
+        // Load services into combobox
+<span class="nc" id="L69">        loadServices();</span>
+
+        // Set up table columns and selection listener
+<span class="nc" id="L72">        setupTableColumns();</span>
+<span class="nc" id="L73">        setupTableSelectionListener();</span>
+<span class="nc" id="L74">        loadSavedRatings();</span>
+
+        // Enforce button styles after UI loads
+<span class="nc" id="L77">        Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L78">            enforceButtonStyles();</span>
+<span class="nc" id="L79">            enforceBackButtonStyle();</span>
+<span class="nc" id="L80">            enforceRateButtonStyle();</span>
+<span class="nc" id="L81">        });</span>
+<span class="nc" id="L82">    }</span>
+
+    // ===== RATING FUNCTIONALITY =====
+    private void setupTableColumns() {
+<span class="nc" id="L86">        idColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;id&quot;));</span>
+<span class="nc" id="L87">        serviceColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;serviceName&quot;));</span>
+<span class="nc" id="L88">        dateColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;date&quot;));</span>
+<span class="nc" id="L89">        statusColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;status&quot;));</span>
+<span class="nc" id="L90">        phoneColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;phoneNumber&quot;));</span>
+
+        // Rating column setup
+<span class="nc" id="L93">        ratingColumn.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L94">            Integer rating = ratings.get(cellData.getValue().getId());</span>
+<span class="nc" id="L95">            return new javafx.beans.property.SimpleObjectProperty&lt;&gt;(rating);</span>
+        });
+
+<span class="nc" id="L98">        ratingColumn.setCellFactory(column -&gt; new TableCell&lt;Consultation, Integer&gt;() {</span>
+<span class="nc" id="L99">            private final HBox starsContainer = new HBox(2);</span>
+
+            @Override
+            protected void updateItem(Integer rating, boolean empty) {
+<span class="nc" id="L103">                super.updateItem(rating, empty);</span>
+
+<span class="nc bnc" id="L105" title="All 4 branches missed.">                if (empty || rating == null) {</span>
+<span class="nc" id="L106">                    setGraphic(null);</span>
+                } else {
+<span class="nc" id="L108">                    starsContainer.getChildren().clear();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">                    for (int i = 1; i &lt;= 5; i++) {</span>
+<span class="nc" id="L110">                        SVGPath star = new SVGPath();</span>
+<span class="nc" id="L111">                        star.setContent(&quot;M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z&quot;);</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">                        star.setFill(i &lt;= rating ? Color.GOLD : Color.LIGHTGRAY);</span>
+<span class="nc" id="L113">                        starsContainer.getChildren().add(star);</span>
+                    }
+<span class="nc" id="L115">                    setGraphic(starsContainer);</span>
+                }
+<span class="nc" id="L117">            }</span>
+        });
+<span class="nc" id="L119">    }</span>
+
+    private void loadSavedRatings() {
+        try {
+<span class="nc" id="L123">            String savedRatings = prefs.get(&quot;consultation_ratings&quot;, &quot;&quot;);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">            if (!savedRatings.isEmpty()) {</span>
+<span class="nc" id="L125">                String[] pairs = savedRatings.split(&quot;;&quot;);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                for (String pair : pairs) {</span>
+<span class="nc" id="L127">                    String[] keyValue = pair.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                    if (keyValue.length == 2) {</span>
+<span class="nc" id="L129">                        ratings.put(Integer.parseInt(keyValue[0]), Integer.parseInt(keyValue[1]));</span>
+                    }
+                }
+            }
+<span class="nc" id="L133">        } catch (Exception e) {</span>
+<span class="nc" id="L134">            System.err.println(&quot;Error loading ratings: &quot; + e.getMessage());</span>
+<span class="nc" id="L135">        }</span>
+<span class="nc" id="L136">    }</span>
+
+    private void saveRatings() {
+        try {
+<span class="nc" id="L140">            StringBuilder sb = new StringBuilder();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            for (Map.Entry&lt;Integer, Integer&gt; entry : ratings.entrySet()) {</span>
+<span class="nc" id="L142">                sb.append(entry.getKey()).append(&quot;:&quot;).append(entry.getValue()).append(&quot;;&quot;);</span>
+<span class="nc" id="L143">            }</span>
+<span class="nc" id="L144">            prefs.put(&quot;consultation_ratings&quot;, sb.toString());</span>
+<span class="nc" id="L145">        } catch (Exception e) {</span>
+<span class="nc" id="L146">            System.err.println(&quot;Error saving ratings: &quot; + e.getMessage());</span>
+<span class="nc" id="L147">        }</span>
+<span class="nc" id="L148">    }</span>
+
+    @FXML
+    private void handleRateService() {
+<span class="nc" id="L152">        Consultation selected = consultationTable.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (selected != null) {</span>
+            // Create star rating dialog
+<span class="nc" id="L155">            Dialog&lt;Integer&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L156">            dialog.setTitle(&quot;Rate Consultation&quot;);</span>
+<span class="nc" id="L157">            dialog.setHeaderText(&quot;How would you rate this service? (1-5 stars)&quot;);</span>
+
+            // Set dialog buttons
+<span class="nc" id="L160">            ButtonType submitButton = new ButtonType(&quot;Submit&quot;, ButtonBar.ButtonData.OK_DONE);</span>
+<span class="nc" id="L161">            dialog.getDialogPane().getButtonTypes().addAll(submitButton, ButtonType.CANCEL);</span>
+
+            // Create star rating UI
+<span class="nc" id="L164">            HBox ratingBox = new HBox(5);</span>
+<span class="nc" id="L165">            ratingBox.setAlignment(javafx.geometry.Pos.CENTER);</span>
+
+<span class="nc" id="L167">            ToggleGroup starGroup = new ToggleGroup();</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">            for (int i = 1; i &lt;= 5; i++) {</span>
+<span class="nc" id="L169">                ToggleButton starBtn = new ToggleButton(&quot;★&quot;);</span>
+<span class="nc" id="L170">                starBtn.setToggleGroup(starGroup);</span>
+<span class="nc" id="L171">                starBtn.setUserData(i);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">                starBtn.setStyle(&quot;-fx-font-size: 24px; -fx-text-fill: &quot; + (i &lt;= 3 ? &quot;gold&quot; : &quot;lightgray&quot;) + &quot;;&quot;);</span>
+<span class="nc" id="L173">                starBtn.selectedProperty().addListener((obs, wasSelected, isSelected) -&gt; {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                    if (isSelected) {</span>
+<span class="nc" id="L175">                        starBtn.setStyle(&quot;-fx-font-size: 24px; -fx-text-fill: gold;&quot;);</span>
+                    }
+<span class="nc" id="L177">                });</span>
+<span class="nc" id="L178">                ratingBox.getChildren().add(starBtn);</span>
+            }
+
+<span class="nc" id="L181">            dialog.getDialogPane().setContent(ratingBox);</span>
+<span class="nc" id="L182">            dialog.setResultConverter(buttonType -&gt; {</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                if (buttonType == submitButton) {</span>
+<span class="nc" id="L184">                    Toggle selectedToggle = starGroup.getSelectedToggle();</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">                    return selectedToggle != null ? (Integer) selectedToggle.getUserData() : null;</span>
+                }
+<span class="nc" id="L187">                return null;</span>
+            });
+
+<span class="nc" id="L190">            dialog.showAndWait().ifPresent(rating -&gt; {</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">                if (rating != null) {</span>
+<span class="nc" id="L192">                    ratings.put(selected.getId(), rating);</span>
+<span class="nc" id="L193">                    saveRatings();</span>
+<span class="nc" id="L194">                    refreshTable();</span>
+<span class="nc" id="L195">                    showAlert(&quot;Thank You&quot;, &quot;You rated this service &quot; + rating + &quot; stars&quot;);</span>
+                }
+<span class="nc" id="L197">            });</span>
+<span class="nc" id="L198">        } else {</span>
+<span class="nc" id="L199">            showAlert(&quot;Error&quot;, &quot;Please select a consultation to rate&quot;);</span>
+        }
+<span class="nc" id="L201">    }</span>
+
+    private void enforceRateButtonStyle() {
+<span class="nc" id="L204">        rateButton.setStyle(</span>
+                &quot;-fx-background-color: #f39c12 !important; &quot; +
+                        &quot;-fx-text-fill: white !important; &quot; +
+                        &quot;-fx-background-radius: 5px !important; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-padding: 10px 20px; &quot; +
+                        &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0.5, 0, 1);&quot;
+        );
+
+<span class="nc" id="L213">        rateButton.setOnMouseEntered(e -&gt; rateButton.setStyle(</span>
+                &quot;-fx-background-color: #e67e22 !important; &quot; +
+                        &quot;-fx-text-fill: white !important; &quot; +
+                        &quot;-fx-background-radius: 5px !important; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-padding: 10px 20px; &quot; +
+                        &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 3, 0.5, 0, 1);&quot;
+        ));
+
+<span class="nc" id="L222">        rateButton.setOnMouseExited(e -&gt; enforceRateButtonStyle());</span>
+<span class="nc" id="L223">    }</span>
+
+    // ===== EXISTING METHODS (PRESERVED) =====
+    private void loadServices() {
+<span class="nc" id="L227">        serviceService.getAllServices().forEach(service -&gt; {</span>
+<span class="nc" id="L228">            serviceCombo.getItems().add(service.getName());</span>
+<span class="nc" id="L229">            serviceNameToIdMap.put(service.getName(), service.getId());</span>
+<span class="nc" id="L230">        });</span>
+<span class="nc" id="L231">    }</span>
+
+    private void setupTableSelectionListener() {
+<span class="nc" id="L234">        consultationTable.getSelectionModel().selectedItemProperty().addListener(</span>
+                (observable, oldValue, newValue) -&gt; {
+<span class="nc bnc" id="L236" title="All 2 branches missed.">                    if (newValue != null) {</span>
+<span class="nc" id="L237">                        populateFormWithSelectedConsultation(newValue);</span>
+<span class="nc" id="L238">                        toggleActionButtons(true);</span>
+                    } else {
+<span class="nc" id="L240">                        toggleActionButtons(false);</span>
+                    }
+<span class="nc" id="L242">                });</span>
+<span class="nc" id="L243">    }</span>
+
+    private void toggleActionButtons(boolean showUpdateDelete) {
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        addButton.setVisible(!showUpdateDelete);</span>
+<span class="nc" id="L247">        updateButton.setVisible(showUpdateDelete);</span>
+<span class="nc" id="L248">        deleteButton.setVisible(showUpdateDelete);</span>
+<span class="nc" id="L249">        rateButton.setVisible(showUpdateDelete);</span>
+<span class="nc" id="L250">        enforceButtonStyles();</span>
+<span class="nc" id="L251">    }</span>
+
+    private void enforceButtonStyles() {
+        // ADD BUTTON - BLUE
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (addButton.isVisible()) {</span>
+<span class="nc" id="L256">            addButton.setStyle(&quot;-fx-background-color: #3498db !important; &quot; +</span>
+                    &quot;-fx-text-fill: white !important; &quot; +
+                    &quot;-fx-background-radius: 5px !important; &quot; +
+                    &quot;-fx-font-weight: bold; &quot; +
+                    &quot;-fx-padding: 10px 20px; &quot; +
+                    &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0.5, 0, 1);&quot;);
+        }
+
+        // DELETE BUTTON - RED
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        if (deleteButton.isVisible()) {</span>
+<span class="nc" id="L266">            deleteButton.setStyle(&quot;-fx-background-color: #e74c3c !important; &quot; +</span>
+                    &quot;-fx-text-fill: white !important; &quot; +
+                    &quot;-fx-background-radius: 5px !important; &quot; +
+                    &quot;-fx-font-weight: bold; &quot; +
+                    &quot;-fx-padding: 10px 20px; &quot; +
+                    &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0.5, 0, 1);&quot;);
+        }
+
+        // UPDATE BUTTON - OUTLINE BLUE
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (updateButton.isVisible()) {</span>
+<span class="nc" id="L276">            updateButton.setStyle(&quot;-fx-background-color: transparent !important; &quot; +</span>
+                    &quot;-fx-text-fill: #3498db !important; &quot; +
+                    &quot;-fx-border-color: #3498db !important; &quot; +
+                    &quot;-fx-border-width: 2px !important; &quot; +
+                    &quot;-fx-border-radius: 5px !important; &quot; +
+                    &quot;-fx-font-weight: bold; &quot; +
+                    &quot;-fx-padding: 10px 20px; &quot; +
+                    &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 0, 0, 1);&quot;);
+        }
+<span class="nc" id="L285">    }</span>
+
+    private void enforceBackButtonStyle() {
+<span class="nc" id="L288">        backButton.setStyle(</span>
+                &quot;-fx-background-color: transparent; &quot; +
+                        &quot;-fx-text-fill: #3498db; &quot; +
+                        &quot;-fx-border-color: transparent; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-cursor: hand; &quot; +
+                        &quot;-fx-padding: 5px 10px;&quot;
+        );
+
+<span class="nc" id="L298">        backButton.setOnMouseEntered(e -&gt; backButton.setStyle(</span>
+                &quot;-fx-background-color: transparent; &quot; +
+                        &quot;-fx-text-fill: #2980b9; &quot; +
+                        &quot;-fx-underline: true; &quot; +
+                        &quot;-fx-border-color: transparent; &quot; +
+                        &quot;-fx-font-weight: bold; &quot; +
+                        &quot;-fx-font-size: 14px; &quot; +
+                        &quot;-fx-cursor: hand; &quot; +
+                        &quot;-fx-padding: 5px 10px;&quot;
+        ));
+
+<span class="nc" id="L309">        backButton.setOnMouseExited(e -&gt; enforceBackButtonStyle());</span>
+<span class="nc" id="L310">    }</span>
+
+    @FXML
+    private void handleBackButton() {
+        try {
+<span class="nc" id="L315">            Stage stage = (Stage) backButton.getScene().getWindow();</span>
+<span class="nc" id="L316">            Parent root = FXMLLoader.load(getClass().getResource(&quot;/front.fxml&quot;));</span>
+<span class="nc" id="L317">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L318">            stage.setScene(scene);</span>
+<span class="nc" id="L319">            stage.show();</span>
+<span class="nc" id="L320">        } catch (Exception e) {</span>
+<span class="nc" id="L321">            e.printStackTrace();</span>
+<span class="nc" id="L322">            showAlert(&quot;Error&quot;, &quot;Could not load the dashboard&quot;);</span>
+<span class="nc" id="L323">        }</span>
+<span class="nc" id="L324">    }</span>
+
+    @FXML
+    private void handlePatientLogin() {
+<span class="nc" id="L328">        String patientId = loginPatientIdField.getText().trim();</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">        if (!patientId.isEmpty()) {</span>
+<span class="nc" id="L330">            currentPatientId = patientId;</span>
+<span class="nc" id="L331">            consultationForm.setVisible(true);</span>
+<span class="nc" id="L332">            actionButtonsContainer.setVisible(true);</span>
+<span class="nc" id="L333">            consultationTable.setVisible(true);</span>
+<span class="nc" id="L334">            patientIdField.setText(patientId);</span>
+<span class="nc" id="L335">            patientIdField.setDisable(true);</span>
+<span class="nc" id="L336">            refreshTable();</span>
+<span class="nc" id="L337">            clearForm();</span>
+        } else {
+<span class="nc" id="L339">            showAlert(&quot;Error&quot;, &quot;Please enter a valid patient ID&quot;);</span>
+        }
+<span class="nc" id="L341">    }</span>
+
+    @FXML
+    private void handleAddConsultation() {
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        if (validateForm()) {</span>
+<span class="nc" id="L346">            Consultation consultation = new Consultation();</span>
+<span class="nc" id="L347">            consultation.setServiceId(serviceNameToIdMap.get(serviceCombo.getValue()));</span>
+<span class="nc" id="L348">            consultation.setDate(Date.valueOf(datePicker.getValue()));</span>
+<span class="nc" id="L349">            consultation.setPatientIdentifier(currentPatientId);</span>
+<span class="nc" id="L350">            consultation.setStatus(&quot;En cours de traitement&quot;);</span>
+<span class="nc" id="L351">            consultation.setPhoneNumber(phoneField.getText());</span>
+
+<span class="nc" id="L353">            consultationService.addConsultation(consultation);</span>
+<span class="nc" id="L354">            refreshTable();</span>
+<span class="nc" id="L355">            clearForm();</span>
+<span class="nc" id="L356">            showAlert(&quot;Success&quot;, &quot;Consultation added successfully&quot;);</span>
+        }
+<span class="nc" id="L358">    }</span>
+
+    @FXML
+    private void handleUpdateConsultation() {
+<span class="nc" id="L362">        Consultation selected = consultationTable.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L363" title="All 4 branches missed.">        if (selected != null &amp;&amp; validateForm()) {</span>
+<span class="nc" id="L364">            selected.setServiceId(serviceNameToIdMap.get(serviceCombo.getValue()));</span>
+<span class="nc" id="L365">            selected.setDate(Date.valueOf(datePicker.getValue()));</span>
+<span class="nc" id="L366">            selected.setPhoneNumber(phoneField.getText());</span>
+
+<span class="nc" id="L368">            consultationService.updateConsultation(selected);</span>
+<span class="nc" id="L369">            refreshTable();</span>
+<span class="nc" id="L370">            clearForm();</span>
+<span class="nc" id="L371">            showAlert(&quot;Success&quot;, &quot;Consultation updated successfully&quot;);</span>
+        }
+<span class="nc" id="L373">    }</span>
+
+    @FXML
+    private void handleDeleteConsultation() {
+<span class="nc" id="L377">        Consultation selected = consultationTable.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">        if (selected != null) {</span>
+<span class="nc" id="L379">            Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L380">            confirmation.setTitle(&quot;Confirm Deletion&quot;);</span>
+<span class="nc" id="L381">            confirmation.setHeaderText(null);</span>
+<span class="nc" id="L382">            confirmation.setContentText(&quot;Are you sure you want to delete this consultation?&quot;);</span>
+
+<span class="nc" id="L384">            confirmation.showAndWait().ifPresent(response -&gt; {</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">                if (response == ButtonType.OK) {</span>
+<span class="nc" id="L386">                    consultationService.deleteConsultation(selected.getId(), currentPatientId);</span>
+<span class="nc" id="L387">                    ratings.remove(selected.getId());</span>
+<span class="nc" id="L388">                    saveRatings();</span>
+<span class="nc" id="L389">                    refreshTable();</span>
+<span class="nc" id="L390">                    clearForm();</span>
+<span class="nc" id="L391">                    showAlert(&quot;Success&quot;, &quot;Consultation deleted successfully&quot;);</span>
+                }
+<span class="nc" id="L393">            });</span>
+        }
+<span class="nc" id="L395">    }</span>
+
+    private void refreshTable() {
+<span class="nc bnc" id="L398" title="All 2 branches missed.">        if (currentPatientId != null) {</span>
+<span class="nc" id="L399">            consultationTable.getItems().setAll(</span>
+<span class="nc" id="L400">                    consultationService.getConsultationsByPatient(currentPatientId)</span>
+            );
+        }
+<span class="nc" id="L403">    }</span>
+
+    private void populateFormWithSelectedConsultation(Consultation consultation) {
+<span class="nc" id="L406">        datePicker.setValue(consultation.getDate().toLocalDate());</span>
+<span class="nc" id="L407">        patientIdField.setText(consultation.getPatientIdentifier());</span>
+<span class="nc" id="L408">        statusField.setText(consultation.getStatus());</span>
+<span class="nc" id="L409">        phoneField.setText(consultation.getPhoneNumber());</span>
+<span class="nc" id="L410">        serviceCombo.setValue(consultation.getServiceName());</span>
+<span class="nc" id="L411">    }</span>
+
+    private void clearForm() {
+<span class="nc" id="L414">        datePicker.setValue(null);</span>
+<span class="nc" id="L415">        statusField.setText(&quot;En cours de traitement&quot;);</span>
+<span class="nc" id="L416">        phoneField.clear();</span>
+<span class="nc" id="L417">        serviceCombo.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L418">        consultationTable.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L419">        toggleActionButtons(false);</span>
+<span class="nc" id="L420">    }</span>
+
+    private boolean validateForm() {
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        if (datePicker.getValue() == null) {</span>
+<span class="nc" id="L424">            showAlert(&quot;Error&quot;, &quot;Please select a date&quot;);</span>
+<span class="nc" id="L425">            return false;</span>
+        }
+<span class="nc bnc" id="L427" title="All 2 branches missed.">        if (serviceCombo.getValue() == null) {</span>
+<span class="nc" id="L428">            showAlert(&quot;Error&quot;, &quot;Please select a service&quot;);</span>
+<span class="nc" id="L429">            return false;</span>
+        }
+<span class="nc bnc" id="L431" title="All 2 branches missed.">        if (phoneField.getText().isEmpty()) {</span>
+<span class="nc" id="L432">            showAlert(&quot;Error&quot;, &quot;Please enter a phone number&quot;);</span>
+<span class="nc" id="L433">            return false;</span>
+<span class="nc bnc" id="L434" title="All 2 branches missed.">        }  else if (!phoneField.getText().matches(&quot;^\\+216[\\s-]?\\d{2}[\\s-]?\\d{3}[\\s-]?\\d{3}$&quot;)) {</span>
+<span class="nc" id="L435">            showAlert(&quot;Error&quot;, &quot;Phone number must be in Tunisian format (e.g., +21612345678, +216 12 345 678, or +216-12-345-678)&quot;);</span>
+<span class="nc" id="L436">            return false;</span>
+        }
+<span class="nc" id="L438">        return true;</span>
+    }
+
+    private void showAlert(String title, String message) {
+<span class="nc" id="L442">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L443">        alert.setTitle(title);</span>
+<span class="nc" id="L444">        alert.setHeaderText(null);</span>
+<span class="nc" id="L445">        alert.setContentText(message);</span>
+<span class="nc" id="L446">        alert.showAndWait();</span>
+<span class="nc" id="L447">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

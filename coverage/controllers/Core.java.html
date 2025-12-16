@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Core.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">Core.java</span></div><h1>Core.java</h1><pre class="source lang-java linenums">package controllers;
+
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+
+public class Core {
+<span class="nc" id="L18">    private final String DATA_PATH = &quot;C:\\Users\\seddi\\Downloads\\archive (3)\\Disease_symptom_and_patient_profile_dataset.csv&quot;;</span>
+<span class="nc" id="L19">    private final Map&lt;String, Integer&gt; diseaseCounts = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L20">    private final Map&lt;String, Map&lt;String, Map&lt;String, Integer&gt;&gt;&gt; symptomValueCounts = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L21">    private final List&lt;String&gt; symptomNames = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L22">    private int totalCases = 0;</span>
+<span class="nc" id="L23">    private final double LAPLACE_K = 1.0;</span>
+
+<span class="nc" id="L25">    public Core() {</span>
+<span class="nc" id="L26">        loadData();</span>
+<span class="nc" id="L27">        System.out.println(&quot;Initialized with &quot; + diseaseCounts.size() + &quot; diseases and &quot;</span>
+<span class="nc" id="L28">                + symptomNames.size() + &quot; symptoms&quot;);</span>
+<span class="nc" id="L29">    }</span>
+
+    private void loadData() {
+<span class="nc" id="L32">        try (BufferedReader br = new BufferedReader(new FileReader(DATA_PATH))) {</span>
+<span class="nc" id="L33">            String[] headers = br.readLine().split(&quot;,&quot;);</span>
+<span class="nc" id="L34">            symptomNames.addAll(Arrays.asList(headers).subList(1, headers.length-1));</span>
+
+            String line;
+<span class="nc bnc" id="L37" title="All 2 branches missed.">            while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L38">                String[] values = line.split(&quot;,(?=(?:[^\&quot;]*\&quot;[^\&quot;]*\&quot;)*[^\&quot;]*$)&quot;, -1);</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">                if (values.length &lt; headers.length) continue;</span>
+
+<span class="nc" id="L41">                String disease = values[0].trim();</span>
+<span class="nc" id="L42">                diseaseCounts.put(disease, diseaseCounts.getOrDefault(disease, 0) + 1);</span>
+<span class="nc" id="L43">                totalCases++;</span>
+
+<span class="nc bnc" id="L45" title="All 2 branches missed.">                for (int i = 0; i &lt; symptomNames.size(); i++) {</span>
+<span class="nc" id="L46">                    String symptom = symptomNames.get(i);</span>
+<span class="nc" id="L47">                    String value = values[i+1].trim().replaceAll(&quot;^\&quot;|\&quot;$&quot;, &quot;&quot;).trim();</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">                    value = value.isEmpty() ? &quot;Unknown&quot; : value;</span>
+<span class="nc" id="L49">                    value = normalizeValue(symptom, value);</span>
+
+<span class="nc" id="L51">                    symptomValueCounts</span>
+<span class="nc" id="L52">                            .computeIfAbsent(symptom, k -&gt; new HashMap&lt;&gt;())</span>
+<span class="nc" id="L53">                            .computeIfAbsent(value, k -&gt; new HashMap&lt;&gt;())</span>
+<span class="nc" id="L54">                            .merge(disease, 1, Integer::sum);</span>
+                }
+<span class="nc" id="L56">            }</span>
+<span class="nc" id="L57">        } catch (IOException e) {</span>
+<span class="nc" id="L58">            System.err.println(&quot;Data loading failed: &quot; + e.getMessage());</span>
+<span class="nc" id="L59">            e.printStackTrace();</span>
+<span class="nc" id="L60">        }</span>
+<span class="nc" id="L61">    }</span>
+
+    private String normalizeValue(String symptom, String value) {
+<span class="nc" id="L64">        value = value.trim();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (symptom.equalsIgnoreCase(&quot;Gender&quot;)) {</span>
+<span class="nc bnc" id="L66" title="All 4 branches missed.">            if (value.equalsIgnoreCase(&quot;m&quot;) || value.equalsIgnoreCase(&quot;male&quot;)) return &quot;Male&quot;;</span>
+<span class="nc bnc" id="L67" title="All 4 branches missed.">            if (value.equalsIgnoreCase(&quot;f&quot;) || value.equalsIgnoreCase(&quot;female&quot;)) return &quot;Female&quot;;</span>
+<span class="nc" id="L68">            return &quot;Other&quot;;</span>
+        }
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        else if (symptom.equalsIgnoreCase(&quot;Fever&quot;) ||</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                symptom.equalsIgnoreCase(&quot;Cough&quot;) ||</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                symptom.equalsIgnoreCase(&quot;Fatigue&quot;) ||</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                symptom.equalsIgnoreCase(&quot;Difficulty Breathing&quot;)) {</span>
+<span class="nc bnc" id="L74" title="All 6 branches missed.">            if (value.equalsIgnoreCase(&quot;y&quot;) || value.equalsIgnoreCase(&quot;yes&quot;) || value.equals(&quot;1&quot;)) return &quot;Yes&quot;;</span>
+<span class="nc bnc" id="L75" title="All 6 branches missed.">            if (value.equalsIgnoreCase(&quot;n&quot;) || value.equalsIgnoreCase(&quot;no&quot;) || value.equals(&quot;0&quot;)) return &quot;No&quot;;</span>
+<span class="nc" id="L76">            return &quot;Unknown&quot;;</span>
+        }
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        else if (symptom.equalsIgnoreCase(&quot;Cholesterol Level&quot;)) {</span>
+<span class="nc bnc" id="L79" title="All 4 branches missed.">            if (value.equalsIgnoreCase(&quot;normal&quot;) || value.contains(&quot;&lt;200&quot;)) return &quot;Normal&quot;;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (value.toLowerCase().contains(&quot;borderline&quot;)) return &quot;Borderline High&quot;;</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            if (value.toLowerCase().contains(&quot;very high&quot;)) return &quot;Very High&quot;;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (value.toLowerCase().contains(&quot;high&quot;)) return &quot;High&quot;;</span>
+<span class="nc" id="L83">            return &quot;Unknown&quot;;</span>
+        }
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        else if (symptom.equalsIgnoreCase(&quot;Blood Pressure&quot;)) {</span>
+<span class="nc bnc" id="L86" title="All 4 branches missed.">            if (value.equalsIgnoreCase(&quot;normal&quot;) || value.contains(&quot;&lt;120&quot;)) return &quot;Normal&quot;;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            if (value.toLowerCase().contains(&quot;elevated&quot;)) return &quot;Elevated&quot;;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            if (value.toLowerCase().contains(&quot;very high&quot;)) return &quot;Very High&quot;;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (value.toLowerCase().contains(&quot;high&quot;)) return &quot;High&quot;;</span>
+<span class="nc" id="L90">            return &quot;Unknown&quot;;</span>
+        }
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        else if (symptom.equalsIgnoreCase(&quot;Age&quot;)) {</span>
+            try {
+<span class="nc" id="L94">                int age = Integer.parseInt(value);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                if (age &lt; 20) return &quot;Under 20&quot;;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                if (age &lt; 30) return &quot;20-29&quot;;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                if (age &lt; 40) return &quot;30-39&quot;;</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">                if (age &lt; 50) return &quot;40-49&quot;;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                if (age &lt; 60) return &quot;50-59&quot;;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">                if (age &lt; 70) return &quot;60-69&quot;;</span>
+<span class="nc" id="L101">                return &quot;70+&quot;;</span>
+<span class="nc" id="L102">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L103">                return value; // Return original if not a number</span>
+            }
+        }
+<span class="nc" id="L106">        return value;</span>
+    }
+
+    public Map&lt;String, Double&gt; predict(Map&lt;String, String&gt; symptomsInput) {
+<span class="nc" id="L110">        Map&lt;String, Double&gt; scores = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L111">        int totalDiseases = diseaseCounts.size();</span>
+
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        for (String disease : diseaseCounts.keySet()) {</span>
+<span class="nc" id="L114">            double diseasePrior = (double)(diseaseCounts.get(disease) + LAPLACE_K)</span>
+                    / (totalCases + LAPLACE_K * totalDiseases);
+<span class="nc" id="L116">            double logScore = Math.log(diseasePrior);</span>
+
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            for (Map.Entry&lt;String, String&gt; entry : symptomsInput.entrySet()) {</span>
+<span class="nc" id="L119">                String symptom = entry.getKey();</span>
+<span class="nc" id="L120">                String value = entry.getValue();</span>
+
+<span class="nc" id="L122">                int symptomValueCount = symptomValueCounts</span>
+<span class="nc" id="L123">                        .getOrDefault(symptom, Collections.emptyMap())</span>
+<span class="nc" id="L124">                        .getOrDefault(value, Collections.emptyMap())</span>
+<span class="nc" id="L125">                        .getOrDefault(disease, 0);</span>
+
+<span class="nc" id="L127">                int diseaseTotal = diseaseCounts.get(disease);</span>
+<span class="nc" id="L128">                int valueOptions = symptomValueCounts</span>
+<span class="nc" id="L129">                        .getOrDefault(symptom, Collections.emptyMap())</span>
+<span class="nc" id="L130">                        .size();</span>
+
+<span class="nc" id="L132">                double likelihood = (symptomValueCount + LAPLACE_K)</span>
+                        / (diseaseTotal + LAPLACE_K * valueOptions);
+<span class="nc" id="L134">                logScore += Math.log(likelihood);</span>
+<span class="nc" id="L135">            }</span>
+<span class="nc" id="L136">            scores.put(disease, logScore);</span>
+<span class="nc" id="L137">        }</span>
+
+<span class="nc" id="L139">        return normalizeScores(scores);</span>
+    }
+
+    private Map&lt;String, Double&gt; normalizeScores(Map&lt;String, Double&gt; logScores) {
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (logScores.isEmpty()) return new LinkedHashMap&lt;&gt;();</span>
+
+<span class="nc" id="L145">        double maxLog = Collections.max(logScores.values());</span>
+<span class="nc" id="L146">        double sum = logScores.values().stream()</span>
+<span class="nc" id="L147">                .mapToDouble(score -&gt; Math.exp(score - maxLog))</span>
+<span class="nc" id="L148">                .sum();</span>
+
+<span class="nc" id="L150">        return logScores.entrySet().stream()</span>
+<span class="nc" id="L151">                .sorted(Map.Entry.&lt;String, Double&gt;comparingByValue().reversed())</span>
+<span class="nc" id="L152">                .collect(Collectors.toMap(</span>
+                        Map.Entry::getKey,
+<span class="nc" id="L154">                        e -&gt; (Math.exp(e.getValue() - maxLog) / sum) * 100,</span>
+<span class="nc" id="L155">                        (a, b) -&gt; a,</span>
+                        LinkedHashMap::new
+                ));
+    }
+
+    public List&lt;String&gt; getSymptoms() {
+<span class="nc" id="L161">        return Collections.unmodifiableList(symptomNames);</span>
+    }
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

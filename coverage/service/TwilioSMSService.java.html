@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TwilioSMSService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">TwilioSMSService.java</span></div><h1>TwilioSMSService.java</h1><pre class="source lang-java linenums">package service;
+
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+public class TwilioSMSService {
+    private final String accountSid;
+    private final String authToken;
+    private final String twilioNumber;
+<span class="nc" id="L14">    private static final Pattern TUNISIAN_PATTERN = Pattern.compile(&quot;^\\+216[2459]\\d{7}$&quot;);</span>
+
+<span class="nc" id="L16">    public TwilioSMSService() {</span>
+<span class="nc" id="L17">        Properties props = loadConfig();</span>
+<span class="nc" id="L18">        this.accountSid = props.getProperty(&quot;twilio.account.sid&quot;);</span>
+<span class="nc" id="L19">        this.authToken = props.getProperty(&quot;twilio.auth.token&quot;);</span>
+<span class="nc" id="L20">        this.twilioNumber = props.getProperty(&quot;twilio.phone.number&quot;);</span>
+<span class="nc" id="L21">    }</span>
+
+    public boolean isConfigured() {
+<span class="nc bnc" id="L24" title="All 6 branches missed.">        return accountSid != null &amp;&amp; !accountSid.isEmpty() &amp;&amp;</span>
+<span class="nc bnc" id="L25" title="All 4 branches missed.">                authToken != null &amp;&amp; !authToken.isEmpty() &amp;&amp;</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">                twilioNumber != null &amp;&amp; !twilioNumber.isEmpty();</span>
+    }
+
+    public String sendSMS(String toNumber, String message) {
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        if (!isConfigured()) {</span>
+<span class="nc" id="L31">            return &quot;Twilio not configured properly&quot;;</span>
+        }
+
+        try {
+<span class="nc" id="L35">            String formattedNumber = formatPhoneNumber(toNumber);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (!isValidPhoneNumber(formattedNumber)) {</span>
+<span class="nc" id="L37">                return &quot;Invalid phone number format for &quot; + toNumber;</span>
+            }
+
+<span class="nc" id="L40">            String apiUrl = &quot;https://api.twilio.com/2010-04-01/Accounts/&quot; + accountSid + &quot;/Messages.json&quot;;</span>
+<span class="nc" id="L41">            String authString = accountSid + &quot;:&quot; + authToken;</span>
+<span class="nc" id="L42">            String encodedAuth = Base64.getEncoder().encodeToString(authString.getBytes(StandardCharsets.UTF_8));</span>
+
+<span class="nc" id="L44">            HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();</span>
+<span class="nc" id="L45">            connection.setRequestMethod(&quot;POST&quot;);</span>
+<span class="nc" id="L46">            connection.setRequestProperty(&quot;Authorization&quot;, &quot;Basic &quot; + encodedAuth);</span>
+<span class="nc" id="L47">            connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);</span>
+<span class="nc" id="L48">            connection.setDoOutput(true);</span>
+
+<span class="nc" id="L50">            String postData = String.format(</span>
+                    &quot;To=%s&amp;From=%s&amp;Body=%s&quot;,
+<span class="nc" id="L52">                    URLEncoder.encode(formattedNumber, &quot;UTF-8&quot;),</span>
+<span class="nc" id="L53">                    URLEncoder.encode(twilioNumber, &quot;UTF-8&quot;),</span>
+<span class="nc" id="L54">                    URLEncoder.encode(message, &quot;UTF-8&quot;)</span>
+            );
+
+<span class="nc" id="L57">            try (OutputStream os = connection.getOutputStream()) {</span>
+<span class="nc" id="L58">                os.write(postData.getBytes(StandardCharsets.UTF_8));</span>
+            }
+
+<span class="nc" id="L61">            int responseCode = connection.getResponseCode();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (responseCode == HttpURLConnection.HTTP_CREATED) {</span>
+<span class="nc" id="L63">                return &quot;SMS sent successfully to &quot; + formattedNumber;</span>
+            } else {
+<span class="nc" id="L65">                return parseErrorResponse(connection);</span>
+            }
+<span class="nc" id="L67">        } catch (Exception e) {</span>
+<span class="nc" id="L68">            return &quot;SMS sending failed: &quot; + e.getMessage();</span>
+        }
+    }
+
+    private String formatPhoneNumber(String phoneNumber) throws IllegalArgumentException {
+<span class="nc bnc" id="L73" title="All 4 branches missed.">        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {</span>
+<span class="nc" id="L74">            throw new IllegalArgumentException(&quot;Phone number cannot be empty&quot;);</span>
+        }
+
+<span class="nc" id="L77">        String formatted = phoneNumber.replaceAll(&quot;[^0-9+]&quot;, &quot;&quot;);</span>
+
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (!formatted.startsWith(&quot;+&quot;)) {</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (formatted.startsWith(&quot;216&quot;)) {</span>
+<span class="nc" id="L81">                formatted = &quot;+&quot; + formatted;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            } else if (formatted.startsWith(&quot;0&quot;)) {</span>
+<span class="nc" id="L83">                formatted = &quot;+216&quot; + formatted.substring(1);</span>
+            } else {
+<span class="nc" id="L85">                formatted = &quot;+&quot; + formatted;</span>
+            }
+        }
+
+<span class="nc" id="L89">        return formatted;</span>
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (phoneNumber == null) return false;</span>
+
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (phoneNumber.startsWith(&quot;+216&quot;)) {</span>
+<span class="nc" id="L96">            return TUNISIAN_PATTERN.matcher(phoneNumber).matches();</span>
+        }
+
+<span class="nc" id="L99">        return false;</span>
+    }
+
+    private String parseErrorResponse(HttpURLConnection connection) throws IOException {
+<span class="nc" id="L103">        try (BufferedReader br = new BufferedReader(</span>
+<span class="nc" id="L104">                new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) {</span>
+<span class="nc" id="L105">            StringBuilder response = new StringBuilder();</span>
+            String line;
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L108">                response.append(line);</span>
+            }
+<span class="nc" id="L110">            return &quot;Twilio API Error: &quot; + response.toString();</span>
+        }
+    }
+
+    private Properties loadConfig() {
+<span class="nc" id="L115">        Properties props = new Properties();</span>
+<span class="nc" id="L116">        try (InputStream input = getClass().getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">            if (input != null) {</span>
+<span class="nc" id="L118">                props.load(input);</span>
+            }
+<span class="nc" id="L120">        } catch (IOException e) {</span>
+<span class="nc" id="L121">            System.err.println(&quot;Error loading config: &quot; + e.getMessage());</span>
+<span class="nc" id="L122">        }</span>
+<span class="nc" id="L123">        return props;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

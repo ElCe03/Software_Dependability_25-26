@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QRCodeScannerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">QRCodeScannerController.java</span></div><h1>QRCodeScannerController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
+import entite.DossierMedicale;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import org.json.JSONObject;
+import service.DossierMedicaleService;
+import service.UserService;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Controller for scanning QR codes to view patient dosser information
+ */
+<span class="nc" id="L36">public class QRCodeScannerController implements Initializable {</span>
+
+    @FXML private Button btnBrowseQRCode;
+    @FXML private TextField txtQRCodePath;
+    @FXML private Button btnScanQRCode;
+    @FXML private VBox patientInfoContainer;
+    @FXML private Label lblPatientName;
+    @FXML private Label lblDossierId;
+    @FXML private Label lblDateCreation;
+    @FXML private Label lblMedecinName;
+    @FXML private Label lblStatus;
+    @FXML private TextArea txtDossierDetails;
+    
+<span class="nc" id="L49">    private final DossierMedicaleService dossierService = new DossierMedicaleService();</span>
+<span class="nc" id="L50">    private final UserService userService = new UserService();</span>
+    
+<span class="nc" id="L52">    private static final Logger logger = Logger.getLogger(QRCodeScannerController.class.getName());</span>
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+<span class="nc" id="L57">        patientInfoContainer.setVisible(false);</span>
+<span class="nc" id="L58">        patientInfoContainer.setManaged(false);</span>
+<span class="nc" id="L59">    }</span>
+    
+    /**
+     * Handle browse button click to select QR code image
+     */
+    @FXML
+    private void handleBrowseQRCode(ActionEvent event) {
+<span class="nc" id="L66">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L67">        fileChooser.setTitle(&quot;Sélectionner une image de code QR&quot;);</span>
+<span class="nc" id="L68">        fileChooser.getExtensionFilters().addAll(</span>
+            new FileChooser.ExtensionFilter(&quot;Images&quot;, &quot;*.png&quot;, &quot;*.jpg&quot;, &quot;*.jpeg&quot;)
+        );
+        
+<span class="nc" id="L72">        Stage stage = (Stage) btnBrowseQRCode.getScene().getWindow();</span>
+<span class="nc" id="L73">        File selectedFile = fileChooser.showOpenDialog(stage);</span>
+        
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (selectedFile != null) {</span>
+<span class="nc" id="L76">            txtQRCodePath.setText(selectedFile.getAbsolutePath());</span>
+        }
+<span class="nc" id="L78">    }</span>
+    
+    /**
+     * Handle scan button click to decode QR code and display patient information
+     */
+    @FXML
+    private void handleScanQRCode(ActionEvent event) {
+<span class="nc" id="L85">        String filePath = txtQRCodePath.getText();</span>
+<span class="nc bnc" id="L86" title="All 4 branches missed.">        if (filePath == null || filePath.isEmpty()) {</span>
+<span class="nc" id="L87">            showError(&quot;Veuillez sélectionner une image de code QR&quot;);</span>
+<span class="nc" id="L88">            return;</span>
+        }
+        
+        try {
+
+<span class="nc" id="L93">            File qrCodeFile = new File(filePath);</span>
+<span class="nc" id="L94">            BufferedImage bufferedImage = ImageIO.read(qrCodeFile);</span>
+            
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            if (bufferedImage == null) {</span>
+<span class="nc" id="L97">                showError(&quot;Impossible de lire l'image sélectionnée&quot;);</span>
+<span class="nc" id="L98">                return;</span>
+            }
+            
+
+<span class="nc" id="L102">            BinaryBitmap binaryBitmap = new BinaryBitmap(</span>
+                new HybridBinarizer(
+                    new BufferedImageLuminanceSource(bufferedImage)
+                )
+            );
+            
+<span class="nc" id="L108">            Result result = new MultiFormatReader().decode(binaryBitmap);</span>
+<span class="nc" id="L109">            String decodedText = result.getText();</span>
+            
+
+<span class="nc" id="L112">            processQRCodeData(decodedText);</span>
+            
+<span class="nc" id="L114">        } catch (NotFoundException e) {</span>
+<span class="nc" id="L115">            showError(&quot;Aucun code QR détecté dans l'image&quot;);</span>
+<span class="nc" id="L116">            logger.log(Level.WARNING, &quot;QR code not found in image&quot;, e);</span>
+<span class="nc" id="L117">        } catch (IOException e) {</span>
+<span class="nc" id="L118">            showError(&quot;Erreur lors de la lecture de l'image: &quot; + e.getMessage());</span>
+<span class="nc" id="L119">            logger.log(Level.SEVERE, &quot;Error reading image&quot;, e);</span>
+<span class="nc" id="L120">        } catch (Exception e) {</span>
+<span class="nc" id="L121">            showError(&quot;Erreur inattendue: &quot; + e.getMessage());</span>
+<span class="nc" id="L122">            logger.log(Level.SEVERE, &quot;Unexpected error processing QR code&quot;, e);</span>
+<span class="nc" id="L123">        }</span>
+<span class="nc" id="L124">    }</span>
+    
+    /**
+     * Process the decoded QR code data and display dossier information
+     */
+    private void processQRCodeData(String jsonData) {
+        try {
+
+<span class="nc" id="L132">            JSONObject dossierData = new JSONObject(jsonData);</span>
+            
+
+<span class="nc" id="L135">            int dossierId = dossierData.getInt(&quot;id&quot;);</span>
+<span class="nc" id="L136">            String patientName = dossierData.getString(&quot;patient&quot;);</span>
+<span class="nc" id="L137">            String dateCreation = dossierData.getString(&quot;dateCreation&quot;);</span>
+<span class="nc" id="L138">            String statutDossier = dossierData.optString(&quot;statutDossier&quot;, &quot;Non spécifié&quot;);</span>
+<span class="nc" id="L139">            String medecinName = dossierData.optString(&quot;medecin&quot;, &quot;Non assigné&quot;);</span>
+            
+
+<span class="nc" id="L142">            lblPatientName.setText(patientName);</span>
+<span class="nc" id="L143">            lblDossierId.setText(String.valueOf(dossierId));</span>
+<span class="nc" id="L144">            lblDateCreation.setText(dateCreation);</span>
+<span class="nc" id="L145">            lblStatus.setText(statutDossier);</span>
+<span class="nc" id="L146">            lblMedecinName.setText(medecinName);</span>
+            
+
+<span class="nc" id="L149">            DossierMedicale dossier = dossierService.recupererDossierParId(dossierId);</span>
+            
+<span class="nc bnc" id="L151" title="All 2 branches missed.">            if (dossier != null) {</span>
+
+<span class="nc" id="L153">                StringBuilder details = new StringBuilder();</span>
+<span class="nc" id="L154">                details.append(&quot;HISTORIQUE DES MALADIES\n&quot;);</span>
+<span class="nc" id="L155">                details.append(&quot;------------------------\n&quot;);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">                details.append(dossier.getHistoriqueDesMaladies() != null ? </span>
+<span class="nc" id="L157">                        dossier.getHistoriqueDesMaladies() : &quot;Aucun historique enregistré&quot;);</span>
+<span class="nc" id="L158">                details.append(&quot;\n\n&quot;);</span>
+                
+<span class="nc" id="L160">                details.append(&quot;OPÉRATIONS PASSÉES\n&quot;);</span>
+<span class="nc" id="L161">                details.append(&quot;------------------\n&quot;);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">                details.append(dossier.getOperationsPassees() != null ? </span>
+<span class="nc" id="L163">                        dossier.getOperationsPassees() : &quot;Aucune opération enregistrée&quot;);</span>
+<span class="nc" id="L164">                details.append(&quot;\n\n&quot;);</span>
+                
+<span class="nc" id="L166">                details.append(&quot;CONSULTATIONS PASSÉES\n&quot;);</span>
+<span class="nc" id="L167">                details.append(&quot;---------------------\n&quot;);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                details.append(dossier.getConsultationsPassees() != null ? </span>
+<span class="nc" id="L169">                        dossier.getConsultationsPassees() : &quot;Aucune consultation enregistrée&quot;);</span>
+<span class="nc" id="L170">                details.append(&quot;\n\n&quot;);</span>
+                
+<span class="nc" id="L172">                details.append(&quot;NOTES\n&quot;);</span>
+<span class="nc" id="L173">                details.append(&quot;-----\n&quot;);</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                details.append(dossier.getNotes() != null ? </span>
+<span class="nc" id="L175">                        dossier.getNotes() : &quot;Aucune note enregistrée&quot;);</span>
+                
+
+<span class="nc" id="L178">                txtDossierDetails.setText(details.toString());</span>
+<span class="nc" id="L179">            } else {</span>
+
+<span class="nc" id="L181">                txtDossierDetails.setText(&quot;Impossible de récupérer les détails complets du dossier dans la base de données.\n&quot; +</span>
+                        &quot;Le dossier a peut-être été supprimé ou le code QR est obsolète.&quot;);
+            }
+            
+
+<span class="nc" id="L186">            patientInfoContainer.setVisible(true);</span>
+<span class="nc" id="L187">            patientInfoContainer.setManaged(true);</span>
+            
+<span class="nc" id="L189">        } catch (Exception e) {</span>
+<span class="nc" id="L190">            showError(&quot;Format de données QR code invalide: &quot; + e.getMessage());</span>
+<span class="nc" id="L191">            logger.log(Level.SEVERE, &quot;Error processing QR code data&quot;, e);</span>
+<span class="nc" id="L192">        }</span>
+<span class="nc" id="L193">    }</span>
+    
+    /**
+     * Show error message
+     */
+    private void showError(String message) {
+
+<span class="nc" id="L200">        patientInfoContainer.setVisible(false);</span>
+<span class="nc" id="L201">        patientInfoContainer.setManaged(false);</span>
+        
+
+<span class="nc" id="L204">        util.AlertUtil.showError(null, &quot;Erreur&quot;, message);</span>
+<span class="nc" id="L205">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

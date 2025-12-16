@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicamentAPIService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">MedicamentAPIService.java</span></div><h1>MedicamentAPIService.java</h1><pre class="source lang-java linenums">package controllers;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+<span class="nc" id="L14">public class MedicamentAPIService {</span>
+
+<span class="nc" id="L16">    private static final Map&lt;String, String&gt; FRENCH_TO_ENGLISH = createTranslationMap();</span>
+<span class="nc" id="L17">    private static final Map&lt;String, String&gt; API_CACHE = Collections.synchronizedMap(</span>
+<span class="nc" id="L18">            new LinkedHashMap&lt;String, String&gt;(100, 0.75f, true) {</span>
+                protected boolean removeEldestEntry(Map.Entry&lt;String, String&gt; eldest) {
+<span class="nc bnc" id="L20" title="All 2 branches missed.">                    return size() &gt; 100;</span>
+                }
+            });
+
+    private static Map&lt;String, String&gt; createTranslationMap() {
+<span class="nc" id="L25">        Map&lt;String, String&gt; map = new LinkedHashMap&lt;&gt;();</span>
+        // Médicaments génériques
+<span class="nc" id="L27">        map.put(&quot;ibuprofène&quot;, &quot;ibuprofen&quot;);</span>
+<span class="nc" id="L28">        map.put(&quot;paracétamol&quot;, &quot;acetaminophen&quot;);</span>
+<span class="nc" id="L29">        map.put(&quot;aspirine&quot;, &quot;aspirin&quot;);</span>
+<span class="nc" id="L30">        map.put(&quot;amoxicilline&quot;, &quot;amoxicillin&quot;);</span>
+<span class="nc" id="L31">        map.put(&quot;oméprazole&quot;, &quot;omeprazole&quot;);</span>
+
+        // Marques françaises
+<span class="nc" id="L34">        map.put(&quot;doliprane&quot;, &quot;acetaminophen&quot;);</span>
+<span class="nc" id="L35">        map.put(&quot;kardegic&quot;, &quot;aspirin&quot;);</span>
+<span class="nc" id="L36">        map.put(&quot;ventoline&quot;, &quot;albuterol&quot;);</span>
+<span class="nc" id="L37">        map.put(&quot;tahor&quot;, &quot;atorvastatin&quot;);</span>
+<span class="nc" id="L38">        map.put(&quot;plavix&quot;, &quot;clopidogrel&quot;);</span>
+<span class="nc" id="L39">        map.put(&quot;coumadine&quot;, &quot;warfarin&quot;);</span>
+
+        // Psychotropes
+<span class="nc" id="L42">        map.put(&quot;lexomil&quot;, &quot;bromazepam&quot;);</span>
+<span class="nc" id="L43">        map.put(&quot;xanax&quot;, &quot;alprazolam&quot;);</span>
+
+<span class="nc" id="L45">        return map;</span>
+    }
+
+    public String chercherMedicament(String nomMedicament) throws Exception {
+<span class="nc" id="L49">        return executeRechercheAPI(nomMedicament,</span>
+                &quot;openfda.brand_name:%1$s+openfda.generic_name:%1$s&quot;, 1);
+    }
+
+    public String chercherMedicamentSimple(String nomMedicament) throws Exception {
+<span class="nc" id="L54">        return executeRechercheAPI(nomMedicament, &quot;%1$s&quot;, 1);</span>
+    }
+
+    public String chercherMedicamentComplet(String nomMedicament) throws Exception {
+<span class="nc" id="L58">        String searchTerm = normalizeAndTranslateTerm(nomMedicament);</span>
+<span class="nc" id="L59">        String encodedName = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString())</span>
+<span class="nc" id="L60">                .replace(&quot;+&quot;, &quot;%20&quot;); // Correction critique pour l'API FDA</span>
+
+<span class="nc" id="L62">        String apiUrl = String.format(</span>
+                &quot;https://api.fda.gov/drug/label.json?search=&quot;
+                        + &quot;(openfda.brand_name:\&quot;%1$s\&quot;+OR+openfda.generic_name:\&quot;%1$s\&quot;)&quot;
+                        + &quot;&amp;limit=10&quot;,
+                encodedName
+        );
+
+<span class="nc" id="L69">        return executeAPICall(apiUrl);</span>
+    }
+
+    private String executeRechercheAPI(String nomMedicament, String queryPattern, int limit) throws Exception {
+<span class="nc" id="L73">        String searchTerm = normalizeAndTranslateTerm(nomMedicament);</span>
+<span class="nc" id="L74">        String encodedName = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8);</span>
+<span class="nc" id="L75">        String apiUrl = String.format(</span>
+                &quot;https://api.fda.gov/drug/label.json?search=&quot; + queryPattern + &quot;&amp;limit=%d&quot;,
+<span class="nc" id="L77">                encodedName, limit</span>
+        );
+<span class="nc" id="L79">        return executeAPICall(apiUrl);</span>
+    }
+
+    private String normalizeAndTranslateTerm(String term) {
+<span class="nc" id="L83">        String normalized = Normalizer.normalize(term, Normalizer.Form.NFD)</span>
+<span class="nc" id="L84">                .replaceAll(&quot;[\\p{InCombiningDiacriticalMarks}]&quot;, &quot;&quot;)</span>
+<span class="nc" id="L85">                .toLowerCase()</span>
+<span class="nc" id="L86">                .replaceAll(&quot;[^a-z0-9]&quot;, &quot;&quot;);</span>
+<span class="nc" id="L87">        return FRENCH_TO_ENGLISH.getOrDefault(normalized, normalized);</span>
+    }
+
+    private String executeAPICall(String apiUrl) throws Exception {
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (API_CACHE.containsKey(apiUrl)) {</span>
+<span class="nc" id="L92">            System.out.println(&quot;Cache hit for: &quot; + apiUrl);</span>
+<span class="nc" id="L93">            return API_CACHE.get(apiUrl);</span>
+        }
+
+<span class="nc" id="L96">        System.out.println(&quot;API call: &quot; + apiUrl);</span>
+<span class="nc" id="L97">        URL url = new URL(apiUrl);</span>
+<span class="nc" id="L98">        HttpURLConnection conn = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L99">        conn.setRequestMethod(&quot;GET&quot;);</span>
+<span class="nc" id="L100">        conn.setConnectTimeout(5000);</span>
+<span class="nc" id="L101">        conn.setReadTimeout(5000);</span>
+<span class="nc" id="L102">        conn.setRequestProperty(&quot;Accept&quot;, &quot;application/json&quot;);</span>
+
+<span class="nc" id="L104">        StringBuilder response = new StringBuilder();</span>
+<span class="nc" id="L105">        int responseCode = conn.getResponseCode();</span>
+
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (responseCode == 200) {</span>
+<span class="nc" id="L108">            try (BufferedReader reader = new BufferedReader(</span>
+<span class="nc" id="L109">                    new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {</span>
+                String line;
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L112">                    response.append(line);</span>
+                }
+            }
+<span class="nc" id="L115">            API_CACHE.put(apiUrl, response.toString());</span>
+<span class="nc" id="L116">            System.out.println(&quot;API response success&quot;);</span>
+        } else {
+<span class="nc" id="L118">            response.append(&quot;{\&quot;error\&quot;:\&quot;API response code &quot;).append(responseCode).append(&quot;\&quot;}&quot;);</span>
+<span class="nc" id="L119">            System.out.println(&quot;API error: &quot; + responseCode);</span>
+        }
+
+<span class="nc" id="L122">        conn.disconnect();</span>
+<span class="nc" id="L123">        return response.toString();</span>
+    }
+
+    public void clearCache() {
+<span class="nc" id="L127">        API_CACHE.clear();</span>
+<span class="nc" id="L128">        System.out.println(&quot;Cache cleared&quot;);</span>
+<span class="nc" id="L129">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

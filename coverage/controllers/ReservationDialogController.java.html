@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReservationDialogController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">ReservationDialogController.java</span></div><h1>ReservationDialogController.java</h1><pre class="source lang-java linenums">package controllers;
+
+
+import entite.reservation;
+import entite.salle;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import service.ReservationService;
+import service.SalleService;
+import util.DataSource;
+import util.EmailService;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+<span class="nc" id="L24">public class ReservationDialogController {</span>
+<span class="nc" id="L25">    public static final Logger LOGGER = Logger.getLogger(ReservationDialogController.class.getName());</span>
+<span class="nc" id="L26">    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+
+    @FXML private TextField emailField;
+    @FXML private DatePicker dateDebutPicker;
+    @FXML private ComboBox&lt;String&gt; heureDebutCombo;
+    @FXML private DatePicker dateFinPicker;
+    @FXML private ComboBox&lt;String&gt; heureFinCombo;
+
+    private salle selectedSalle;
+    private Dialog&lt;ButtonType&gt; dialog;
+<span class="nc" id="L36">    private final SalleService salleService = new SalleService();</span>
+<span class="nc" id="L37">    private final ReservationService reservationService = new ReservationService();</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L41">        heureDebutCombo.setItems(FXCollections.observableArrayList(</span>
+                &quot;08:00&quot;, &quot;09:00&quot;, &quot;10:00&quot;, &quot;11:00&quot;, &quot;12:00&quot;,
+                &quot;13:00&quot;, &quot;14:00&quot;, &quot;15:00&quot;, &quot;16:00&quot;, &quot;17:00&quot;, &quot;18:00&quot;
+        ));
+<span class="nc" id="L45">        heureFinCombo.setItems(FXCollections.observableArrayList(</span>
+                &quot;08:00&quot;, &quot;09:00&quot;, &quot;10:00&quot;, &quot;11:00&quot;, &quot;12:00&quot;,
+                &quot;13:00&quot;, &quot;14:00&quot;, &quot;15:00&quot;, &quot;16:00&quot;, &quot;17:00&quot;, &quot;18:00&quot;
+        ));
+<span class="nc" id="L49">    }</span>
+
+    public void setDialog(Dialog&lt;ButtonType&gt; dialog) {
+<span class="nc" id="L52">        this.dialog = dialog;</span>
+<span class="nc" id="L53">        dialog.getDialogPane().lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION, event -&gt; {</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            if (!validateInputs()) {</span>
+<span class="nc" id="L55">                event.consume();</span>
+            } else {
+<span class="nc" id="L57">                handleReservation();</span>
+            }
+<span class="nc" id="L59">        });</span>
+<span class="nc" id="L60">    }</span>
+
+    public void setSalle(salle salle) {
+<span class="nc" id="L63">        this.selectedSalle = salle;</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        LOGGER.info(&quot;Salle sélectionnée: &quot; + (salle != null ? salle.getId() + &quot; - &quot; + salle.getNom() : &quot;null&quot;));</span>
+<span class="nc" id="L65">    }</span>
+
+    private boolean validateInputs() {
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (emailField.getText().isEmpty() ||</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">                dateDebutPicker.getValue() == null ||</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                heureDebutCombo.getValue() == null ||</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">                dateFinPicker.getValue() == null ||</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                heureFinCombo.getValue() == null) {</span>
+<span class="nc" id="L73">            showAlert(&quot;Erreur&quot;, &quot;Veuillez remplir tous les champs&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L74">            return false;</span>
+        }
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (!isValidEmail(emailField.getText())) {</span>
+<span class="nc" id="L78">            showAlert(&quot;Erreur&quot;, &quot;Veuillez entrer une adresse email valide&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L79">            return false;</span>
+        }
+
+<span class="nc" id="L82">        LocalDateTime debut = getDateTime(dateDebutPicker.getValue(), heureDebutCombo.getValue());</span>
+<span class="nc" id="L83">        LocalDateTime fin = getDateTime(dateFinPicker.getValue(), heureFinCombo.getValue());</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (fin.isBefore(debut)) {</span>
+<span class="nc" id="L86">            showAlert(&quot;Erreur&quot;, &quot;La date de fin doit être postérieure à la date de début&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L87">            return false;</span>
+        }
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (fin.isEqual(debut)) {</span>
+<span class="nc" id="L91">            showAlert(&quot;Erreur&quot;, &quot;La durée de réservation doit être d'au moins une minute&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L92">            return false;</span>
+        }
+
+        try {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            if (!salleService.isSalleAvailable(selectedSalle.getId(), debut, fin)) {</span>
+<span class="nc" id="L97">                showAlert(&quot;Erreur&quot;, &quot;La salle est déjà réservée pour cette période&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L98">                return false;</span>
+            }
+<span class="nc" id="L100">        } catch (SQLException e) {</span>
+<span class="nc" id="L101">            LOGGER.log(Level.SEVERE, &quot;Erreur lors de la vérification de disponibilité&quot;, e);</span>
+<span class="nc" id="L102">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors de la vérification de disponibilité: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L103">            return false;</span>
+<span class="nc" id="L104">        }</span>
+
+<span class="nc" id="L106">        return true;</span>
+    }
+
+    private boolean isValidEmail(String email) {
+<span class="nc bnc" id="L110" title="All 4 branches missed.">        return email != null &amp;&amp; email.matches(&quot;^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$&quot;);</span>
+    }
+
+    private LocalDateTime getDateTime(LocalDate date, String heure) {
+<span class="nc" id="L114">        LocalTime time = LocalTime.parse(heure);</span>
+<span class="nc" id="L115">        return LocalDateTime.of(date, time);</span>
+    }
+
+    private void handleReservation() {
+<span class="nc" id="L119">        try (Connection conn = DataSource.getInstance().getConnection()) {</span>
+<span class="nc" id="L120">            conn.setAutoCommit(false);</span>
+
+            try {
+<span class="nc" id="L123">                LOGGER.info(&quot;Début de la transaction de réservation...&quot;);</span>
+
+<span class="nc" id="L125">                LocalDateTime dateDebut = getDateTime(dateDebutPicker.getValue(), heureDebutCombo.getValue());</span>
+<span class="nc" id="L126">                LocalDateTime dateFin = getDateTime(dateFinPicker.getValue(), heureFinCombo.getValue());</span>
+
+<span class="nc" id="L128">                reservation res = new reservation();</span>
+<span class="nc" id="L129">                res.setSalle(selectedSalle);</span>
+<span class="nc" id="L130">                res.setDate_debut(Timestamp.valueOf(dateDebut));</span>
+<span class="nc" id="L131">                res.setDate_fin(Timestamp.valueOf(dateFin));</span>
+
+<span class="nc" id="L133">                LOGGER.info(&quot;Tentative d'ajout de réservation...&quot;);</span>
+<span class="nc" id="L134">                reservationService.addReservation(conn, res);</span>
+<span class="nc" id="L135">                LOGGER.info(&quot;Réservation ajoutée avec ID: &quot; + res.getId());</span>
+
+<span class="nc" id="L137">                LOGGER.info(&quot;Mise à jour du statut de la salle...&quot;);</span>
+<span class="nc" id="L138">                selectedSalle.setStatus(&quot;Occupée&quot;);</span>
+<span class="nc" id="L139">                salleService.updateSalle(conn, selectedSalle);</span>
+
+<span class="nc" id="L141">                conn.commit();</span>
+<span class="nc" id="L142">                LOGGER.info(&quot;Transaction confirmée avec succès&quot;);</span>
+
+                // Envoyer les emails
+<span class="nc" id="L145">                String formattedDateDebut = dateDebut.format(DATE_TIME_FORMATTER);</span>
+<span class="nc" id="L146">                String formattedDateFin = dateFin.format(DATE_TIME_FORMATTER);</span>
+<span class="nc" id="L147">                String recipientEmail = emailField.getText();</span>
+<span class="nc" id="L148">                String adminEmail = &quot;eyah5268@gmail.com&quot;;</span>
+
+<span class="nc" id="L150">                LOGGER.info(&quot;Envoi des emails de confirmation...&quot;);</span>
+<span class="nc" id="L151">                sendEmail(recipientEmail, formattedDateDebut, formattedDateFin);</span>
+<span class="nc" id="L152">                sendEmail(adminEmail, formattedDateDebut, formattedDateFin);</span>
+
+<span class="nc" id="L154">                showAlert(&quot;Succès&quot;, &quot;Réservation effectuée avec succès. Un email de confirmation a été envoyé.&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L155">                dialog.setResult(ButtonType.OK);</span>
+<span class="nc" id="L156">                dialog.close();</span>
+
+<span class="nc" id="L158">            } catch (SQLException e) {</span>
+<span class="nc" id="L159">                conn.rollback();</span>
+<span class="nc" id="L160">                LOGGER.log(Level.SEVERE, &quot;Erreur lors de la réservation - Transaction annulée&quot;, e);</span>
+<span class="nc" id="L161">                showAlert(&quot;Erreur&quot;, &quot;Échec de la réservation: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+            } finally {
+                try {
+<span class="nc" id="L164">                    conn.setAutoCommit(true);</span>
+<span class="nc" id="L165">                } catch (SQLException e) {</span>
+<span class="nc" id="L166">                    LOGGER.log(Level.SEVERE, &quot;Erreur lors du rétablissement de l'auto-commit&quot;, e);</span>
+<span class="nc" id="L167">                }</span>
+            }
+<span class="nc" id="L169">        } catch (SQLException e) {</span>
+<span class="nc" id="L170">            LOGGER.log(Level.SEVERE, &quot;Erreur de connexion à la base de données&quot;, e);</span>
+<span class="nc" id="L171">            showAlert(&quot;Erreur&quot;, &quot;Erreur de connexion à la base de données: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L172">        }</span>
+<span class="nc" id="L173">    }</span>
+
+    private void sendEmail(String toEmail, String dateDebut, String dateFin) {
+<span class="nc" id="L176">        LOGGER.info(&quot;Envoi d'email à: &quot; + toEmail);</span>
+<span class="nc" id="L177">        EmailService.sendReservationEmail(</span>
+                toEmail,
+<span class="nc" id="L179">                selectedSalle.getNom(),</span>
+                dateDebut,
+                dateFin,
+<span class="nc" id="L182">                selectedSalle.getType_salle(),</span>
+<span class="nc" id="L183">                selectedSalle.getStatus(),</span>
+<span class="nc" id="L184">                () -&gt; LOGGER.info(&quot;Email envoyé avec succès à &quot; + toEmail),</span>
+<span class="nc" id="L185">                () -&gt; LOGGER.warning(&quot;Échec d'envoi à &quot; + toEmail)</span>
+        );
+<span class="nc" id="L187">    }</span>
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+<span class="nc" id="L190">        Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L191">            Alert alert = new Alert(type);</span>
+<span class="nc" id="L192">            alert.setTitle(title);</span>
+<span class="nc" id="L193">            alert.setHeaderText(null);</span>
+<span class="nc" id="L194">            alert.setContentText(message);</span>
+<span class="nc" id="L195">            alert.showAndWait();</span>
+<span class="nc" id="L196">  });</span>
+<span class="nc" id="L197">}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

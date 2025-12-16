@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Medicament.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">Medicament.java</span></div><h1>Medicament.java</h1><pre class="source lang-java linenums">package entite;
+
+import java.sql.Date;
+import java.time.LocalDate;
+
+public class Medicament {
+
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private String nom_medicament;
+    /*@ spec_public nullable @*/ private String description_medicament;
+    /*@ spec_public nullable @*/ private String type_medicament;
+    /*@ spec_public @*/ private double prix_medicament;
+    /*@ spec_public @*/ private int quantite_stock;
+    /*@ spec_public nullable @*/ private LocalDate date_entree;
+    /*@ spec_public nullable @*/ private LocalDate date_expiration;
+
+    /*@ public invariant id &gt;= 0; @*/
+    /*@ public invariant prix_medicament &gt;= 0.0; @*/
+    /*@ public invariant quantite_stock &gt;= 0; @*/
+    /*@ public invariant (date_entree != null &amp;&amp; date_expiration != null) ==&gt; 
+      @     !date_expiration.isBefore(date_entree); 
+      @*/
+
+    /*@ 
+      @ ensures id == 0;
+      @ ensures prix_medicament == 0.0;
+      @ ensures quantite_stock == 0;
+      @*/
+<span class="fc" id="L29">    public Medicament() {</span>
+
+<span class="fc" id="L31">    }</span>
+
+    /*@ 
+      @ requires id &gt;= 0;
+      @ requires prix_medicament &gt;= 0.0;
+      @ requires quantite_stock &gt;= 0;
+      @ requires (date_entree != null &amp;&amp; date_expiration != null) ==&gt; !date_expiration.isBefore(date_entree);
+      @ 
+      @ ensures this.id == id;
+      @ ensures this.prix_medicament == prix_medicament;
+      @ ensures this.quantite_stock == quantite_stock;
+      @ ensures this.date_entree == date_entree;
+      @ ensures this.date_expiration == date_expiration;
+      @*/
+    public Medicament(int id, String nom_medicament, String description_medicament, String type_medicament, double prix_medicament, int quantite_stock,
+<span class="fc" id="L46">                      LocalDate date_entree, LocalDate date_expiration) {</span>
+<span class="fc" id="L47">        this.id = id;</span>
+<span class="fc" id="L48">        this.nom_medicament = nom_medicament;</span>
+<span class="fc" id="L49">        this.description_medicament = description_medicament;</span>
+<span class="fc" id="L50">        this.type_medicament = type_medicament;</span>
+<span class="fc" id="L51">        this.prix_medicament = prix_medicament;</span>
+<span class="fc" id="L52">        this.quantite_stock = quantite_stock;</span>
+<span class="fc" id="L53">        this.date_entree = date_entree;</span>
+<span class="fc" id="L54">        this.date_expiration = date_expiration;</span>
+<span class="fc" id="L55">    }</span>
+
+
+    /*@ 
+      @ requires prix_medicament &gt;= 0.0;
+      @ requires quantite_Stock &gt;= 0;
+      @ requires (date_entree != null &amp;&amp; date_expiration != null) ==&gt; !date_expiration.isBefore(date_entree);
+      @ 
+      @ ensures this.prix_medicament == prix_medicament;
+      @ ensures this.quantite_stock == quantite_Stock;
+      @*/
+    // Constructeur sans l'id (l'id sera géré par la base de données)
+    public Medicament(String nom_medicament, String description_medicament,
+                      String type_medicament, double prix_medicament,
+<span class="nc" id="L69">                      int quantite_Stock, LocalDate date_entree, LocalDate date_expiration) {</span>
+<span class="nc" id="L70">        this.nom_medicament = nom_medicament;</span>
+<span class="nc" id="L71">        this.description_medicament = description_medicament;</span>
+<span class="nc" id="L72">        this.type_medicament = type_medicament;</span>
+<span class="nc" id="L73">        this.prix_medicament = prix_medicament;</span>
+<span class="nc" id="L74">        this.quantite_stock = quantite_Stock;</span>
+<span class="nc" id="L75">        this.date_entree = date_entree;</span>
+<span class="nc" id="L76">        this.date_expiration = date_expiration;</span>
+<span class="nc" id="L77">    }</span>
+
+    // Getters et Setters
+
+    /*@ ensures \result == id; pure @*/
+    public int getId() {
+<span class="fc" id="L83">        return id;</span>
+    }
+
+    /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
+    public void setId(int id) {
+<span class="fc" id="L88">        this.id = id;</span>
+<span class="fc" id="L89">    }</span>
+
+    public String getNom_medicament() {
+<span class="fc" id="L92">        return nom_medicament;</span>
+    }
+
+    public void setNom_medicament(String nom_medicament) {
+<span class="fc" id="L96">        this.nom_medicament = nom_medicament;</span>
+<span class="fc" id="L97">    }</span>
+
+    public String getDescription_medicament() {
+<span class="fc" id="L100">        return description_medicament;</span>
+    }
+
+    public void setDescription_medicament(String description_medicament) {
+<span class="fc" id="L104">        this.description_medicament = description_medicament;</span>
+<span class="fc" id="L105">    }</span>
+
+    public String getType_medicament() {
+<span class="fc" id="L108">        return type_medicament;</span>
+    }
+
+    public void setType_medicament(String type_medicament) {
+<span class="fc" id="L112">        this.type_medicament = type_medicament;</span>
+<span class="fc" id="L113">    }</span>
+
+    /*@ ensures \result == prix_medicament; pure @*/
+    public double getPrix_medicament() {
+<span class="fc" id="L117">        return prix_medicament;</span>
+    }
+
+    /*@ 
+      @ requires prix_medicament &gt;= 0.0;
+      @ assignable this.prix_medicament;
+      @ ensures this.prix_medicament == prix_medicament;
+      @*/
+    public void setPrix_medicament(double prix_medicament) {
+<span class="fc" id="L126">        this.prix_medicament = prix_medicament;</span>
+<span class="fc" id="L127">    }</span>
+
+    /*@ ensures \result == quantite_stock; pure @*/
+    public int getQuantite_stock() {
+<span class="fc" id="L131">        return quantite_stock;</span>
+    }
+
+    /*@ 
+      @ requires quantite_Stock &gt;= 0;
+      @ assignable this.quantite_stock;
+      @ ensures this.quantite_stock == quantite_Stock;
+      @*/
+    public void setQuantite_stock(int quantite_Stock) {
+<span class="fc" id="L140">        this.quantite_stock = quantite_Stock;</span>
+<span class="fc" id="L141">    }</span>
+
+    public LocalDate getDate_entree() {
+<span class="fc" id="L144">        return date_entree;</span>
+    }
+
+    /*@ 
+      @ requires (this.date_expiration != null &amp;&amp; date_entree != null) ==&gt; !date_entree.isAfter(this.date_expiration);
+      @ assignable this.date_entree;
+      @ ensures this.date_entree == date_entree;
+      @*/
+    public void setDate_entree(LocalDate date_entree) {
+<span class="fc" id="L153">        this.date_entree = date_entree;</span>
+<span class="fc" id="L154">    }</span>
+
+    public LocalDate getDate_expiration() {
+<span class="fc" id="L157">        return date_expiration;</span>
+    }
+
+    /*@ 
+      @ requires (this.date_entree != null &amp;&amp; date_expiration != null) ==&gt; !date_expiration.isBefore(this.date_entree);
+      @ assignable this.date_expiration;
+      @ ensures this.date_expiration == date_expiration;
+      @*/
+    public void setDate_expiration(LocalDate date_expiration) {
+<span class="fc" id="L166">        this.date_expiration = date_expiration;</span>
+<span class="fc" id="L167">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L171">        return this.nom_medicament;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

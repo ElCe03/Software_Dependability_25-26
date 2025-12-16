@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MedicalServicesController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">MedicalServicesController.java</span></div><h1>MedicalServicesController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.Service;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import service.serviceservice;
+
+import java.util.List;
+import java.util.Optional;
+
+<span class="nc" id="L19">public class MedicalServicesController {</span>
+
+<span class="nc" id="L21">    private final serviceservice serviceService = new serviceservice();</span>
+<span class="nc" id="L22">    private final ObservableList&lt;Service&gt; servicesData = FXCollections.observableArrayList();</span>
+    private FilteredList&lt;Service&gt; filteredServices;
+    private SortedList&lt;Service&gt; sortedServices;
+
+    // FXML Components
+    @FXML private TextField serviceName;
+    @FXML private TextArea serviceDescription;
+    @FXML private Spinner&lt;Integer&gt; durationSpinner;
+    @FXML private TableView&lt;Service&gt; servicesTable;
+    @FXML private TableColumn&lt;Service, String&gt; nameColumn;
+    @FXML private TableColumn&lt;Service, String&gt; descriptionColumn;
+    @FXML private TableColumn&lt;Service, Integer&gt; durationColumn;
+    @FXML private TableColumn&lt;Service, Void&gt; modifyColumn;
+    @FXML private TableColumn&lt;Service, Void&gt; deleteColumn;
+    @FXML private TextField searchField;
+    @FXML private Button submitButton; // Added for the styled button
+
+    // Error Labels
+    @FXML private Label serviceNameError;
+    @FXML private Label serviceDescriptionError;
+    @FXML private Label durationError;
+
+    @FXML
+    private void handleSubmit() {
+<span class="nc" id="L46">        clearErrorMessages();</span>
+
+        try {
+<span class="nc" id="L49">            String name = serviceName.getText().trim();</span>
+<span class="nc" id="L50">            String description = serviceDescription.getText().trim();</span>
+<span class="nc" id="L51">            int duration = durationSpinner.getValue();</span>
+
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (!validateInputs(name, description, duration)) {</span>
+<span class="nc" id="L54">                return;</span>
+            }
+
+<span class="nc" id="L57">            Service newService = new Service(name, description, duration);</span>
+<span class="nc" id="L58">            serviceService.addService(newService);</span>
+<span class="nc" id="L59">            refreshTableData();</span>
+<span class="nc" id="L60">            clearForm();</span>
+<span class="nc" id="L61">            showAlert(&quot;Success&quot;, &quot;Service added successfully!&quot;, Alert.AlertType.INFORMATION);</span>
+
+<span class="nc" id="L63">        } catch (Exception e) {</span>
+<span class="nc" id="L64">            showAlert(&quot;Database Error&quot;, &quot;Failed to add service: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L65">            e.printStackTrace();</span>
+<span class="nc" id="L66">        }</span>
+<span class="nc" id="L67">    }</span>
+
+    private boolean validateInputs(String name, String description, int duration) {
+<span class="nc" id="L70">        boolean valid = true;</span>
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (name.isEmpty()) {</span>
+<span class="nc" id="L73">            serviceNameError.setText(&quot;Service name cannot be blank!&quot;);</span>
+<span class="nc" id="L74">            valid = false;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        } else if (name.length() &lt; 3) {</span>
+<span class="nc" id="L76">            serviceNameError.setText(&quot;Service name must be at least 3 characters long!&quot;);</span>
+<span class="nc" id="L77">            valid = false;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        } else if (name.matches(&quot;.*\\d.*&quot;)) {</span>
+<span class="nc" id="L79">            serviceNameError.setText(&quot;Service name cannot contain numbers!&quot;);</span>
+<span class="nc" id="L80">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (description.isEmpty()) {</span>
+<span class="nc" id="L84">            serviceDescriptionError.setText(&quot;Description cannot be blank!&quot;);</span>
+<span class="nc" id="L85">            valid = false;</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        } else if (!description.contains(&quot; &quot;)) {</span>
+<span class="nc" id="L87">            serviceDescriptionError.setText(&quot;Description must contain at least one space!&quot;);</span>
+<span class="nc" id="L88">            valid = false;</span>
+        }
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (duration &lt;= 0) {</span>
+<span class="nc" id="L92">            durationError.setText(&quot;Duration must be greater than 0!&quot;);</span>
+<span class="nc" id="L93">            valid = false;</span>
+        }
+
+<span class="nc" id="L96">        return valid;</span>
+    }
+
+    private void clearErrorMessages() {
+<span class="nc" id="L100">        serviceNameError.setText(&quot;&quot;);</span>
+<span class="nc" id="L101">        serviceDescriptionError.setText(&quot;&quot;);</span>
+<span class="nc" id="L102">        durationError.setText(&quot;&quot;);</span>
+<span class="nc" id="L103">    }</span>
+
+    private void refreshTableData() {
+        try {
+<span class="nc" id="L107">            List&lt;Service&gt; services = serviceService.getAllServices();</span>
+<span class="nc" id="L108">            servicesData.setAll(services);</span>
+<span class="nc" id="L109">            servicesTable.refresh();</span>
+<span class="nc" id="L110">        } catch (Exception e) {</span>
+<span class="nc" id="L111">            showAlert(&quot;Error&quot;, &quot;Failed to load services: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L112">            e.printStackTrace();</span>
+<span class="nc" id="L113">        }</span>
+<span class="nc" id="L114">    }</span>
+
+    private void clearForm() {
+<span class="nc" id="L117">        serviceName.clear();</span>
+<span class="nc" id="L118">        serviceDescription.clear();</span>
+<span class="nc" id="L119">        durationSpinner.getValueFactory().setValue(1);</span>
+<span class="nc" id="L120">    }</span>
+
+    private void showAlert(String title, String message, Alert.AlertType alertType) {
+<span class="nc" id="L123">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L124">        alert.setTitle(title);</span>
+<span class="nc" id="L125">        alert.setHeaderText(null);</span>
+<span class="nc" id="L126">        alert.setContentText(message);</span>
+<span class="nc" id="L127">        alert.showAndWait();</span>
+<span class="nc" id="L128">    }</span>
+
+    @FXML
+    private void initialize() {
+<span class="nc" id="L132">        setupFormControls();</span>
+<span class="nc" id="L133">        setupTableColumns();</span>
+<span class="nc" id="L134">        setupSearchFunctionality();</span>
+<span class="nc" id="L135">        setupTableButtons();</span>
+<span class="nc" id="L136">        styleSubmitButton(); // Style the existing button</span>
+<span class="nc" id="L137">        refreshTableData();</span>
+<span class="nc" id="L138">    }</span>
+
+    private void setupFormControls() {
+<span class="nc" id="L141">        durationSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1000, 1));</span>
+<span class="nc" id="L142">    }</span>
+
+    private void setupTableColumns() {
+<span class="nc" id="L145">        nameColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;name&quot;));</span>
+<span class="nc" id="L146">        descriptionColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;description&quot;));</span>
+<span class="nc" id="L147">        durationColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;duration&quot;));</span>
+<span class="nc" id="L148">        servicesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);</span>
+<span class="nc" id="L149">    }</span>
+
+    private void setupSearchFunctionality() {
+<span class="nc" id="L152">        filteredServices = new FilteredList&lt;&gt;(servicesData, p -&gt; true);</span>
+<span class="nc" id="L153">        sortedServices = new SortedList&lt;&gt;(filteredServices);</span>
+<span class="nc" id="L154">        sortedServices.comparatorProperty().bind(servicesTable.comparatorProperty());</span>
+
+<span class="nc" id="L156">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
+<span class="nc" id="L157">            Platform.runLater(() -&gt; updateSearchFilter(newValue));</span>
+<span class="nc" id="L158">        });</span>
+
+<span class="nc" id="L160">        servicesTable.setItems(sortedServices);</span>
+<span class="nc" id="L161">    }</span>
+
+    private void updateSearchFilter(String searchText) {
+<span class="nc" id="L164">        filteredServices.setPredicate(service -&gt; {</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">            if (searchText == null || searchText.isEmpty()) {</span>
+<span class="nc" id="L166">                return true;</span>
+            }
+<span class="nc" id="L168">            String lowerCaseFilter = searchText.toLowerCase();</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            return service.getName().toLowerCase().contains(lowerCaseFilter) ||</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">                    service.getDescription().toLowerCase().contains(lowerCaseFilter);</span>
+        });
+<span class="nc" id="L172">    }</span>
+
+    private void setupTableButtons() {
+<span class="nc" id="L175">        addModifyButtonToTable();</span>
+<span class="nc" id="L176">        addDeleteButtonToTable();</span>
+<span class="nc" id="L177">    }</span>
+
+    private void addModifyButtonToTable() {
+<span class="nc" id="L180">        modifyColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L181">            private final Button modifyButton = new Button(&quot;Modify&quot;);</span>
+
+            {
+<span class="nc" id="L184">                modifyButton.setStyle(&quot;-fx-background-color: #2196F3; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L185">                modifyButton.setOnAction(event -&gt; {</span>
+<span class="nc" id="L186">                    Service service = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L187">                    handleModify(service);</span>
+<span class="nc" id="L188">                });</span>
+<span class="nc" id="L189">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L193">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">                setGraphic(empty ? null : modifyButton);</span>
+<span class="nc" id="L195">            }</span>
+        });
+<span class="nc" id="L197">    }</span>
+
+    private void addDeleteButtonToTable() {
+<span class="nc" id="L200">        deleteColumn.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L201">            private final Button deleteButton = new Button(&quot;Delete&quot;);</span>
+
+            {
+<span class="nc" id="L204">                deleteButton.setStyle(&quot;-fx-background-color: #F44336; -fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L205">                deleteButton.setOnAction(event -&gt; {</span>
+<span class="nc" id="L206">                    Service service = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L207">                    handleDelete(service);</span>
+<span class="nc" id="L208">                });</span>
+<span class="nc" id="L209">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L213">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                setGraphic(empty ? null : deleteButton);</span>
+<span class="nc" id="L215">            }</span>
+        });
+<span class="nc" id="L217">    }</span>
+
+    private void styleSubmitButton() {
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        if (submitButton != null) {</span>
+            // Red-to-blue gradient effect
+<span class="nc" id="L222">            submitButton.setStyle(</span>
+                    &quot;-fx-background-color: linear-gradient(to right, #FF5252, #2196F3);&quot; +
+                            &quot;-fx-text-fill: white;&quot; +
+                            &quot;-fx-font-weight: bold;&quot; +
+                            &quot;-fx-background-radius: 5px;&quot;
+            );
+
+            // Hover effect - darker version of the gradient
+<span class="nc" id="L230">            submitButton.setOnMouseEntered(e -&gt; submitButton.setStyle(</span>
+                    &quot;-fx-background-color: linear-gradient(to right, #FF1744, #1976D2);&quot; +
+                            &quot;-fx-text-fill: white;&quot; +
+                            &quot;-fx-font-weight: bold;&quot; +
+                            &quot;-fx-background-radius: 5px;&quot; +
+                            &quot;-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 1);&quot;
+            ));
+
+            // Normal state when mouse exits
+<span class="nc" id="L239">            submitButton.setOnMouseExited(e -&gt; submitButton.setStyle(</span>
+                    &quot;-fx-background-color: linear-gradient(to right, #FF5252, #2196F3);&quot; +
+                            &quot;-fx-text-fill: white;&quot; +
+                            &quot;-fx-font-weight: bold;&quot; +
+                            &quot;-fx-background-radius: 5px;&quot; +
+                            &quot;-fx-effect: null;&quot;
+            ));
+
+            // Pressed effect
+<span class="nc" id="L248">            submitButton.setOnMousePressed(e -&gt; submitButton.setStyle(</span>
+                    &quot;-fx-background-color: linear-gradient(to right, #D50000, #0D47A1);&quot; +
+                            &quot;-fx-text-fill: white;&quot; +
+                            &quot;-fx-font-weight: bold;&quot; +
+                            &quot;-fx-background-radius: 5px;&quot; +
+                            &quot;-fx-effect: innershadow(three-pass-box, rgba(0,0,0,0.4), 2, 0, 0, 0);&quot;
+            ));
+        }
+<span class="nc" id="L256">    }</span>
+
+    private void handleModify(Service service) {
+<span class="nc" id="L259">        Dialog&lt;Service&gt; dialog = createModifyDialog(service);</span>
+<span class="nc" id="L260">        Optional&lt;Service&gt; result = dialog.showAndWait();</span>
+
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (result.isPresent()) {</span>
+            try {
+<span class="nc" id="L264">                Service updatedService = result.get();</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">                if (validateInputs(updatedService.getName(), updatedService.getDescription(), updatedService.getDuration())) {</span>
+<span class="nc" id="L266">                    serviceService.updateService(updatedService);</span>
+<span class="nc" id="L267">                    refreshTableData();</span>
+<span class="nc" id="L268">                    showAlert(&quot;Success&quot;, &quot;Service updated successfully!&quot;, Alert.AlertType.INFORMATION);</span>
+                }
+<span class="nc" id="L270">            } catch (Exception e) {</span>
+<span class="nc" id="L271">                showAlert(&quot;Error&quot;, &quot;Failed to update service: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L272">            }</span>
+        }
+<span class="nc" id="L274">    }</span>
+
+    private Dialog&lt;Service&gt; createModifyDialog(Service service) {
+<span class="nc" id="L277">        Dialog&lt;Service&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L278">        dialog.setTitle(&quot;Modify Service&quot;);</span>
+<span class="nc" id="L279">        dialog.setHeaderText(&quot;Edit Service Details&quot;);</span>
+
+<span class="nc" id="L281">        TextField nameField = new TextField(service.getName());</span>
+<span class="nc" id="L282">        TextArea descriptionField = new TextArea(service.getDescription());</span>
+<span class="nc" id="L283">        Spinner&lt;Integer&gt; durationSpinner = new Spinner&lt;&gt;(1, 1000, service.getDuration());</span>
+
+<span class="nc" id="L285">        Label nameError = new Label();</span>
+<span class="nc" id="L286">        Label descriptionError = new Label();</span>
+<span class="nc" id="L287">        Label durationError = new Label();</span>
+
+<span class="nc" id="L289">        nameError.setStyle(&quot;-fx-text-fill: red;&quot;);</span>
+<span class="nc" id="L290">        descriptionError.setStyle(&quot;-fx-text-fill: red;&quot;);</span>
+<span class="nc" id="L291">        durationError.setStyle(&quot;-fx-text-fill: red;&quot;);</span>
+
+<span class="nc" id="L293">        GridPane grid = new GridPane();</span>
+<span class="nc" id="L294">        grid.setHgap(10);</span>
+<span class="nc" id="L295">        grid.setVgap(10);</span>
+<span class="nc" id="L296">        grid.add(new Label(&quot;Name:&quot;), 0, 0);</span>
+<span class="nc" id="L297">        grid.add(nameField, 1, 0);</span>
+<span class="nc" id="L298">        grid.add(nameError, 2, 0);</span>
+<span class="nc" id="L299">        grid.add(new Label(&quot;Description:&quot;), 0, 1);</span>
+<span class="nc" id="L300">        grid.add(descriptionField, 1, 1);</span>
+<span class="nc" id="L301">        grid.add(descriptionError, 2, 1);</span>
+<span class="nc" id="L302">        grid.add(new Label(&quot;Duration (minutes):&quot;), 0, 2);</span>
+<span class="nc" id="L303">        grid.add(durationSpinner, 1, 2);</span>
+<span class="nc" id="L304">        grid.add(durationError, 2, 2);</span>
+
+<span class="nc" id="L306">        dialog.getDialogPane().setContent(grid);</span>
+<span class="nc" id="L307">        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);</span>
+
+<span class="nc" id="L309">        Node okButton = dialog.getDialogPane().lookupButton(ButtonType.OK);</span>
+<span class="nc" id="L310">        okButton.setDisable(false);</span>
+
+<span class="nc" id="L312">        nameField.textProperty().addListener((obs, oldVal, newVal) -&gt; validateDialogFields(nameField, nameError, descriptionField, descriptionError, durationSpinner, durationError, okButton));</span>
+<span class="nc" id="L313">        descriptionField.textProperty().addListener((obs, oldVal, newVal) -&gt; validateDialogFields(nameField, nameError, descriptionField, descriptionError, durationSpinner, durationError, okButton));</span>
+<span class="nc" id="L314">        durationSpinner.valueProperty().addListener((obs, oldVal, newVal) -&gt; validateDialogFields(nameField, nameError, descriptionField, descriptionError, durationSpinner, durationError, okButton));</span>
+
+<span class="nc" id="L316">        dialog.setResultConverter(buttonType -&gt; {</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">            if (buttonType == ButtonType.OK) {</span>
+<span class="nc" id="L318">                service.setName(nameField.getText().trim());</span>
+<span class="nc" id="L319">                service.setDescription(descriptionField.getText().trim());</span>
+<span class="nc" id="L320">                service.setDuration(durationSpinner.getValue());</span>
+<span class="nc" id="L321">                return service;</span>
+            }
+<span class="nc" id="L323">            return null;</span>
+        });
+
+<span class="nc" id="L326">        return dialog;</span>
+    }
+
+    private void validateDialogFields(TextField nameField, Label nameError,
+                                      TextArea descriptionField, Label descriptionError,
+                                      Spinner&lt;Integer&gt; durationSpinner, Label durationError,
+                                      Node okButton) {
+<span class="nc" id="L333">        boolean valid = true;</span>
+
+<span class="nc" id="L335">        String name = nameField.getText().trim();</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">        if (name.isEmpty()) {</span>
+<span class="nc" id="L337">            nameError.setText(&quot;Service name cannot be blank!&quot;);</span>
+<span class="nc" id="L338">            valid = false;</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        } else if (name.length() &lt; 3) {</span>
+<span class="nc" id="L340">            nameError.setText(&quot;Service name must be at least 3 characters long!&quot;);</span>
+<span class="nc" id="L341">            valid = false;</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        } else if (name.matches(&quot;.*\\d.*&quot;)) {</span>
+<span class="nc" id="L343">            nameError.setText(&quot;Service name cannot contain numbers!&quot;);</span>
+<span class="nc" id="L344">            valid = false;</span>
+        } else {
+<span class="nc" id="L346">            nameError.setText(&quot;&quot;);</span>
+        }
+
+<span class="nc" id="L349">        String description = descriptionField.getText().trim();</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">        if (description.isEmpty()) {</span>
+<span class="nc" id="L351">            descriptionError.setText(&quot;Description cannot be blank!&quot;);</span>
+<span class="nc" id="L352">            valid = false;</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">        } else if (!description.contains(&quot; &quot;)) {</span>
+<span class="nc" id="L354">            descriptionError.setText(&quot;Description must contain at least one space!&quot;);</span>
+<span class="nc" id="L355">            valid = false;</span>
+        } else {
+<span class="nc" id="L357">            descriptionError.setText(&quot;&quot;);</span>
+        }
+
+<span class="nc" id="L360">        int duration = durationSpinner.getValue();</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (duration &lt;= 0) {</span>
+<span class="nc" id="L362">            durationError.setText(&quot;Duration must be greater than 0!&quot;);</span>
+<span class="nc" id="L363">            valid = false;</span>
+        } else {
+<span class="nc" id="L365">            durationError.setText(&quot;&quot;);</span>
+        }
+
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        okButton.setDisable(!valid);</span>
+<span class="nc" id="L369">    }</span>
+
+    private void handleDelete(Service service) {
+<span class="nc" id="L372">        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L373">        confirmation.setTitle(&quot;Delete Confirmation&quot;);</span>
+<span class="nc" id="L374">        confirmation.setHeaderText(&quot;Are you sure you want to delete this service?&quot;);</span>
+<span class="nc" id="L375">        confirmation.setContentText(&quot;Service: &quot; + service.getName());</span>
+
+<span class="nc" id="L377">        Optional&lt;ButtonType&gt; result = confirmation.showAndWait();</span>
+<span class="nc bnc" id="L378" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+            try {
+<span class="nc" id="L380">                serviceService.deleteService(service.getId());</span>
+<span class="nc" id="L381">                refreshTableData();</span>
+<span class="nc" id="L382">                showAlert(&quot;Success&quot;, &quot;Service deleted successfully!&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L383">            } catch (Exception e) {</span>
+<span class="nc" id="L384">                showAlert(&quot;Error&quot;, &quot;Failed to delete service: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L385">            }</span>
+        }
+<span class="nc" id="L387">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

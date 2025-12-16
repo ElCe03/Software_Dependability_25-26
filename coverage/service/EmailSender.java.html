@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmailSender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">service</a> &gt; <span class="el_source">EmailSender.java</span></div><h1>EmailSender.java</h1><pre class="source lang-java linenums">package service;
+
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+<span class="nc" id="L11">public class EmailSender {</span>
+
+    private static String EMAIL;
+    private static String PASSWORD;
+
+    static {
+<span class="nc" id="L17">        try (InputStream input = EmailSender.class.getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="nc" id="L18">            Properties prop = new Properties();</span>
+
+<span class="nc bnc" id="L20" title="All 2 branches missed.">            if (input == null) {</span>
+<span class="nc" id="L21">                System.out.println(&quot;Spiacente, impossibile trovare config.properties&quot;);</span>
+            } else {
+<span class="nc" id="L23">                prop.load(input);</span>
+
+<span class="nc" id="L25">                EMAIL = prop.getProperty(&quot;email.username&quot;);</span>
+<span class="nc" id="L26">                PASSWORD = prop.getProperty(&quot;email.password&quot;);</span>
+            }
+<span class="nc" id="L28">        } catch (IOException ex) {</span>
+<span class="nc" id="L29">            System.out.println(&quot;Errore durante il caricamento del file di configurazione.&quot;);</span>
+<span class="nc" id="L30">        }</span>
+<span class="nc" id="L31">    }</span>
+
+    private static Session getSession() {
+<span class="nc" id="L34">        Properties props = new Properties();</span>
+<span class="nc" id="L35">        props.put(&quot;mail.smtp.host&quot;, &quot;smtp.gmail.com&quot;);</span>
+<span class="nc" id="L36">        props.put(&quot;mail.smtp.port&quot;, &quot;587&quot;);</span>
+<span class="nc" id="L37">        props.put(&quot;mail.smtp.auth&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L38">        props.put(&quot;mail.smtp.starttls.enable&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L39">        props.put(&quot;mail.smtp.ssl.checkserveridentity&quot;, &quot;true&quot;);</span>
+
+        // Authentication session
+<span class="nc" id="L42">        Authenticator auth = new Authenticator() {</span>
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+<span class="nc" id="L45">                return new PasswordAuthentication(EMAIL, PASSWORD);</span>
+            }
+        };
+<span class="nc" id="L48">        return Session.getInstance(props, auth);</span>
+    }
+
+    public static boolean sendEmail(String to, String subject, String content) {
+<span class="nc bnc" id="L52" title="All 8 branches missed.">        if (EMAIL == null || PASSWORD == null || EMAIL.isEmpty() || PASSWORD.isEmpty()) {</span>
+<span class="nc" id="L53">            System.out.println(&quot;Errore: Credenziali Gmail non impostate o file config.properties non letto!&quot;);</span>
+<span class="nc" id="L54">            return false;</span>
+        }
+
+        try {
+<span class="nc" id="L58">            Message message = new MimeMessage(getSession());</span>
+<span class="nc" id="L59">            message.setFrom(new InternetAddress(EMAIL));</span>
+<span class="nc" id="L60">            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));</span>
+<span class="nc" id="L61">            message.setSubject(subject);</span>
+<span class="nc" id="L62">            message.setText(content);</span>
+
+<span class="nc" id="L64">            Transport.send(message);</span>
+<span class="nc" id="L65">            System.out.println(&quot;Email inviata con successo a &quot; + to);</span>
+<span class="nc" id="L66">            return true;</span>
+<span class="nc" id="L67">        } catch (MessagingException e) {</span>
+<span class="nc" id="L68">            System.out.println(&quot;Errore nell'invio dell'email: &quot; + e.getMessage());</span>
+<span class="nc" id="L69">            e.printStackTrace();</span>
+<span class="nc" id="L70">            return false;</span>
+        }
+    }
+
+    public static void envoyerEmailInscription(String email, String nom, String password, String type) {
+<span class="nc" id="L75">        String subject = &quot;Bienvenue sur ClinicCare!&quot;;</span>
+<span class="nc" id="L76">        String content = &quot;Bonjour &quot; + nom + &quot;,\n\n&quot; +</span>
+                &quot;Bienvenue sur ClinicCare ! Vous êtes inscrit en tant que &quot; + type + &quot;.\n&quot; +
+                &quot;Vos identifiants :\n&quot; +
+                &quot;Email : &quot; + email + &quot;\n&quot; +
+                &quot;Mot de passe : &quot; + password + &quot;\n\n&quot; +
+                &quot;Cordialement,\n&quot; +
+                &quot;L'équipe ClinicCare.&quot;;
+
+<span class="nc" id="L84">        sendEmail(email, subject, content);</span>
+<span class="nc" id="L85">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

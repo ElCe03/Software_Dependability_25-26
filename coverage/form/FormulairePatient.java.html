@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FormulairePatient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">form</a> &gt; <span class="el_source">FormulairePatient.java</span></div><h1>FormulairePatient.java</h1><pre class="source lang-java linenums">package form;
+
+import javax.swing.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import util.DataSource;
+
+<span class="nc" id="L11">public class FormulairePatient {</span>
+    
+    public static void afficherFormulaire(int userId) {
+<span class="nc" id="L14">        String adresse = JOptionPane.showInputDialog(&quot;Adresse du patient :&quot;);</span>
+<span class="nc" id="L15">        String telephone = JOptionPane.showInputDialog(&quot;Numéro de téléphone :&quot;);</span>
+<span class="nc" id="L16">        String dateNaissanceStr = JOptionPane.showInputDialog(&quot;Date de naissance (format: yyyy-MM-dd) :&quot;);</span>
+
+<span class="nc" id="L18">        String req = &quot;UPDATE users SET adresse = ?, telephone = ?, date_naissance = ? WHERE id = ?&quot;;</span>
+
+<span class="nc" id="L20">        try (Connection conn = DataSource.getInstance().getConnection();</span>
+<span class="nc" id="L21">             PreparedStatement pstmt = conn.prepareStatement(req)) {</span>
+
+<span class="nc" id="L23">            pstmt.setString(1, adresse);</span>
+<span class="nc" id="L24">            pstmt.setString(2, telephone);</span>
+            
+<span class="nc" id="L26">            pstmt.setDate(3, java.sql.Date.valueOf(LocalDate.parse(dateNaissanceStr)));</span>
+            
+<span class="nc" id="L28">            pstmt.setInt(4, userId);</span>
+
+<span class="nc" id="L30">            pstmt.executeUpdate();</span>
+<span class="nc" id="L31">            System.out.println(&quot;✅ Patient mis à jour dans la table `users` !&quot;);</span>
+
+<span class="nc" id="L33">        } catch (SQLException e) {</span>
+<span class="nc" id="L34">            System.err.println(&quot;❌ Erreur SQL mise à jour patient : &quot; + e.getMessage());</span>
+<span class="nc" id="L35">        } catch (DateTimeParseException e) {</span>
+<span class="nc" id="L36">            System.err.println(&quot;❌ Erreur format date : &quot; + e.getMessage());</span>
+<span class="nc" id="L37">            JOptionPane.showMessageDialog(null, &quot;Format de date invalide ! Utilisez yyyy-MM-dd&quot;, &quot;Erreur&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L38">        } catch (Exception e) {</span>
+<span class="nc" id="L39">            System.err.println(&quot;❌ Erreur générique : &quot; + e.getMessage());</span>
+<span class="nc" id="L40">        }</span>
+<span class="nc" id="L41">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Commande.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">Commande.java</span></div><h1>Commande.java</h1><pre class="source lang-java linenums">package entite;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Commande {
+    
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private LocalDate date_commande;
+    /*@ spec_public @*/ private double total_prix;
+    /*@ spec_public @*/ private int quantite;
+    /*@ spec_public non_null @*/ private List&lt;MedicamentCommande&gt; medicamentsCommandes;
+    /*@ spec_public nullable @*/ private String stripeSessionId;
+    /*@ spec_public nullable @*/ private String status;
+
+    /*@ public invariant id &gt;= 0; @*/
+    /*@ public invariant total_prix &gt;= 0.0; @*/
+    /*@ public invariant quantite &gt;= 0; @*/
+    /*@ public invariant medicamentsCommandes != null; @*/
+    /*@ public invariant (\forall int i; 0 &lt;= i &amp;&amp; i &lt; medicamentsCommandes.size(); medicamentsCommandes.get(i) != null); @*/
+
+    /*@ 
+      @ ensures id == 0;
+      @ ensures total_prix == 0.0;
+      @ ensures quantite == 0;
+      @ ensures medicamentsCommandes != null &amp;&amp; medicamentsCommandes.isEmpty();
+      @*/
+<span class="fc" id="L30">    public Commande() {</span>
+<span class="fc" id="L31">        this.medicamentsCommandes = new ArrayList&lt;MedicamentCommande&gt;();</span>
+<span class="fc" id="L32">    }</span>
+
+    /*@ 
+      @ requires id &gt;= 0;
+      @ requires total_prix &gt;= 0.0;
+      @ requires quantite &gt;= 0;
+      @ 
+      @ ensures this.id == id;
+      @ ensures this.total_prix == total_prix;
+      @ ensures this.quantite == quantite;
+      @ ensures this.medicamentsCommandes != null &amp;&amp; this.medicamentsCommandes.isEmpty();
+      @*/
+    // Constructeur
+<span class="fc" id="L45">    public Commande(int id, LocalDate date_commande, double total_prix, int quantite) {</span>
+<span class="fc" id="L46">        this.id = id;</span>
+<span class="fc" id="L47">        this.date_commande = date_commande;</span>
+<span class="fc" id="L48">        this.total_prix = total_prix;</span>
+<span class="fc" id="L49">        this.quantite = quantite;</span>
+<span class="fc" id="L50">        this.medicamentsCommandes = new ArrayList&lt;MedicamentCommande&gt;();</span>
+<span class="fc" id="L51">    }</span>
+
+    // Getters/Setters
+
+    /*@ ensures \result == id; pure @*/
+<span class="fc" id="L56">    public int getId() { return id; }</span>
+    /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
+<span class="fc" id="L58">    public void setId(int id) { this.id = id; }</span>
+
+    /*@ pure @*/
+<span class="fc" id="L61">    public LocalDate getDate_commande() { return date_commande; }</span>
+    /*@ assignable this.date_commande; @*/
+<span class="fc" id="L63">    public void setDate_commande(LocalDate date_commande) { this.date_commande = date_commande; }</span>
+
+    /*@ ensures \result == total_prix; pure @*/
+<span class="fc" id="L66">    public double getTotal_prix() { return total_prix; }</span>
+    /*@ 
+      @ requires total_prix &gt;= 0.0;
+      @ assignable this.total_prix;
+      @ ensures this.total_prix == total_prix;
+      @*/
+<span class="fc" id="L72">    public void setTotal_prix(double total_prix) { this.total_prix = total_prix; }</span>
+
+    /*@ ensures \result == quantite; pure @*/
+<span class="fc" id="L75">    public int getQuantite() { return quantite; } // New getter</span>
+    /*@ 
+      @ requires quantite &gt;= 0;
+      @ assignable this.quantite;
+      @ ensures this.quantite == quantite;
+      @*/
+<span class="fc" id="L81">    public void setQuantite(int quantite) { this.quantite = quantite; }</span>
+
+    /*@ ensures \result == medicamentsCommandes; ensures \result != null; pure @*/
+<span class="fc" id="L84">    public List&lt;MedicamentCommande&gt; getMedicaments() { return medicamentsCommandes; }</span>
+    /*@ 
+      @ requires m != null;
+      @ requires quantite &gt; 0;
+      @ 
+      @ ensures medicamentsCommandes.size() == \old(medicamentsCommandes.size()) + 1;
+      @*/
+    public void addMedicament(Medicament m, int quantite) {
+<span class="fc" id="L92">        this.medicamentsCommandes.add(new MedicamentCommande(this, m, quantite));</span>
+<span class="fc" id="L93">    }</span>
+
+    /*@
+      @ ensures \result != null;
+      @ pure
+      @*/
+    public String getNomMedicamentsCommandes() {
+<span class="nc bnc" id="L100" title="All 4 branches missed.">        if (medicamentsCommandes == null || medicamentsCommandes.isEmpty()) return &quot;&quot;;</span>
+<span class="nc" id="L101">        return medicamentsCommandes.stream()</span>
+<span class="nc" id="L102">                .map(mc -&gt; mc.getMedicament().getNom_medicament())</span>
+<span class="nc" id="L103">                .collect(Collectors.joining(&quot;, &quot;));</span>
+    }
+<span class="fc" id="L105">    public String getStripeSessionId() { return stripeSessionId; }</span>
+<span class="fc" id="L106">    public void setStripeSessionId(String stripeSessionId) { this.stripeSessionId = stripeSessionId; }</span>
+
+<span class="fc" id="L108">    public String getStatus() { return status; }</span>
+<span class="fc" id="L109">    public void setStatus(String status) { this.status = status; }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

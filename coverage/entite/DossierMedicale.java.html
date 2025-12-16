@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DossierMedicale.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">entite</a> &gt; <span class="el_source">DossierMedicale.java</span></div><h1>DossierMedicale.java</h1><pre class="source lang-java linenums">package entite;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Represents a medical record containing all of a patient's medical information
+ */
+public class DossierMedicale {
+
+    /*@ spec_public @*/ private int id;
+    /*@ spec_public nullable @*/ private User patient;        // corresponds to patient_id in SQL
+    /*@ spec_public nullable @*/ private User medecin;        // corresponds to medecin_id in SQL
+    /*@ spec_public nullable @*/ private LocalDateTime dateDeCreation;
+    /*@ spec_public nullable @*/ private String historiqueDesMaladies;
+    /*@ spec_public nullable @*/ private String operationsPassees;
+    /*@ spec_public nullable @*/ private String consultationsPassees;
+    /*@ spec_public nullable @*/ private String statutDossier;
+    /*@ spec_public nullable @*/ private String notes;
+    /*@ spec_public nullable @*/ private String image;
+    /*@ spec_public non_null @*/private List&lt;Sejour&gt; sejours;
+
+    /*@ public invariant id &gt;= 0; @*/
+    /*@ public invariant sejours != null; @*/
+    
+    // Default constructor
+<span class="nc" id="L28">    public DossierMedicale() {</span>
+<span class="nc" id="L29">        this.sejours = new ArrayList&lt;Sejour&gt;();</span>
+<span class="nc" id="L30">    }</span>
+    
+    // Constructor with all fields
+    public DossierMedicale(User patient, User medecin, LocalDateTime dateDeCreation, 
+            String historiqueDesMaladies, String operationsPassees, String consultationsPassees, 
+<span class="nc" id="L35">            String statutDossier, String notes, String image) {</span>
+<span class="nc" id="L36">        this.patient = patient;</span>
+<span class="nc" id="L37">        this.medecin = medecin;</span>
+<span class="nc" id="L38">        this.dateDeCreation = dateDeCreation;</span>
+<span class="nc" id="L39">        this.historiqueDesMaladies = historiqueDesMaladies;</span>
+<span class="nc" id="L40">        this.operationsPassees = operationsPassees;</span>
+<span class="nc" id="L41">        this.consultationsPassees = consultationsPassees;</span>
+<span class="nc" id="L42">        this.statutDossier = statutDossier;</span>
+<span class="nc" id="L43">        this.notes = notes;</span>
+<span class="nc" id="L44">        this.image = image;</span>
+<span class="nc" id="L45">        this.sejours = new ArrayList&lt;Sejour&gt;();</span>
+<span class="nc" id="L46">    }</span>
+    
+    // Getters and Setters
+
+    /*@ pure @*/
+    public int getId() {
+<span class="nc" id="L52">        return id;</span>
+    }
+    
+    public void setId(int id) {
+<span class="nc" id="L56">        this.id = id;</span>
+<span class="nc" id="L57">    }</span>
+    
+    // *** ECCO LA PARTE CRUCIALE CHE PREVIENE IL CRASH ***
+    /*@ pure @*/
+    public User getPatient() {
+<span class="nc" id="L62">        return patient;</span>
+    }
+    
+    public void setPatient(User patient) {
+<span class="nc" id="L66">        this.patient = patient;</span>
+<span class="nc" id="L67">    }</span>
+    
+    /*@ pure @*/
+    public User getMedecin() {
+<span class="nc" id="L71">        return medecin;</span>
+    }
+    
+    public void setMedecin(User medecin) {
+<span class="nc" id="L75">        this.medecin = medecin;</span>
+<span class="nc" id="L76">    }</span>
+    
+    /*@ pure @*/
+    public LocalDateTime getDateDeCreation() {
+<span class="nc" id="L80">        return dateDeCreation;</span>
+    }
+    
+    public void setDateDeCreation(LocalDateTime dateDeCreation) {
+<span class="nc" id="L84">        this.dateDeCreation = dateDeCreation;</span>
+<span class="nc" id="L85">    }</span>
+    
+    /*@ pure @*/
+    public String getHistoriqueDesMaladies() {
+<span class="nc" id="L89">        return historiqueDesMaladies;</span>
+    }
+    
+    public void setHistoriqueDesMaladies(String historiqueDesMaladies) {
+<span class="nc" id="L93">        this.historiqueDesMaladies = historiqueDesMaladies;</span>
+<span class="nc" id="L94">    }</span>
+    
+    /*@ pure @*/
+    public String getOperationsPassees() {
+<span class="nc" id="L98">        return operationsPassees;</span>
+    }
+    
+    public void setOperationsPassees(String operationsPassees) {
+<span class="nc" id="L102">        this.operationsPassees = operationsPassees;</span>
+<span class="nc" id="L103">    }</span>
+    
+    /*@ pure @*/
+    public String getConsultationsPassees() {
+<span class="nc" id="L107">        return consultationsPassees;</span>
+    }
+    
+    public void setConsultationsPassees(String consultationsPassees) {
+<span class="nc" id="L111">        this.consultationsPassees = consultationsPassees;</span>
+<span class="nc" id="L112">    }</span>
+    
+    /*@ pure @*/
+    public String getStatutDossier() {
+<span class="nc" id="L116">        return statutDossier;</span>
+    }
+    
+    public void setStatutDossier(String statutDossier) {
+<span class="nc" id="L120">        this.statutDossier = statutDossier;</span>
+<span class="nc" id="L121">    }</span>
+    
+    /*@ pure @*/
+    public String getNotes() {
+<span class="nc" id="L125">        return notes;</span>
+    }
+    
+    public void setNotes(String notes) {
+<span class="nc" id="L129">        this.notes = notes;</span>
+<span class="nc" id="L130">    }</span>
+    
+    /*@ pure @*/
+    public String getImage() {
+<span class="nc" id="L134">        return image;</span>
+    }
+    
+    public void setImage(String image) {
+<span class="nc" id="L138">        this.image = image;</span>
+<span class="nc" id="L139">    }</span>
+    
+    /*@ pure @*/
+    public List&lt;Sejour&gt; getSejours() {
+<span class="nc" id="L143">        return sejours;</span>
+    }
+    
+    public void setSejours(List&lt;Sejour&gt; sejours) {
+<span class="nc" id="L147">        this.sejours = sejours;</span>
+<span class="nc" id="L148">    }</span>
+    
+    public void addSejour(Sejour sejour) {
+<span class="nc bnc" id="L151" title="All 2 branches missed.">        if(sejours == null) {</span>
+<span class="nc" id="L152">            sejours = new ArrayList&lt;Sejour&gt;();</span>
+        }
+<span class="nc" id="L154">        sejours.add(sejour);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (sejour.getDossierMedicale() != this) {</span>
+<span class="nc" id="L156">            sejour.setDossierMedicale(this);</span>
+        }
+<span class="nc" id="L158">    }</span>
+    
+    /*@ pure @*/
+    public int getPatientId() {
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        return patient != null ? patient.getId() : 0;</span>
+    }
+    
+    /*@ pure @*/
+    public int getMedecinId() {
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        return medecin != null ? medecin.getId() : 0;</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L172">        return &quot;Dossier #&quot; + id;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

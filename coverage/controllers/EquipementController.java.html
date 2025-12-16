@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EquipementController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">EquipementController.java</span></div><h1>EquipementController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage; // Ajoutez Stage pour gérer les fenêtres
+import java.io.IOException;
+
+<span class="nc" id="L15">public class EquipementController {</span>
+
+    @FXML
+    private VBox categoryList; // Le conteneur où les catégories seront ajoutées
+
+    @FXML
+    private HBox contentArea;  // Définissez un HBox pour la zone de contenu, à ajuster selon votre layout
+
+    // Méthode pour ajouter une nouvelle catégorie à la liste
+    public void addCategory(String categoryName) {
+<span class="nc" id="L25">        HBox categoryItem = new HBox(10); // Crée un HBox pour chaque catégorie</span>
+<span class="nc" id="L26">        Label categoryLabel = new Label(categoryName);</span>
+<span class="nc" id="L27">        Button detailsButton = new Button(&quot;Voir les détails&quot;);</span>
+<span class="nc" id="L28">        detailsButton.setOnAction(event-&gt;ouvrirFenetreCategorie(categoryName)); // L'action pour voir les détails</span>
+
+<span class="nc" id="L30">        categoryItem.getChildren().addAll(categoryLabel, detailsButton);</span>
+<span class="nc" id="L31">        categoryList.getChildren().add(categoryItem); // Ajoute cette HBox au VBox</span>
+<span class="nc" id="L32">    }</span>
+
+    // Méthode appelée lorsqu'on clique sur &quot;Voir les détails&quot;
+    //@FXML
+    /*private void handleEquipementCategory(ActionEvent event) {
+        try {
+            // Charger la vue de la catégorie d'équipement
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/equipement_category.fxml&quot;));
+            Parent equipementCategoryView = loader.load();
+
+            // Récupérer le contrôleur pour lui passer l’objet
+            EquipementCategoryController controller = loader.getController();
+            controller.setCategoryTitle(selectedCategorie);
+
+            // Créer une nouvelle scène pour afficher la catégorie d'équipement dans une nouvelle fenêtre
+            Stage newStage = new Stage();
+            newStage.setTitle(&quot;Détails de la catégorie&quot;);
+            newStage.setScene(new Scene(equipementCategoryView));
+            newStage.show(); // Ouvre la nouvelle fenêtre
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            loadContent(&quot;Erreur lors du chargement de la page de la catégorie d'équipement&quot;);
+        }
+    }*/
+
+    @FXML
+    private void ouvrirFenetreCategorie(String categorie) {
+        try {
+<span class="nc" id="L61">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/equipement_category.fxml&quot;));</span>
+<span class="nc" id="L62">            Parent view = loader.load();</span>
+
+<span class="nc" id="L64">            EquipementCategoryController controller = loader.getController();</span>
+<span class="nc" id="L65">            controller.setCategorie(categorie);</span>
+
+<span class="nc" id="L67">            Stage stage = new Stage();</span>
+<span class="nc" id="L68">            stage.setTitle(&quot;Détails de la catégorie&quot;);</span>
+<span class="nc" id="L69">            stage.setScene(new Scene(view));</span>
+<span class="nc" id="L70">            stage.show();</span>
+
+<span class="nc" id="L72">        } catch (IOException e) {</span>
+<span class="nc" id="L73">            e.printStackTrace();</span>
+<span class="nc" id="L74">        }</span>
+<span class="nc" id="L75">    }</span>
+
+    // Méthode pour afficher un message d'erreur ou autre contenu
+    private void loadContent(String message) {
+<span class="nc" id="L79">        Label errorLabel = new Label(message);</span>
+<span class="nc" id="L80">        contentArea.getChildren().clear();</span>
+<span class="nc" id="L81">        contentArea.getChildren().add(errorLabel);</span>
+<span class="nc" id="L82">    }</span>
+    // Exemple pour ajouter des catégories
+    public void initialize() {
+<span class="nc" id="L85">        addCategory(&quot;Imagerie médicale&quot;);</span>
+<span class="nc" id="L86">        addCategory(&quot;Équipements de laboratoire&quot;);</span>
+<span class="nc" id="L87">        addCategory(&quot;Équipements de soins&quot;);</span>
+<span class="nc" id="L88">        addCategory(&quot;Équipements d'urgence&quot;);</span>
+<span class="nc" id="L89">        addCategory(&quot;Équipements de chirurgie&quot;);</span>
+<span class="nc" id="L90">        addCategory(&quot;Équipements de surveillance&quot;);</span>
+<span class="nc" id="L91">        addCategory(&quot;Équipements de stérilisation&quot;);</span>
+<span class="nc" id="L92">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

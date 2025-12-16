@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmailService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">util</a> &gt; <span class="el_source">EmailService.java</span></div><h1>EmailService.java</h1><pre class="source lang-java linenums">package util;
+
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+
+<span class="nc" id="L13">public class EmailService {</span>
+<span class="nc" id="L14">    private static final Logger LOGGER = Logger.getLogger(EmailService.class.getName());</span>
+    
+<span class="nc" id="L16">    private static final Properties CONFIG_PROPS = loadConfig();</span>
+   
+<span class="nc" id="L18">    private static final String SMTP_HOST = getConfig(&quot;smtp.host&quot;, &quot;sandbox.smtp.mailtrap.io&quot;);</span>
+<span class="nc" id="L19">    private static final String SMTP_PORT = getConfig(&quot;smtp.port&quot;, &quot;2525&quot;);</span>
+    
+<span class="nc" id="L21">    private static final String SMTP_USERNAME = getConfig(&quot;smtp.user&quot;, null);</span>
+<span class="nc" id="L22">    private static final String SMTP_PASSWORD = getConfig(&quot;smtp.password&quot;, null);</span>
+    
+<span class="nc" id="L24">    private static final String SENDER_EMAIL = getConfig(&quot;sender.email&quot;, &quot;eyah5268@gmail.com&quot;);</span>
+<span class="nc" id="L25">    private static final String SENDER_NAME = getConfig(&quot;sender.name&quot;, &quot;eya&quot;);</span>
+
+<span class="nc" id="L27">    private static final Properties SMTP_PROPS = new Properties();</span>
+    
+    static {
+<span class="nc bnc" id="L30" title="All 4 branches missed.">        if (SMTP_USERNAME == null || SMTP_PASSWORD == null) {</span>
+<span class="nc" id="L31">            LOGGER.log(Level.WARNING, &quot;Attenzione: Credenziali SMTP (smtp.user/password) non trovate nel config.properties!&quot;);</span>
+        }
+
+<span class="nc" id="L34">        SMTP_PROPS.put(&quot;mail.smtp.auth&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L35">        SMTP_PROPS.put(&quot;mail.smtp.starttls.enable&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L36">        SMTP_PROPS.put(&quot;mail.smtp.host&quot;, SMTP_HOST);</span>
+<span class="nc" id="L37">        SMTP_PROPS.put(&quot;mail.smtp.port&quot;, SMTP_PORT);</span>
+<span class="nc" id="L38">        SMTP_PROPS.put(&quot;mail.smtp.ssl.protocols&quot;, &quot;TLSv1.2&quot;);</span>
+<span class="nc" id="L39">        SMTP_PROPS.put(&quot;mail.smtp.connectiontimeout&quot;, &quot;5000&quot;);</span>
+<span class="nc" id="L40">        SMTP_PROPS.put(&quot;mail.smtp.timeout&quot;, &quot;5000&quot;);</span>
+<span class="nc" id="L41">        SMTP_PROPS.put(&quot;mail.debug&quot;, &quot;true&quot;); // Activation des logs</span>
+<span class="nc" id="L42">    }</span>
+
+    private static Properties loadConfig() {
+<span class="nc" id="L45">        Properties props = new Properties();</span>
+        // Usiamo config.properties per coerenza con il resto del progetto
+<span class="nc" id="L47">        try (InputStream input = EmailService.class.getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (input != null) {</span>
+<span class="nc" id="L49">                props.load(input);</span>
+            } else {
+<span class="nc" id="L51">                LOGGER.log(Level.SEVERE, &quot;File config.properties non trovato!&quot;);</span>
+            }
+<span class="nc" id="L53">        } catch (IOException e) {</span>
+<span class="nc" id="L54">            LOGGER.log(Level.SEVERE, &quot;Erreur de chargement du fichier de configuration&quot;, e);</span>
+<span class="nc" id="L55">        }</span>
+<span class="nc" id="L56">        return props;</span>
+    }
+
+    private static String getConfig(String key, String defaultValue) {
+<span class="nc" id="L60">        return CONFIG_PROPS.getProperty(key, defaultValue);</span>
+    }
+
+    public static void sendReservationEmail(
+            String recipientEmail,
+            String salleName,
+            String dateDebut,
+            String dateFin,
+            String typeSalle,
+            String status,
+            Runnable onSuccess,
+            Runnable onFailure
+    ) {
+<span class="nc" id="L73">        Task&lt;Void&gt; emailTask = new Task&lt;Void&gt;() {</span>
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    // Ensure SSL server identity is checked for MITM protection
+<span class="nc" id="L78">                    SMTP_PROPS.put(&quot;mail.smtp.ssl.checkserveridentity&quot;, &quot;true&quot;);</span>
+
+<span class="nc" id="L80">                    Authenticator auth = new Authenticator() {</span>
+                        @Override
+                        protected PasswordAuthentication getPasswordAuthentication() {
+<span class="nc" id="L83">                            return new PasswordAuthentication(SMTP_USERNAME, SMTP_PASSWORD);</span>
+                        }
+                    };
+
+<span class="nc" id="L87">                    Session session = Session.getInstance(SMTP_PROPS, auth);</span>
+
+<span class="nc" id="L89">                    Message message = new MimeMessage(session);</span>
+<span class="nc" id="L90">                    message.setFrom(new InternetAddress(SENDER_EMAIL, SENDER_NAME));</span>
+<span class="nc" id="L91">                    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));</span>
+<span class="nc" id="L92">                    message.setSubject(&quot;Confirmation de Réservation&quot;);</span>
+
+                    // Partie texte
+<span class="nc" id="L95">                    String textContent = String.format(</span>
+                            &quot;Bonjour,\n\nVotre réservation pour la salle %s a été confirmée.\n\n&quot; +
+                                    &quot;Détails :\n- Date : %s à %s\n- Type : %s\n- Statut : %s\n\n&quot; +
+                                    &quot;Cordialement,\n%s&quot;,
+                            salleName, dateDebut, dateFin, typeSalle, status, SENDER_NAME
+                    );
+
+                    // Partie HTML
+<span class="nc" id="L103">                    String htmlContent = String.format(</span>
+                            &quot;&lt;html&gt;&lt;body&gt;&quot; +
+                                    &quot;&lt;h2&gt;Confirmation de Réservation&lt;/h2&gt;&quot; +
+                                    &quot;&lt;p&gt;Bonjour,&lt;/p&gt;&quot; +
+                                    &quot;&lt;p&gt;Votre réservation pour la salle &lt;strong&gt;%s&lt;/strong&gt; a été confirmée.&lt;/p&gt;&quot; +
+                                    &quot;&lt;ul&gt;&quot; +
+                                    &quot;&lt;li&gt;&lt;strong&gt;Date :&lt;/strong&gt; %s à %s&lt;/li&gt;&quot; +
+                                    &quot;&lt;li&gt;&lt;strong&gt;Type :&lt;/strong&gt; %s&lt;/li&gt;&quot; +
+                                    &quot;&lt;li&gt;&lt;strong&gt;Statut :&lt;/strong&gt; %s&lt;/li&gt;&quot; +
+                                    &quot;&lt;/ul&gt;&quot; +
+                                    &quot;&lt;p&gt;Cordialement,&lt;br&gt;%s&lt;/p&gt;&quot; +
+                                    &quot;&lt;/body&gt;&lt;/html&gt;&quot;,
+                            salleName, dateDebut, dateFin, typeSalle, status, SENDER_NAME
+                    );
+
+<span class="nc" id="L118">                    MimeMultipart multipart = new MimeMultipart(&quot;alternative&quot;);</span>
+
+<span class="nc" id="L120">                    MimeBodyPart textPart = new MimeBodyPart();</span>
+<span class="nc" id="L121">                    textPart.setText(textContent, &quot;UTF-8&quot;);</span>
+
+<span class="nc" id="L123">                    MimeBodyPart htmlPart = new MimeBodyPart();</span>
+<span class="nc" id="L124">                    htmlPart.setContent(htmlContent, &quot;text/html; charset=UTF-8&quot;);</span>
+
+<span class="nc" id="L126">                    multipart.addBodyPart(textPart);</span>
+<span class="nc" id="L127">                    multipart.addBodyPart(htmlPart);</span>
+
+<span class="nc" id="L129">                    message.setContent(multipart);</span>
+<span class="nc" id="L130">                    Transport.send(message);</span>
+
+<span class="nc" id="L132">                    Platform.runLater(onSuccess);</span>
+<span class="nc" id="L133">                } catch (Exception e) {</span>
+<span class="nc" id="L134">                    LOGGER.log(Level.SEVERE, &quot;Erreur d'envoi d'email&quot;, e);</span>
+<span class="nc" id="L135">                    Platform.runLater(onFailure);</span>
+<span class="nc" id="L136">                }</span>
+<span class="nc" id="L137">                return null;</span>
+            }
+        };
+
+<span class="nc" id="L141">        new Thread(emailTask).start();</span>
+<span class="nc" id="L142">    }</span>
+
+    public static class EmailException extends Exception {
+        public EmailException(String message, Throwable cause) {
+<span class="nc" id="L146">            super(message, cause);</span>
+<span class="nc" id="L147">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

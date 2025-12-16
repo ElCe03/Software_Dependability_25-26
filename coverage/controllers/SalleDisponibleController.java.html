@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SalleDisponibleController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">SalleDisponibleController.java</span></div><h1>SalleDisponibleController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.salle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import service.SalleService;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.logging.Logger;
+
+import javafx.fxml.FXMLLoader;
+
+<span class="nc" id="L20">public class SalleDisponibleController {</span>
+<span class="nc" id="L21">    private static final Logger LOGGER = Logger.getLogger(SalleDisponibleController.class.getName());</span>
+
+    @FXML private TableView&lt;salle&gt; salleTable;
+    @FXML private TableColumn&lt;salle, Integer&gt; idCol;
+    @FXML private TableColumn&lt;salle, String&gt; nomCol;
+    @FXML private TableColumn&lt;salle, Integer&gt; capaciteCol;
+    @FXML private TableColumn&lt;salle, String&gt; typeCol;
+    @FXML private TableColumn&lt;salle, String&gt; statusCol;
+    @FXML private TableColumn&lt;salle, Void&gt; actionCol;
+
+<span class="nc" id="L31">    private final ObservableList&lt;salle&gt; salleData = FXCollections.observableArrayList();</span>
+<span class="nc" id="L32">    private final SalleService salleService = new SalleService();</span>
+
+    @FXML
+    public void initialize() {
+<span class="nc" id="L36">        configureTableColumns();</span>
+<span class="nc" id="L37">        loadSalles();</span>
+<span class="nc" id="L38">    }</span>
+
+    private void configureTableColumns() {
+<span class="nc" id="L41">        idCol.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;id&quot;));</span>
+<span class="nc" id="L42">        nomCol.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom&quot;));</span>
+<span class="nc" id="L43">        capaciteCol.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;capacite&quot;));</span>
+<span class="nc" id="L44">        typeCol.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;type_salle&quot;));</span>
+<span class="nc" id="L45">        statusCol.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;status&quot;));</span>
+
+        // Configuration de la colonne d'action avec un bouton
+<span class="nc" id="L48">        actionCol.setCellFactory(param -&gt; new TableCell&lt;&gt;() {</span>
+<span class="nc" id="L49">            private final Button reserveButton = new Button();</span>
+            {
+                // Tentative de chargement de l'icône
+<span class="nc" id="L52">                Image reserveIcon = null;</span>
+                try {
+<span class="nc" id="L54">                    reserveIcon = new Image(getClass().getResourceAsStream(&quot;/icons/reserve.png&quot;));</span>
+<span class="nc" id="L55">                    ImageView iconView = new ImageView(reserveIcon);</span>
+<span class="nc" id="L56">                    iconView.setFitHeight(16);</span>
+<span class="nc" id="L57">                    iconView.setFitWidth(16);</span>
+<span class="nc" id="L58">                    reserveButton.setGraphic(iconView);</span>
+<span class="nc" id="L59">                    reserveButton.getStyleClass().add(&quot;icon-button&quot;);</span>
+<span class="nc" id="L60">                } catch (Exception e) {</span>
+<span class="nc" id="L61">                    LOGGER.warning(&quot;Impossible de charger l'icône /icons/reserve.png: &quot; + e.getMessage());</span>
+                    // Fallback : utiliser un texte si l'icône est introuvable
+<span class="nc" id="L63">                    reserveButton.setText(&quot;Réserver&quot;);</span>
+<span class="nc" id="L64">                    reserveButton.getStyleClass().add(&quot;text-button&quot;);</span>
+<span class="nc" id="L65">                }</span>
+
+<span class="nc" id="L67">                reserveButton.setOnAction(event -&gt; {</span>
+<span class="nc" id="L68">                    salle selectedSalle = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L69">                    showReservationDialog(selectedSalle);</span>
+<span class="nc" id="L70">                });</span>
+<span class="nc" id="L71">            }</span>
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+<span class="nc" id="L75">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                setGraphic(empty ? null : reserveButton);</span>
+<span class="nc" id="L77">            }</span>
+        });
+<span class="nc" id="L79">    }</span>
+
+    private void loadSalles() {
+        try {
+<span class="nc" id="L83">            salleData.clear();</span>
+            // Charger uniquement les salles avec statut &quot;Disponible&quot;
+<span class="nc" id="L85">            salleData.addAll(salleService.getAvailableSalles());</span>
+<span class="nc" id="L86">            salleTable.setItems(salleData);</span>
+<span class="nc" id="L87">            LOGGER.info(&quot;Salles disponibles chargées : &quot; + salleData.size());</span>
+<span class="nc" id="L88">        } catch (SQLException e) {</span>
+<span class="nc" id="L89">            LOGGER.severe(&quot;Erreur lors du chargement des salles : &quot; + e.getMessage());</span>
+<span class="nc" id="L90">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger les salles : &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L91">        }</span>
+<span class="nc" id="L92">    }</span>
+
+    private void showReservationDialog(salle selectedSalle) {
+        try {
+<span class="nc" id="L96">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/reservationDialog.fxml&quot;));</span>
+<span class="nc" id="L97">            DialogPane dialogPane = loader.load();</span>
+<span class="nc" id="L98">            ReservationDialogController controller = loader.getController();</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            if (controller == null) {</span>
+<span class="nc" id="L100">                showAlert(&quot;Erreur&quot;, &quot;Controller non chargé pour reservationDialog.fxml&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L101">                return;</span>
+            }
+<span class="nc" id="L103">            controller.setSalle(selectedSalle);</span>
+
+<span class="nc" id="L105">            Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L106">            dialog.setDialogPane(dialogPane);</span>
+<span class="nc" id="L107">            dialog.setTitle(&quot;Réserver Salle&quot;);</span>
+
+            // Pass the dialog to the controller
+<span class="nc" id="L110">            controller.setDialog(dialog);</span>
+
+<span class="nc" id="L112">            Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">            if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L114">                loadSalles(); // Refresh the TableView</span>
+            }
+<span class="nc" id="L116">        } catch (IOException e) {</span>
+<span class="nc" id="L117">            LOGGER.severe(&quot;Erreur lors de l'ouverture de la fenêtre de réservation: &quot; + e.getMessage());</span>
+<span class="nc" id="L118">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'ouverture de la fenêtre de réservation: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L119">        }</span>
+<span class="nc" id="L120">    }</span>
+
+    private void showAlert(String title, String message, Alert.AlertType alertType) {
+<span class="nc" id="L123">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L124">        alert.setTitle(title);</span>
+<span class="nc" id="L125">        alert.setHeaderText(null);</span>
+<span class="nc" id="L126">        alert.setContentText(message);</span>
+<span class="nc" id="L127">        alert.showAndWait();</span>
+<span class="nc" id="L128">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

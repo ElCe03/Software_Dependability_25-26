@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataSource.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">util</a> &gt; <span class="el_source">DataSource.java</span></div><h1>DataSource.java</h1><pre class="source lang-java linenums">package util;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
+
+public class DataSource {
+    private String url;
+    private String username;
+    private String password;
+
+    private Connection connection;
+    private static volatile DataSource instance;
+
+<span class="nc" id="L18">    private DataSource() {</span>
+<span class="nc" id="L19">        loadProperties();</span>
+
+        try {
+<span class="nc" id="L22">            Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span>
+<span class="nc" id="L23">            connection = DriverManager.getConnection(url, username, password);</span>
+<span class="nc" id="L24">            System.out.println(&quot;Database connection established successfully!&quot;);</span>
+
+<span class="nc" id="L26">        } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L27">            System.err.println(&quot;MySQL JDBC Driver not found!&quot;);</span>
+<span class="nc" id="L28">            e.printStackTrace();</span>
+<span class="nc" id="L29">        } catch (SQLException e) {</span>
+<span class="nc" id="L30">            System.err.println(&quot;Connection failed! Check output console&quot;);</span>
+<span class="nc" id="L31">            e.printStackTrace();</span>
+<span class="nc" id="L32">            throw new RuntimeException(&quot;Failed to create database connection&quot;, e);</span>
+<span class="nc" id="L33">        }</span>
+<span class="nc" id="L34">    }</span>
+
+    private void loadProperties() {
+<span class="nc" id="L37">        try (InputStream input = getClass().getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="nc" id="L38">            Properties prop = new Properties();</span>
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">            if (input == null) {</span>
+<span class="nc" id="L41">                System.err.println(&quot;❌ Errore: Impossibile trovare config.properties&quot;);</span>
+<span class="nc" id="L42">                throw new RuntimeException(&quot;config.properties not found&quot;);</span>
+            }
+
+<span class="nc" id="L45">            prop.load(input);</span>
+
+<span class="nc" id="L47">            this.url = prop.getProperty(&quot;db.url&quot;);</span>
+<span class="nc" id="L48">            this.username = prop.getProperty(&quot;db.username&quot;);</span>
+<span class="nc" id="L49">            this.password = prop.getProperty(&quot;db.password&quot;);</span>
+
+<span class="nc bnc" id="L51" title="All 6 branches missed.">            if (this.url == null || this.username == null || this.password == null) {</span>
+<span class="nc" id="L52">                throw new RuntimeException(&quot;Configurazioni database mancanti nel file properties!&quot;);</span>
+            }
+
+<span class="nc" id="L55">        } catch (IOException ex) {</span>
+<span class="nc" id="L56">            System.err.println(&quot;❌ Errore durante la lettura del file di configurazione.&quot;);</span>
+<span class="nc" id="L57">            throw new RuntimeException(&quot;Failed to load database configuration&quot;, ex);</span>
+<span class="nc" id="L58">        }</span>
+<span class="nc" id="L59">    }</span>
+
+    public static DataSource getInstance() {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (instance == null) {</span>
+<span class="nc" id="L63">            synchronized (DataSource.class) {</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">                if (instance == null) {</span>
+<span class="nc" id="L65">                    instance = new DataSource();</span>
+                }
+<span class="nc" id="L67">            }</span>
+        }
+<span class="nc" id="L69">        return instance;</span>
+    }
+
+    public Connection getConnection() {
+        try {
+<span class="nc bnc" id="L74" title="All 4 branches missed.">            if (connection == null || connection.isClosed()) {</span>
+<span class="nc" id="L75">                System.out.println(&quot;Reconnecting to database...&quot;);</span>
+<span class="nc" id="L76">                connection = DriverManager.getConnection(url, username, password);</span>
+            }
+<span class="nc" id="L78">        } catch (SQLException e) {</span>
+<span class="nc" id="L79">            e.printStackTrace();</span>
+<span class="nc" id="L80">        }</span>
+<span class="nc" id="L81">        return connection;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

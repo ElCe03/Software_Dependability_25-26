@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationAPI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">NotificationAPI.java</span></div><h1>NotificationAPI.java</h1><pre class="source lang-java linenums">package controllers;
+import javafx.animation.PauseTransition;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
+
+<span class="nc" id="L12">public class NotificationAPI {</span>
+
+    public static void showAdminAlert(String message) {
+<span class="nc" id="L15">        Stage notificationStage = new Stage();</span>
+<span class="nc" id="L16">        notificationStage.initStyle(StageStyle.TRANSPARENT);</span>
+
+<span class="nc" id="L18">        Label label = new Label(message);</span>
+<span class="nc" id="L19">        label.setStyle(&quot;-fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10px;&quot;);</span>
+
+<span class="nc" id="L21">        StackPane root = new StackPane(label);</span>
+<span class="nc" id="L22">        root.setStyle(&quot;-fx-background-color: rgba(0, 100, 200, 0.8); -fx-background-radius: 10;&quot;);</span>
+<span class="nc" id="L23">        root.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L25">        Scene scene = new Scene(root);</span>
+<span class="nc" id="L26">        scene.setFill(Color.TRANSPARENT);</span>
+<span class="nc" id="L27">        notificationStage.setScene(scene);</span>
+
+        // Position at bottom-right
+<span class="nc" id="L30">        notificationStage.setX(javafx.stage.Screen.getPrimary().getVisualBounds().getWidth() - 350);</span>
+<span class="nc" id="L31">        notificationStage.setY(javafx.stage.Screen.getPrimary().getVisualBounds().getHeight() - 120);</span>
+
+<span class="nc" id="L33">        notificationStage.show();</span>
+
+        // Auto-close after 3 seconds
+<span class="nc" id="L36">        PauseTransition delay = new PauseTransition(Duration.seconds(3));</span>
+<span class="nc" id="L37">        delay.setOnFinished(event -&gt; notificationStage.close());</span>
+<span class="nc" id="L38">        delay.play();</span>
+<span class="nc" id="L39">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

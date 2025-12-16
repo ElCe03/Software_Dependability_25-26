@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SejourController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">roar</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">SejourController.java</span></div><h1>SejourController.java</h1><pre class="source lang-java linenums">package controllers;
+
+import entite.DossierMedicale;
+import entite.Sejour;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+import service.DossierMedicaleService;
+import service.SejourService;
+import util.AlertUtil;
+
+import java.io.IOException;
+import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
+
+<span class="nc" id="L34">public class SejourController implements Initializable {</span>
+    
+    @FXML
+    private TableView&lt;Sejour&gt; sejourTable;
+    
+    @FXML
+    private TableColumn&lt;Sejour, Integer&gt; colId;
+    
+    @FXML
+    private TableColumn&lt;Sejour, LocalDate&gt; colDateEntree;
+    
+    @FXML
+    private TableColumn&lt;Sejour, LocalDate&gt; colDateSortie;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colTypeSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, Double&gt; colFraisSejour;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colMoyenPaiement;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colStatutPaiement;
+    
+    @FXML
+    private TableColumn&lt;Sejour, Double&gt; colPrixExtras;
+    
+    @FXML
+    private TableColumn&lt;Sejour, String&gt; colDossierMedicale;
+    
+    @FXML
+    private DatePicker dateEntreePicker;
+    
+    @FXML
+    private DatePicker dateSortiePicker;
+    
+    @FXML
+    private ComboBox&lt;String&gt; comboTypeSejour;
+    
+    @FXML
+    private TextField txtFraisSejour;
+    
+    @FXML
+    private ComboBox&lt;String&gt; comboMoyenPaiement;
+    
+    @FXML
+    private ComboBox&lt;String&gt; comboStatutPaiement;
+    
+    @FXML
+    private TextField txtPrixExtras;
+    
+    @FXML
+    private ComboBox&lt;DossierMedicale&gt; comboDossierMedicale;
+    
+    @FXML
+    private Button btnAjouter;
+    
+    @FXML
+    private Button btnModifier;
+    
+    @FXML
+    private Button btnSupprimer;
+    
+    @FXML
+    private Button btnVoir;
+    
+    @FXML
+    private Label lblValidationError;
+    
+<span class="nc" id="L105">    private final SejourService sejourService = new SejourService();</span>
+<span class="nc" id="L106">    private final DossierMedicaleService dossierMedicaleService = new DossierMedicaleService();</span>
+<span class="nc" id="L107">    private ObservableList&lt;Sejour&gt; sejourList = FXCollections.observableArrayList();</span>
+    private Sejour currentSejour;
+    
+<span class="nc" id="L110">    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(&quot;dd/MM/yyyy HH:mm&quot;);</span>
+<span class="nc" id="L111">    private static final String[] TYPE_SEJOUR_OPTIONS = {&quot;Hospitalisation&quot;, &quot;Consultation&quot;, &quot;Urgence&quot;, &quot;Chirurgie&quot;, &quot;Observation&quot;};</span>
+<span class="nc" id="L112">    private static final String[] MOYEN_PAIEMENT_OPTIONS = {&quot;Carte Bancaire&quot;, &quot;Espèces&quot;, &quot;Chèque&quot;, &quot;Assurance&quot;, &quot;Virement&quot;};</span>
+<span class="nc" id="L113">    private static final String[] STATUT_PAIEMENT_OPTIONS = {&quot;Payé&quot;, &quot;En attente&quot;, &quot;Partiel&quot;, &quot;Annulé&quot;, &quot;Remboursé&quot;};</span>
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Set up circular dependencies between services but break the circular reference during load operations
+<span class="nc" id="L118">        sejourService.setDossierService(dossierMedicaleService);</span>
+<span class="nc" id="L119">        dossierMedicaleService.setSejourService(sejourService);</span>
+        
+<span class="nc" id="L121">        setupTableColumns();</span>
+<span class="nc" id="L122">        loadSejours();</span>
+<span class="nc" id="L123">        setupComboBoxes();</span>
+<span class="nc" id="L124">        setupEventHandlers();</span>
+<span class="nc" id="L125">        resetFormFields();</span>
+<span class="nc" id="L126">    }</span>
+    
+    private void setupTableColumns() {
+<span class="nc" id="L129">        colId.setCellValueFactory(cellData -&gt; new SimpleObjectProperty&lt;&gt;(cellData.getValue().getId()));</span>
+<span class="nc" id="L130">        colDateEntree.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L131">            LocalDateTime dateTime = cellData.getValue().getDateEntree();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            return new SimpleObjectProperty&lt;&gt;(dateTime != null ? dateTime.toLocalDate() : null);</span>
+        });
+<span class="nc" id="L134">        colDateSortie.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L135">            LocalDateTime dateTime = cellData.getValue().getDateSortie();</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            return new SimpleObjectProperty&lt;&gt;(dateTime != null ? dateTime.toLocalDate() : null);</span>
+        });
+<span class="nc" id="L138">        colTypeSejour.setCellValueFactory(cellData -&gt; new SimpleStringProperty(cellData.getValue().getTypeSejour()));</span>
+<span class="nc" id="L139">        colFraisSejour.setCellValueFactory(cellData -&gt; new SimpleObjectProperty&lt;&gt;(cellData.getValue().getFraisSejour()));</span>
+<span class="nc" id="L140">        colMoyenPaiement.setCellValueFactory(cellData -&gt; new SimpleStringProperty(cellData.getValue().getMoyenPaiement()));</span>
+<span class="nc" id="L141">        colStatutPaiement.setCellValueFactory(cellData -&gt; new SimpleStringProperty(cellData.getValue().getStatutPaiement()));</span>
+<span class="nc" id="L142">        colPrixExtras.setCellValueFactory(cellData -&gt; new SimpleObjectProperty&lt;&gt;(cellData.getValue().getPrixExtras()));</span>
+<span class="nc" id="L143">        colDossierMedicale.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L144">            DossierMedicale dossier = cellData.getValue().getDossierMedicale();</span>
+<span class="nc bnc" id="L145" title="All 4 branches missed.">            if (dossier != null &amp;&amp; dossier.getPatient() != null) {</span>
+<span class="nc" id="L146">                return new SimpleStringProperty(dossier.getPatient().getNom() + &quot; &quot; + dossier.getPatient().getPrenom());</span>
+            } else {
+<span class="nc" id="L148">                return new SimpleStringProperty(&quot;N/A&quot;);</span>
+            }
+        });
+<span class="nc" id="L151">    }</span>
+    
+    private void loadSejours() {
+        try {
+            // We can safely display the table of sejours
+<span class="nc" id="L156">            sejourTable.setItems(sejourList);</span>
+            
+<span class="nc" id="L158">            List&lt;Sejour&gt; sejours = sejourService.recupererTousSejours();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">            if (sejours != null) {</span>
+<span class="nc" id="L160">                System.out.println(&quot;Loaded &quot; + sejours.size() + &quot; sejours&quot;);</span>
+<span class="nc" id="L161">                sejourList.clear();</span>
+<span class="nc" id="L162">                sejourList.addAll(sejours);</span>
+<span class="nc" id="L163">                sejourTable.refresh();</span>
+            } else {
+<span class="nc" id="L165">                System.out.println(&quot;No sejours loaded - returned null list&quot;);</span>
+<span class="nc" id="L166">                sejourList.clear();</span>
+            }
+<span class="nc" id="L168">        } catch (Exception e) {</span>
+<span class="nc" id="L169">            e.printStackTrace();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            Window owner = sejourTable.getScene() != null ? sejourTable.getScene().getWindow() : null;</span>
+<span class="nc" id="L171">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors du chargement des séjours\n&quot; + e.getMessage());</span>
+<span class="nc" id="L172">        }</span>
+<span class="nc" id="L173">    }</span>
+    
+    private void setupComboBoxes() {
+        // Types de séjour
+<span class="nc" id="L177">        List&lt;String&gt; typesSejour = Arrays.asList(TYPE_SEJOUR_OPTIONS);</span>
+<span class="nc" id="L178">        comboTypeSejour.setItems(FXCollections.observableArrayList(typesSejour));</span>
+        
+        // Moyens de paiement
+<span class="nc" id="L181">        List&lt;String&gt; moyensPaiement = Arrays.asList(MOYEN_PAIEMENT_OPTIONS);</span>
+<span class="nc" id="L182">        comboMoyenPaiement.setItems(FXCollections.observableArrayList(moyensPaiement));</span>
+        
+        // Statuts de paiement
+<span class="nc" id="L185">        List&lt;String&gt; statutsPaiement = Arrays.asList(STATUT_PAIEMENT_OPTIONS);</span>
+<span class="nc" id="L186">        comboStatutPaiement.setItems(FXCollections.observableArrayList(statutsPaiement));</span>
+        
+        // Dossiers médicaux - Load without sejours to prevent circular references
+        try {
+<span class="nc" id="L190">            List&lt;DossierMedicale&gt; dossiers = dossierMedicaleService.recupererTousDossiers(false);</span>
+<span class="nc" id="L191">            comboDossierMedicale.setItems(FXCollections.observableArrayList(dossiers));</span>
+            
+            // Définir le converter pour afficher le nom du patient
+<span class="nc" id="L194">            comboDossierMedicale.setConverter(new javafx.util.StringConverter&lt;DossierMedicale&gt;() {</span>
+                @Override
+                public String toString(DossierMedicale dossier) {
+<span class="nc bnc" id="L197" title="All 2 branches missed.">                    if (dossier == null) return &quot;&quot;;</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">                    if (dossier.getPatient() == null) return &quot;Dossier #&quot; + dossier.getId();</span>
+<span class="nc" id="L199">                    return dossier.getPatient().getNom() + &quot; &quot; + dossier.getPatient().getPrenom() + &quot; (ID: &quot; + dossier.getId() + &quot;)&quot;;</span>
+                }
+                
+                @Override
+                public DossierMedicale fromString(String string) {
+<span class="nc" id="L204">                    return null; // Not needed for our purposes</span>
+                }
+            });
+<span class="nc" id="L207">        } catch (Exception e) {</span>
+<span class="nc" id="L208">            System.err.println(&quot;Error loading dossiers: &quot; + e.getMessage());</span>
+<span class="nc" id="L209">            e.printStackTrace();</span>
+<span class="nc" id="L210">        }</span>
+<span class="nc" id="L211">    }</span>
+    
+    private void setupEventHandlers() {
+<span class="nc" id="L214">        sejourTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -&gt; {</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">            if (newSelection != null) {</span>
+<span class="nc" id="L216">                currentSejour = newSelection;</span>
+<span class="nc" id="L217">                populateForm(currentSejour);</span>
+<span class="nc" id="L218">                btnModifier.setDisable(false);</span>
+<span class="nc" id="L219">                btnSupprimer.setDisable(false);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                if (btnVoir != null) {</span>
+<span class="nc" id="L221">                btnVoir.setDisable(false);</span>
+                }
+            } else {
+<span class="nc" id="L224">                resetFormFields();</span>
+<span class="nc" id="L225">                btnModifier.setDisable(true);</span>
+<span class="nc" id="L226">                btnSupprimer.setDisable(true);</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">                if (btnVoir != null) {</span>
+<span class="nc" id="L228">                btnVoir.setDisable(true);</span>
+                }
+            }
+<span class="nc" id="L231">        });</span>
+<span class="nc" id="L232">    }</span>
+    
+    private void populateForm(Sejour sejour) {
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        dateEntreePicker.setValue(sejour.getDateEntree() != null ? sejour.getDateEntree().toLocalDate() : null);</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        dateSortiePicker.setValue(sejour.getDateSortie() != null ? sejour.getDateSortie().toLocalDate() : null);</span>
+<span class="nc" id="L237">        comboTypeSejour.setValue(sejour.getTypeSejour());</span>
+<span class="nc" id="L238">        txtFraisSejour.setText(String.valueOf(sejour.getFraisSejour()));</span>
+<span class="nc" id="L239">        comboMoyenPaiement.setValue(sejour.getMoyenPaiement());</span>
+<span class="nc" id="L240">        comboStatutPaiement.setValue(sejour.getStatutPaiement());</span>
+<span class="nc" id="L241">        txtPrixExtras.setText(String.valueOf(sejour.getPrixExtras()));</span>
+<span class="nc" id="L242">        comboDossierMedicale.setValue(sejour.getDossierMedicale());</span>
+<span class="nc" id="L243">    }</span>
+    
+    private void resetFormFields() {
+<span class="nc" id="L246">        currentSejour = null;</span>
+<span class="nc" id="L247">        dateEntreePicker.setValue(LocalDate.now());</span>
+<span class="nc" id="L248">        dateSortiePicker.setValue(null);</span>
+<span class="nc" id="L249">        comboTypeSejour.setValue(null);</span>
+<span class="nc" id="L250">        txtFraisSejour.setText(&quot;0.0&quot;);</span>
+<span class="nc" id="L251">        comboMoyenPaiement.setValue(null);</span>
+<span class="nc" id="L252">        comboStatutPaiement.setValue(&quot;En attente&quot;);</span>
+<span class="nc" id="L253">        txtPrixExtras.setText(&quot;0.0&quot;);</span>
+<span class="nc" id="L254">        comboDossierMedicale.setValue(null);</span>
+        
+<span class="nc" id="L256">        btnModifier.setDisable(true);</span>
+<span class="nc" id="L257">        btnSupprimer.setDisable(true);</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if (btnVoir != null) {</span>
+<span class="nc" id="L259">        btnVoir.setDisable(true);</span>
+        }
+<span class="nc" id="L261">    }</span>
+    
+    @FXML
+    private void handleAjouter(ActionEvent event) {
+        // Validate form before saving
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        if (!validateForm()) {</span>
+<span class="nc" id="L267">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L271">            Sejour sejour = new Sejour();</span>
+<span class="nc" id="L272">            updateSejourFromForm(sejour);</span>
+            
+            // Print debug information
+<span class="nc" id="L275">            System.out.println(&quot;===== ADDING NEW SEJOUR =====&quot;);</span>
+<span class="nc" id="L276">            System.out.println(&quot;Date entrée: &quot; + sejour.getDateEntree());</span>
+<span class="nc" id="L277">            System.out.println(&quot;Date sortie: &quot; + sejour.getDateSortie());</span>
+<span class="nc" id="L278">            System.out.println(&quot;Type séjour: &quot; + sejour.getTypeSejour());</span>
+<span class="nc" id="L279">            System.out.println(&quot;Frais séjour: &quot; + sejour.getFraisSejour());</span>
+<span class="nc" id="L280">            System.out.println(&quot;Moyen paiement: &quot; + sejour.getMoyenPaiement());</span>
+<span class="nc" id="L281">            System.out.println(&quot;Statut paiement: &quot; + sejour.getStatutPaiement());</span>
+<span class="nc" id="L282">            System.out.println(&quot;Prix extras: &quot; + sejour.getPrixExtras());</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">            System.out.println(&quot;Dossier Medicale ID: &quot; + (sejour.getDossierMedicale() != null ? sejour.getDossierMedicale().getId() : &quot;null&quot;));</span>
+            
+            // For adding a new sejour, use modified methods to break circular references
+            // Get the DossierMedicale with loadSejours=false to prevent circular references
+<span class="nc bnc" id="L287" title="All 2 branches missed.">            if (sejour.getDossierMedicale() != null) {</span>
+<span class="nc" id="L288">                DossierMedicale dossier = dossierMedicaleService.recupererDossierParId(</span>
+<span class="nc" id="L289">                    sejour.getDossierMedicale().getId(), false);</span>
+<span class="nc" id="L290">                sejour.setDossierMedicale(dossier);</span>
+            }
+            
+<span class="nc" id="L293">            boolean success = sejourService.ajouterSejour(sejour);</span>
+            
+<span class="nc bnc" id="L295" title="All 2 branches missed.">            if (success) {</span>
+<span class="nc" id="L296">                System.out.println(&quot;Sejour added successfully with ID: &quot; + sejour.getId());</span>
+                // Reload the sejours to refresh the table
+<span class="nc" id="L298">                loadSejours();</span>
+                
+                // If this window was opened from DossierMedicaleController,
+                // update the parent window's table as well
+<span class="nc bnc" id="L302" title="All 4 branches missed.">                if (comboDossierMedicale.getValue() != null &amp;&amp; comboDossierMedicale.getItems().size() == 1) {</span>
+                    // It was likely opened from a specific dossier
+<span class="nc" id="L304">                    resetFormFields();</span>
+<span class="nc" id="L305">                    Window owner = btnAjouter.getScene().getWindow();</span>
+<span class="nc" id="L306">                    AlertUtil.showInformation(owner, &quot;Succès&quot;, &quot;Séjour ajouté avec succès !&quot;);</span>
+                    
+                    // Close this window if it was opened as a modal dialog
+<span class="nc" id="L309">                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L310">                    stage.close();</span>
+<span class="nc" id="L311">                } else {</span>
+<span class="nc" id="L312">                    resetFormFields();</span>
+<span class="nc" id="L313">                    Window owner = btnAjouter.getScene().getWindow();</span>
+<span class="nc" id="L314">                    AlertUtil.showInformation(owner, &quot;Succès&quot;, &quot;Séjour ajouté avec succès !&quot;);</span>
+<span class="nc" id="L315">                }</span>
+            } else {
+<span class="nc" id="L317">                Window owner = btnAjouter.getScene().getWindow();</span>
+<span class="nc" id="L318">                AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors de l'ajout du séjour. L'opération a échoué.&quot;);</span>
+            }
+<span class="nc" id="L320">        } catch (Exception e) {</span>
+<span class="nc" id="L321">            e.printStackTrace();</span>
+<span class="nc" id="L322">            Window owner = btnAjouter.getScene().getWindow();</span>
+<span class="nc" id="L323">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors de l'ajout du séjour\n&quot; + e.getMessage());</span>
+<span class="nc" id="L324">        }</span>
+<span class="nc" id="L325">    }</span>
+    
+    @FXML
+    private void handleModifier(ActionEvent event) {
+        // Validate form before saving
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (!validateForm()) {</span>
+<span class="nc" id="L331">            return;</span>
+        }
+        
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (currentSejour == null) {</span>
+<span class="nc" id="L335">            Window owner = btnModifier.getScene().getWindow();</span>
+<span class="nc" id="L336">            AlertUtil.showWarning(owner, &quot;Attention&quot;, &quot;Veuillez sélectionner un séjour à modifier.&quot;);</span>
+<span class="nc" id="L337">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L341">            updateSejourFromForm(currentSejour);</span>
+            
+<span class="nc" id="L343">            boolean success = sejourService.modifierSejour(currentSejour);</span>
+            
+<span class="nc bnc" id="L345" title="All 2 branches missed.">            if (success) {</span>
+                // Reload the sejours to refresh the table
+<span class="nc" id="L347">                loadSejours();</span>
+<span class="nc" id="L348">                resetFormFields();</span>
+<span class="nc" id="L349">                Window owner = btnModifier.getScene().getWindow();</span>
+<span class="nc" id="L350">                AlertUtil.showInformation(owner, &quot;Succès&quot;, &quot;Séjour mis à jour avec succès !&quot;);</span>
+<span class="nc" id="L351">            } else {</span>
+<span class="nc" id="L352">                Window owner = btnModifier.getScene().getWindow();</span>
+<span class="nc" id="L353">                AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors de la mise à jour du séjour. L'opération a échoué.&quot;);</span>
+            }
+<span class="nc" id="L355">        } catch (Exception e) {</span>
+<span class="nc" id="L356">            e.printStackTrace();</span>
+<span class="nc" id="L357">            Window owner = btnModifier.getScene().getWindow();</span>
+<span class="nc" id="L358">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors de la mise à jour du séjour\n&quot; + e.getMessage());</span>
+<span class="nc" id="L359">        }</span>
+<span class="nc" id="L360">    }</span>
+    
+    @FXML
+    private void handleSupprimer(ActionEvent event) {
+<span class="nc bnc" id="L364" title="All 2 branches missed.">        if (currentSejour == null) {</span>
+<span class="nc" id="L365">            Window owner = btnSupprimer.getScene().getWindow();</span>
+<span class="nc" id="L366">            AlertUtil.showWarning(owner, &quot;Attention&quot;, &quot;Veuillez sélectionner un séjour à supprimer.&quot;);</span>
+<span class="nc" id="L367">            return;</span>
+        }
+        
+<span class="nc" id="L370">        Window owner = btnSupprimer.getScene().getWindow();</span>
+<span class="nc" id="L371">        boolean confirm = AlertUtil.showConfirmation(owner, &quot;Confirmation&quot;, </span>
+                &quot;Êtes-vous sûr de vouloir supprimer ce séjour ? Cette action ne peut pas être annulée.&quot;);
+        
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        if (confirm) {</span>
+            try {
+<span class="nc" id="L376">                sejourService.supprimerSejour(currentSejour.getId());</span>
+<span class="nc" id="L377">                loadSejours();</span>
+<span class="nc" id="L378">                resetFormFields();</span>
+<span class="nc" id="L379">                AlertUtil.showInformation(owner, &quot;Succès&quot;, &quot;Séjour supprimé avec succès !&quot;);</span>
+<span class="nc" id="L380">            } catch (Exception e) {</span>
+<span class="nc" id="L381">                AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors de la suppression du séjour\n&quot; + e.getMessage());</span>
+<span class="nc" id="L382">            }</span>
+        }
+<span class="nc" id="L384">    }</span>
+    
+    @FXML
+    private void handleVoir(ActionEvent event) {
+<span class="nc bnc" id="L388" title="All 2 branches missed.">        if (currentSejour == null) {</span>
+            // Get the window from the event source instead of relying on btnVoir
+<span class="nc" id="L390">            Window owner = ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L391">            AlertUtil.showWarning(owner, &quot;Attention&quot;, &quot;Veuillez sélectionner un séjour pour voir les détails.&quot;);</span>
+<span class="nc" id="L392">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L396">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/sejour_detail.fxml&quot;));</span>
+<span class="nc" id="L397">            Parent root = loader.load();</span>
+            
+<span class="nc" id="L399">            SejourDetailController controller = loader.getController();</span>
+<span class="nc" id="L400">            controller.setSejour(currentSejour);</span>
+            
+<span class="nc" id="L402">            Stage stage = new Stage();</span>
+<span class="nc" id="L403">            stage.setTitle(&quot;Détails du Séjour&quot;);</span>
+<span class="nc" id="L404">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L405">            stage.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L406">            stage.showAndWait();</span>
+<span class="nc" id="L407">        } catch (IOException e) {</span>
+            // Get the window from the event source instead of relying on btnVoir
+<span class="nc" id="L409">            Window owner = ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L410">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors de l'ouverture des détails du séjour\n&quot; + e.getMessage());</span>
+<span class="nc" id="L411">        }</span>
+<span class="nc" id="L412">    }</span>
+    
+    @FXML
+    private void handleRefresh(ActionEvent event) {
+<span class="nc" id="L416">        loadSejours();</span>
+<span class="nc" id="L417">        resetFormFields();</span>
+<span class="nc" id="L418">    }</span>
+    
+    @FXML
+    private void handleClose(ActionEvent event) {
+<span class="nc" id="L422">        Stage stage = (Stage) sejourTable.getScene().getWindow();</span>
+<span class="nc" id="L423">        stage.close();</span>
+<span class="nc" id="L424">    }</span>
+    
+    @FXML
+    private void handleBackToHome(ActionEvent event) {
+        try {
+            // Load the interface.fxml
+<span class="nc" id="L430">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/interface.fxml&quot;));</span>
+<span class="nc" id="L431">            Parent root = loader.load();</span>
+            
+            // Get the current stage
+<span class="nc" id="L434">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+            
+            // Set the scene
+<span class="nc" id="L437">            Scene scene = new Scene(root);</span>
+<span class="nc" id="L438">            stage.setScene(scene);</span>
+<span class="nc" id="L439">            stage.setTitle(&quot;Admin Dashboard&quot;);</span>
+<span class="nc" id="L440">            stage.show();</span>
+<span class="nc" id="L441">        } catch (IOException e) {</span>
+<span class="nc" id="L442">            e.printStackTrace();</span>
+<span class="nc" id="L443">            Window owner = btnVoir.getScene().getWindow();</span>
+<span class="nc" id="L444">            AlertUtil.showError(owner, &quot;Erreur&quot;, &quot;Erreur lors du retour à l'interface principale\n&quot; + e.getMessage());</span>
+<span class="nc" id="L445">        }</span>
+<span class="nc" id="L446">    }</span>
+    
+    /**
+     * Validate form fields before saving
+     * @return true if the form is valid, false otherwise
+     */
+    private boolean validateForm() {
+<span class="nc" id="L453">        StringBuilder errorMessage = new StringBuilder();</span>
+        
+        // Check required fields
+<span class="nc bnc" id="L456" title="All 2 branches missed.">        if (dateEntreePicker.getValue() == null) {</span>
+<span class="nc" id="L457">            errorMessage.append(&quot;- La date d'entrée est obligatoire\n&quot;);</span>
+        }
+        
+<span class="nc bnc" id="L460" title="All 4 branches missed.">        if (comboTypeSejour.getValue() == null || comboTypeSejour.getValue().isEmpty()) {</span>
+<span class="nc" id="L461">            errorMessage.append(&quot;- Le type de séjour est obligatoire\n&quot;);</span>
+        }
+        
+<span class="nc bnc" id="L464" title="All 2 branches missed.">        if (txtFraisSejour.getText().trim().isEmpty()) {</span>
+<span class="nc" id="L465">            errorMessage.append(&quot;- Les frais de séjour sont obligatoires\n&quot;);</span>
+        } else {
+            try {
+                // Check if frais is a valid number
+<span class="nc" id="L469">                double frais = Double.parseDouble(txtFraisSejour.getText().trim());</span>
+<span class="nc bnc" id="L470" title="All 2 branches missed.">                if (frais &lt; 0) {</span>
+<span class="nc" id="L471">                    errorMessage.append(&quot;- Les frais de séjour doivent être un nombre positif\n&quot;);</span>
+                }
+<span class="nc" id="L473">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L474">                errorMessage.append(&quot;- Les frais de séjour doivent être un nombre valide\n&quot;);</span>
+<span class="nc" id="L475">            }</span>
+        }
+        
+<span class="nc bnc" id="L478" title="All 4 branches missed.">        if (comboMoyenPaiement.getValue() == null || comboMoyenPaiement.getValue().isEmpty()) {</span>
+<span class="nc" id="L479">            errorMessage.append(&quot;- Le moyen de paiement est obligatoire\n&quot;);</span>
+        }
+        
+<span class="nc bnc" id="L482" title="All 4 branches missed.">        if (comboStatutPaiement.getValue() == null || comboStatutPaiement.getValue().isEmpty()) {</span>
+<span class="nc" id="L483">            errorMessage.append(&quot;- Le statut du paiement est obligatoire\n&quot;);</span>
+        }
+        
+<span class="nc bnc" id="L486" title="All 2 branches missed.">        if (comboDossierMedicale.getValue() == null) {</span>
+<span class="nc" id="L487">            errorMessage.append(&quot;- Le dossier médical est obligatoire\n&quot;);</span>
+        }
+        
+        // Check if prix extras is valid when provided
+<span class="nc bnc" id="L491" title="All 2 branches missed.">        if (!txtPrixExtras.getText().trim().isEmpty()) {</span>
+            try {
+<span class="nc" id="L493">                double prix = Double.parseDouble(txtPrixExtras.getText().trim());</span>
+<span class="nc bnc" id="L494" title="All 2 branches missed.">                if (prix &lt; 0) {</span>
+<span class="nc" id="L495">                    errorMessage.append(&quot;- Le prix des extras doit être un nombre positif\n&quot;);</span>
+                }
+<span class="nc" id="L497">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L498">                errorMessage.append(&quot;- Le prix des extras doit être un nombre valide\n&quot;);</span>
+<span class="nc" id="L499">            }</span>
+        }
+        
+        // Check if date de sortie is after date d'entrée when both are provided
+<span class="nc bnc" id="L503" title="All 4 branches missed.">        if (dateEntreePicker.getValue() != null &amp;&amp; dateSortiePicker.getValue() != null) {</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">            if (dateSortiePicker.getValue().isBefore(dateEntreePicker.getValue())) {</span>
+<span class="nc" id="L505">                errorMessage.append(&quot;- La date de sortie doit être après la date d'entrée\n&quot;);</span>
+            }
+        }
+        
+        // Display error message if validation fails
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        if (errorMessage.length() &gt; 0) {</span>
+<span class="nc" id="L511">            lblValidationError.setText(&quot;Veuillez corriger les erreurs suivantes:\n&quot; + errorMessage.toString());</span>
+<span class="nc" id="L512">            lblValidationError.setVisible(true);</span>
+<span class="nc" id="L513">            lblValidationError.setManaged(true);</span>
+<span class="nc" id="L514">            return false;</span>
+        }
+        
+        // Hide error message if validation passes
+<span class="nc" id="L518">        lblValidationError.setVisible(false);</span>
+<span class="nc" id="L519">        lblValidationError.setManaged(false);</span>
+<span class="nc" id="L520">        return true;</span>
+    }
+    
+    private void updateSejourFromForm(Sejour sejour) {
+        // Convert LocalDate to LocalDateTime by setting time to start/end of day
+<span class="nc" id="L525">        LocalDate dateEntree = dateEntreePicker.getValue();</span>
+<span class="nc bnc" id="L526" title="All 2 branches missed.">        if (dateEntree != null) {</span>
+<span class="nc" id="L527">            sejour.setDateEntree(LocalDateTime.of(dateEntree, LocalTime.of(0, 0)));</span>
+        } else {
+            // Default to today as the date_entree is NOT NULL in the database
+<span class="nc" id="L530">            sejour.setDateEntree(LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0)));</span>
+        }
+        
+<span class="nc" id="L533">        LocalDate dateSortie = dateSortiePicker.getValue();</span>
+<span class="nc bnc" id="L534" title="All 2 branches missed.">        if (dateSortie != null) {</span>
+<span class="nc" id="L535">            sejour.setDateSortie(LocalDateTime.of(dateSortie, LocalTime.of(23, 59)));</span>
+        } else {
+            // Default to date_entree + 1 day as date_sortie is NOT NULL in the database
+<span class="nc" id="L538">            sejour.setDateSortie(sejour.getDateEntree().plusDays(1));</span>
+        }
+        
+        // Ensure type_sejour is not null (required by the database)
+<span class="nc" id="L542">        String typeSejour = comboTypeSejour.getValue();</span>
+<span class="nc bnc" id="L543" title="All 4 branches missed.">        sejour.setTypeSejour(typeSejour != null &amp;&amp; !typeSejour.isEmpty() ? typeSejour : &quot;Non spécifié&quot;);</span>
+        
+        // Parse frais_sejour with default value if invalid
+        try {
+<span class="nc" id="L547">            double fraisSejour = Double.parseDouble(txtFraisSejour.getText());</span>
+<span class="nc" id="L548">            sejour.setFraisSejour(fraisSejour);</span>
+<span class="nc" id="L549">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L550">            sejour.setFraisSejour(0.0);</span>
+<span class="nc" id="L551">        }</span>
+        
+        // Ensure moyen_paiement is not null (required by the database)
+<span class="nc" id="L554">        String moyenPaiement = comboMoyenPaiement.getValue();</span>
+<span class="nc bnc" id="L555" title="All 4 branches missed.">        sejour.setMoyenPaiement(moyenPaiement != null &amp;&amp; !moyenPaiement.isEmpty() ? moyenPaiement : &quot;Non spécifié&quot;);</span>
+        
+        // Ensure statut_paiement is not null (required by the database)
+<span class="nc" id="L558">        String statutPaiement = comboStatutPaiement.getValue();</span>
+<span class="nc bnc" id="L559" title="All 4 branches missed.">        sejour.setStatutPaiement(statutPaiement != null &amp;&amp; !statutPaiement.isEmpty() ? statutPaiement : &quot;En attente&quot;);</span>
+        
+        // Parse prix_extras with default value if invalid
+        try {
+<span class="nc" id="L563">            double prixExtras = Double.parseDouble(txtPrixExtras.getText());</span>
+<span class="nc" id="L564">            sejour.setPrixExtras(prixExtras);</span>
+<span class="nc" id="L565">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L566">            sejour.setPrixExtras(0.0);</span>
+<span class="nc" id="L567">        }</span>
+        
+        // Set the dossier_medicale (required by the database)
+<span class="nc" id="L570">        DossierMedicale dossier = comboDossierMedicale.getValue();</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">        if (dossier != null) {</span>
+<span class="nc" id="L572">            sejour.setDossierMedicale(dossier);</span>
+        } else {
+            // This should not happen if the form validation works correctly
+<span class="nc" id="L575">            System.err.println(&quot;Error: No DossierMedicale selected!&quot;);</span>
+        }
+<span class="nc" id="L577">    }</span>
+    
+    /**
+     * Initialise le formulaire pour créer un nouveau séjour associé à un dossier médical spécifique
+     * @param dossier Le dossier médical auquel associer le nouveau séjour
+     */
+    public void initNewSejour(DossierMedicale dossier) {
+<span class="nc" id="L584">        resetFormFields();</span>
+<span class="nc" id="L585">        comboDossierMedicale.setValue(dossier);</span>
+<span class="nc" id="L586">        dateEntreePicker.setValue(LocalDate.now());</span>
+<span class="nc" id="L587">        comboStatutPaiement.setValue(&quot;En attente&quot;);</span>
+<span class="nc" id="L588">        txtFraisSejour.setText(&quot;0.0&quot;);</span>
+<span class="nc" id="L589">        txtPrixExtras.setText(&quot;0.0&quot;);</span>
+<span class="nc" id="L590">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
