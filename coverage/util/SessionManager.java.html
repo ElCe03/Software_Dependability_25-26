@@ -13,56 +13,56 @@ import java.time.LocalDate;
     
     static {
         // Initialize with a default user since we're removing login
-<span class="nc" id="L16">        initializeDefaultUser();</span>
-<span class="nc" id="L17">    }</span>
+<span class="fc" id="L16">        initializeDefaultUser();</span>
+<span class="fc" id="L17">    }</span>
     
     /**
      * Initialize a default user for testing without login
      */
     private static void initializeDefaultUser() {
         // Create a default patient user
-<span class="nc" id="L24">        User defaultUser = new User();</span>
-<span class="nc" id="L25">        defaultUser.setId(1);</span>
-<span class="nc" id="L26">        defaultUser.setNom(&quot;Dupont&quot;);</span>
-<span class="nc" id="L27">        defaultUser.setPrenom(&quot;Jean&quot;);</span>
-<span class="nc" id="L28">        defaultUser.setEmail(&quot;jean.dupont@example.com&quot;);</span>
-<span class="nc" id="L29">        defaultUser.setTelephone(&quot;01 23 45 67 89&quot;);</span>
-<span class="nc" id="L30">        defaultUser.setType(&quot;patient&quot;);</span>
-<span class="nc" id="L31">        defaultUser.setAdresse(&quot;123 Avenue de la République, 75011 Paris&quot;);</span>
-<span class="nc" id="L32">        defaultUser.setDateNaissance(LocalDate.of(1980, 1, 15));</span>
+<span class="fc" id="L24">        User defaultUser = new User();</span>
+<span class="fc" id="L25">        defaultUser.setId(1);</span>
+<span class="fc" id="L26">        defaultUser.setNom(&quot;Dupont&quot;);</span>
+<span class="fc" id="L27">        defaultUser.setPrenom(&quot;Jean&quot;);</span>
+<span class="fc" id="L28">        defaultUser.setEmail(&quot;jean.dupont@example.com&quot;);</span>
+<span class="fc" id="L29">        defaultUser.setTelephone(&quot;01 23 45 67 89&quot;);</span>
+<span class="fc" id="L30">        defaultUser.setType(&quot;patient&quot;);</span>
+<span class="fc" id="L31">        defaultUser.setAdresse(&quot;123 Avenue de la République, 75011 Paris&quot;);</span>
+<span class="fc" id="L32">        defaultUser.setDateNaissance(LocalDate.of(1980, 1, 15));</span>
         
         // Note: No need to create a dossier medicale here as we now create it on demand
         // in the PatientDashboardController.createDemoData() method
         
-<span class="nc" id="L37">        currentUser = defaultUser;</span>
-<span class="nc" id="L38">    }</span>
+<span class="fc" id="L37">        currentUser = defaultUser;</span>
+<span class="fc" id="L38">    }</span>
     
     /**
      * Set the current logged-in user
      * @param user The user to set as current
      */
     public static void login(User user) {
-<span class="nc" id="L45">        currentUser = user;</span>
-<span class="nc" id="L46">    }</span>
+<span class="fc" id="L45">        currentUser = user;</span>
+<span class="fc" id="L46">    }</span>
     
     /**
      * Explicitly set the current user
      * @param user The user to set as current
      */
     public static void setCurrentUser(User user) {
-<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (user == null) {</span>
-<span class="nc" id="L54">            throw new IllegalArgumentException(&quot;Current user cannot be set to null&quot;);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (user == null) {</span>
+<span class="fc" id="L54">            throw new IllegalArgumentException(&quot;Current user cannot be set to null&quot;);</span>
         }
-<span class="nc" id="L56">        currentUser = user;</span>
-<span class="nc" id="L57">    }</span>
+<span class="fc" id="L56">        currentUser = user;</span>
+<span class="fc" id="L57">    }</span>
     
     /**
      * Clear the current user session and set back to default user
      */
     public static void logout() {
         // Instead of nulling the user, restore the default one
-<span class="nc" id="L64">        initializeDefaultUser();</span>
-<span class="nc" id="L65">    }</span>
+<span class="fc" id="L64">        initializeDefaultUser();</span>
+<span class="fc" id="L65">    }</span>
     
     /**
      * Get the current logged-in user
@@ -70,10 +70,10 @@ import java.time.LocalDate;
      */
     public static User getCurrentUser() {
         // Always provide at least the default user
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (currentUser == null) {</span>
-<span class="nc" id="L74">            initializeDefaultUser();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (currentUser == null) {</span>
+<span class="fc" id="L74">            initializeDefaultUser();</span>
         }
-<span class="nc" id="L76">        return currentUser;</span>
+<span class="fc" id="L76">        return currentUser;</span>
     }
     
     /**
@@ -81,7 +81,7 @@ import java.time.LocalDate;
      * @return true if a user is logged in, false otherwise
      */
     public static boolean isLoggedIn() {
-<span class="nc" id="L84">        return true; // Always return true since we always have a default user</span>
+<span class="fc" id="L84">        return true; // Always return true since we always have a default user</span>
     }
     
     /**
@@ -89,7 +89,7 @@ import java.time.LocalDate;
      * @return true if the current user is a patient, false otherwise
      */
     public static boolean isPatient() {
-<span class="nc" id="L92">        return &quot;patient&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
+<span class="fc" id="L92">        return &quot;patient&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
     }
     
     /**
@@ -97,7 +97,7 @@ import java.time.LocalDate;
      * @return true if the current user is a doctor, false otherwise
      */
     public static boolean isDoctor() {
-<span class="nc" id="L100">        return &quot;medecin&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
+<span class="fc" id="L100">        return &quot;medecin&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
     }
     
     /**
@@ -105,7 +105,7 @@ import java.time.LocalDate;
      * @return true if the current user is an admin, false otherwise
      */
     public static boolean isAdmin() {
-<span class="nc" id="L108">        return &quot;admin&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
+<span class="fc" id="L108">        return &quot;admin&quot;.equalsIgnoreCase(getCurrentUser().getType());</span>
     }
 } 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

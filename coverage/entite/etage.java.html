@@ -4,7 +4,7 @@ public class etage {
 
     /*@ spec_public @*/ private int id;
     /*@ spec_public @*/ private int numero;
-<span class="nc" id="L7">    /*@ spec_public @*/ private int  nbrSalle = 0; // Initialisé à 0</span>
+<span class="fc" id="L7">    /*@ spec_public @*/ private int  nbrSalle = 0; // Initialisé à 0</span>
     /*@ spec_public nullable @*/ private entite.departement departement;
 
     /*@ public invariant id &gt;= 0; @*/
@@ -16,7 +16,7 @@ public class etage {
       @ ensures nbrSalle == 0;
       @ ensures departement == null;
       @*/
-<span class="nc" id="L19">    public etage() {}</span>
+<span class="fc" id="L19">    public etage() {}</span>
 
     /*@ 
       @ requires id &gt;= 0;
@@ -26,45 +26,45 @@ public class etage {
       @ ensures this.departement == departement;
       @ ensures this.nbrSalle == 0;
       @*/
-<span class="nc" id="L29">    public etage(int id, int numero, entite.departement departement) {</span>
-<span class="nc" id="L30">        this.id = id;</span>
-<span class="nc" id="L31">        this.numero = numero;</span>
-<span class="nc" id="L32">        this.departement = departement;</span>
-<span class="nc" id="L33">    }</span>
+<span class="fc" id="L29">    public etage(int id, int numero, entite.departement departement) {</span>
+<span class="fc" id="L30">        this.id = id;</span>
+<span class="fc" id="L31">        this.numero = numero;</span>
+<span class="fc" id="L32">        this.departement = departement;</span>
+<span class="fc" id="L33">    }</span>
 
     /*@ ensures \result == id; pure @*/
     public int getId() {
-<span class="nc" id="L37">        return id;</span>
+<span class="fc" id="L37">        return id;</span>
     }
 
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
-<span class="nc" id="L42">        this.id = id;</span>
-<span class="nc" id="L43">    }</span>
+<span class="fc" id="L42">        this.id = id;</span>
+<span class="fc" id="L43">    }</span>
 
     /*@ ensures \result == numero; pure @*/
     public int getNumero() {
-<span class="nc" id="L47">        return numero;</span>
+<span class="fc" id="L47">        return numero;</span>
     }
 
     /*@ assignable this.numero; ensures this.numero == numero; @*/
     public void setNumero(int numero) {
-<span class="nc" id="L52">        this.numero = numero;</span>
-<span class="nc" id="L53">    }</span>
+<span class="fc" id="L52">        this.numero = numero;</span>
+<span class="fc" id="L53">    }</span>
 
     /*@ ensures \result == departement; pure @*/
     public entite.departement getDepartement() {
-<span class="nc" id="L57">        return departement;</span>
+<span class="fc" id="L57">        return departement;</span>
     }
 
     /*@ assignable this.departement; ensures this.departement == departement; @*/
     public void setDepartement(entite.departement departement) {
-<span class="nc" id="L62">        this.departement = departement;</span>
-<span class="nc" id="L63">    }</span>
+<span class="fc" id="L62">        this.departement = departement;</span>
+<span class="fc" id="L63">    }</span>
 
     /*@ ensures \result == nbrSalle; pure @*/
     public int getNbrSalle() {
-<span class="nc" id="L67">        return nbrSalle;</span>
+<span class="fc" id="L67">        return nbrSalle;</span>
     }
 
     /*@ 
@@ -73,7 +73,7 @@ public class etage {
       @ ensures this.nbrSalle == nbrSalle;
       @*/
     public void setNbrSalle(int nbrSalle) {
-<span class="nc" id="L76">        this.nbrSalle = nbrSalle;</span>
-<span class="nc" id="L77">    }</span>
+<span class="fc" id="L76">        this.nbrSalle = nbrSalle;</span>
+<span class="fc" id="L77">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

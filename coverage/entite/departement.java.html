@@ -16,9 +16,9 @@ public class departement {
       @ ensures nbr_etage == 0;
       @*/
     // Constructeurs
-<span class="nc" id="L19">    public departement() {</span>
-<span class="nc" id="L20">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
-<span class="nc" id="L21">    }</span>
+<span class="fc" id="L19">    public departement() {</span>
+<span class="fc" id="L20">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="fc" id="L21">    }</span>
 
     /*@ 
       @ ensures this.id == 0;
@@ -27,12 +27,12 @@ public class departement {
       @ ensures this.image == image;
       @ ensures this.nbr_etage == 0;
       @*/
-<span class="nc" id="L30">    public departement(String nom, String adresse, String image) {</span>
-<span class="nc" id="L31">        this.nom = nom;</span>
-<span class="nc" id="L32">        this.adresse = adresse;</span>
-<span class="nc" id="L33">        this.image = image;</span>
-<span class="nc" id="L34">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
-<span class="nc" id="L35">    }</span>
+<span class="fc" id="L30">    public departement(String nom, String adresse, String image) {</span>
+<span class="fc" id="L31">        this.nom = nom;</span>
+<span class="fc" id="L32">        this.adresse = adresse;</span>
+<span class="fc" id="L33">        this.image = image;</span>
+<span class="fc" id="L34">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="fc" id="L35">    }</span>
 
     /*@ 
       @ requires id &gt;= 0;
@@ -43,54 +43,54 @@ public class departement {
       @ ensures this.image == image;
       @ ensures this.nbr_etage == 0;
       @*/
-<span class="nc" id="L46">    public departement(int id, String nom, String adresse, String image) {</span>
-<span class="nc" id="L47">        this.id = id;</span>
-<span class="nc" id="L48">        this.nom = nom;</span>
-<span class="nc" id="L49">        this.adresse = adresse;</span>
-<span class="nc" id="L50">        this.image = image;</span>
-<span class="nc" id="L51">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
-<span class="nc" id="L52">    }</span>
+<span class="fc" id="L46">    public departement(int id, String nom, String adresse, String image) {</span>
+<span class="fc" id="L47">        this.id = id;</span>
+<span class="fc" id="L48">        this.nom = nom;</span>
+<span class="fc" id="L49">        this.adresse = adresse;</span>
+<span class="fc" id="L50">        this.image = image;</span>
+<span class="fc" id="L51">        this.nbr_etage = 0;  // Initialisé à 0 par défaut</span>
+<span class="fc" id="L52">    }</span>
 
     // Getters et setters
 
     /*@ ensures \result == id; pure @*/
-<span class="nc" id="L57">    public int getId() { return id; }</span>
+<span class="fc" id="L57">    public int getId() { return id; }</span>
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
-<span class="nc" id="L59">    public void setId(int id) { this.id = id; }</span>
+<span class="fc" id="L59">    public void setId(int id) { this.id = id; }</span>
     /*@ pure @*/
-<span class="nc" id="L61">    public String getNom() { return nom; }</span>
+<span class="fc" id="L61">    public String getNom() { return nom; }</span>
     /*@ assignable this.nom; @*/
-<span class="nc" id="L63">    public void setNom(String nom) { this.nom = nom; }</span>
+<span class="fc" id="L63">    public void setNom(String nom) { this.nom = nom; }</span>
     /*@ pure @*/
-<span class="nc" id="L65">    public String getAdresse() { return adresse; }</span>
+<span class="fc" id="L65">    public String getAdresse() { return adresse; }</span>
     /*@ assignable this.adresse; @*/
-<span class="nc" id="L67">    public void setAdresse(String adresse) { this.adresse = adresse; }</span>
+<span class="fc" id="L67">    public void setAdresse(String adresse) { this.adresse = adresse; }</span>
     /*@ pure @*/
-<span class="nc" id="L69">    public String getImage() { return image; }</span>
+<span class="fc" id="L69">    public String getImage() { return image; }</span>
     /*@ assignable this.image; @*/
-<span class="nc" id="L71">    public void setImage(String image) { this.image = image; }</span>
+<span class="fc" id="L71">    public void setImage(String image) { this.image = image; }</span>
 
     // Getter et setter pour nbretage
 
     /*@ ensures \result == nbr_etage; pure @*/
-<span class="nc" id="L76">    public int getNbr_etage() { return nbr_etage; }</span>
+<span class="fc" id="L76">    public int getNbr_etage() { return nbr_etage; }</span>
     /*@ 
       @ // Protezione dell'invariante: Rifiutiamo valori negativi
       @ requires nbretage &gt;= 0;
       @ assignable this.nbr_etage;
       @ ensures this.nbr_etage == nbretage;
       @*/
-<span class="nc" id="L83">    public void setNbr_etage(int nbretage) { this.nbr_etage = nbretage; }</span>
+<span class="fc" id="L83">    public void setNbr_etage(int nbretage) { this.nbr_etage = nbretage; }</span>
 
     // Méthode pour augmenter le nombre d'étages
 
     @Override
     public String toString() {
-<span class="nc" id="L89">        return null;</span>
+<span class="fc" id="L89">        return null;</span>
     }
 
     public void setNbr_Etage(int i) {
-<span class="nc" id="L93">    }</span>
+<span class="fc" id="L93">    }</span>
 
     // Méthode optionnelle pour diminuer le nombre d'étages
 

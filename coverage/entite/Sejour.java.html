@@ -44,12 +44,12 @@ public class Sejour {
       @ ensures statutPaiement != null &amp;&amp; statutPaiement.equals(&quot;En attente&quot;);
       @*/
     // Default constructor
-<span class="nc" id="L47">    public Sejour() {</span>
+<span class="fc" id="L47">    public Sejour() {</span>
         // Initialize default values
-<span class="nc" id="L49">        this.fraisSejour = 0.0;</span>
-<span class="nc" id="L50">        this.prixExtras = 0.0;</span>
-<span class="nc" id="L51">        this.statutPaiement = &quot;En attente&quot;;</span>
-<span class="nc" id="L52">    }</span>
+<span class="fc" id="L49">        this.fraisSejour = 0.0;</span>
+<span class="fc" id="L50">        this.prixExtras = 0.0;</span>
+<span class="fc" id="L51">        this.statutPaiement = &quot;En attente&quot;;</span>
+<span class="fc" id="L52">    }</span>
     
     /*@ 
       @ requires fraisSejour &gt;= 0.0;
@@ -63,59 +63,59 @@ public class Sejour {
     // Constructor with all fields that exist in the database
     public Sejour(LocalDateTime dateEntree, LocalDateTime dateSortie, String typeSejour, 
             double fraisSejour, String moyenPaiement, String statutPaiement, double prixExtras, 
-<span class="nc" id="L66">            DossierMedicale dossierMedicale) {</span>
-<span class="nc" id="L67">        this.dateEntree = dateEntree;</span>
-<span class="nc" id="L68">        this.dateSortie = dateSortie;</span>
-<span class="nc" id="L69">        this.typeSejour = typeSejour;</span>
-<span class="nc" id="L70">        this.fraisSejour = fraisSejour;</span>
-<span class="nc" id="L71">        this.moyenPaiement = moyenPaiement;</span>
-<span class="nc" id="L72">        this.statutPaiement = statutPaiement;</span>
-<span class="nc" id="L73">        this.prixExtras = prixExtras;</span>
-<span class="nc" id="L74">        this.dossierMedicale = dossierMedicale;</span>
-<span class="nc" id="L75">    }</span>
+<span class="fc" id="L66">            DossierMedicale dossierMedicale) {</span>
+<span class="fc" id="L67">        this.dateEntree = dateEntree;</span>
+<span class="fc" id="L68">        this.dateSortie = dateSortie;</span>
+<span class="fc" id="L69">        this.typeSejour = typeSejour;</span>
+<span class="fc" id="L70">        this.fraisSejour = fraisSejour;</span>
+<span class="fc" id="L71">        this.moyenPaiement = moyenPaiement;</span>
+<span class="fc" id="L72">        this.statutPaiement = statutPaiement;</span>
+<span class="fc" id="L73">        this.prixExtras = prixExtras;</span>
+<span class="fc" id="L74">        this.dossierMedicale = dossierMedicale;</span>
+<span class="fc" id="L75">    }</span>
     
     // Getters and Setters
 
     /*@ pure @*/
     public int getId() {
-<span class="nc" id="L81">        return id;</span>
+<span class="fc" id="L81">        return id;</span>
     }
     
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
-<span class="nc" id="L86">        this.id = id;</span>
-<span class="nc" id="L87">    }</span>
+<span class="fc" id="L86">        this.id = id;</span>
+<span class="fc" id="L87">    }</span>
     
     /*@ pure @*/
     public LocalDateTime getDateEntree() {
-<span class="nc" id="L91">        return dateEntree;</span>
+<span class="fc" id="L91">        return dateEntree;</span>
     }
     
     public void setDateEntree(LocalDateTime dateEntree) {
-<span class="nc" id="L95">        this.dateEntree = dateEntree;</span>
-<span class="nc" id="L96">    }</span>
+<span class="fc" id="L95">        this.dateEntree = dateEntree;</span>
+<span class="fc" id="L96">    }</span>
     
     /*@ pure @*/
     public LocalDateTime getDateSortie() {
-<span class="nc" id="L100">        return dateSortie;</span>
+<span class="fc" id="L100">        return dateSortie;</span>
     }
     
     public void setDateSortie(LocalDateTime dateSortie) {
-<span class="nc" id="L104">        this.dateSortie = dateSortie;</span>
-<span class="nc" id="L105">    }</span>
+<span class="fc" id="L104">        this.dateSortie = dateSortie;</span>
+<span class="fc" id="L105">    }</span>
     
     /*@ pure @*/
     public String getTypeSejour() {
-<span class="nc" id="L109">        return typeSejour;</span>
+<span class="fc" id="L109">        return typeSejour;</span>
     }
     
     public void setTypeSejour(String typeSejour) {
-<span class="nc" id="L113">        this.typeSejour = typeSejour;</span>
-<span class="nc" id="L114">    }</span>
+<span class="fc" id="L113">        this.typeSejour = typeSejour;</span>
+<span class="fc" id="L114">    }</span>
     
     /*@ pure @*/
     public double getFraisSejour() {
-<span class="nc" id="L118">        return fraisSejour;</span>
+<span class="fc" id="L118">        return fraisSejour;</span>
     }
     
     /*@ 
@@ -124,12 +124,12 @@ public class Sejour {
       @ ensures this.fraisSejour == fraisSejour;
       @*/
     public void setFraisSejour(double fraisSejour) {
-<span class="nc" id="L127">        this.fraisSejour = fraisSejour;</span>
-<span class="nc" id="L128">    }</span>
+<span class="fc" id="L127">        this.fraisSejour = fraisSejour;</span>
+<span class="fc" id="L128">    }</span>
     
     /*@ pure @*/
     public String getMoyenPaiement() {
-<span class="nc" id="L132">        return moyenPaiement;</span>
+<span class="fc" id="L132">        return moyenPaiement;</span>
     }
     
     public void setMoyenPaiement(String moyenPaiement) {
@@ -138,7 +138,7 @@ public class Sejour {
     
     /*@ pure @*/
     public String getStatutPaiement() {
-<span class="nc" id="L141">        return statutPaiement;</span>
+<span class="fc" id="L141">        return statutPaiement;</span>
     }
     
     public void setStatutPaiement(String statutPaiement) {
@@ -147,7 +147,7 @@ public class Sejour {
     
     /*@ pure @*/
     public double getPrixExtras() {
-<span class="nc" id="L150">        return prixExtras;</span>
+<span class="fc" id="L150">        return prixExtras;</span>
     }
     
     /*@ 
@@ -156,49 +156,49 @@ public class Sejour {
       @ ensures this.prixExtras == prixExtras;
       @*/
     public void setPrixExtras(double prixExtras) {
-<span class="nc" id="L159">        this.prixExtras = prixExtras;</span>
-<span class="nc" id="L160">    }</span>
+<span class="fc" id="L159">        this.prixExtras = prixExtras;</span>
+<span class="fc" id="L160">    }</span>
     
     /*@ pure @*/
     public DossierMedicale getDossierMedicale() {
-<span class="nc" id="L164">        return dossierMedicale;</span>
+<span class="fc" id="L164">        return dossierMedicale;</span>
     }
     
     /*@ 
       @ ensures this.dossierMedicale == dossierMedicale;
       @*/
     public void setDossierMedicale(DossierMedicale dossierMedicale) {
-<span class="nc" id="L171">        this.dossierMedicale = dossierMedicale;</span>
+<span class="fc" id="L171">        this.dossierMedicale = dossierMedicale;</span>
         
         // Ensure bi-directional relationship
-<span class="nc bnc" id="L174" title="All 4 branches missed.">        if (dossierMedicale != null &amp;&amp; !dossierMedicale.getSejours().contains(this)) {</span>
-<span class="nc" id="L175">            dossierMedicale.addSejour(this);</span>
+<span class="pc bpc" id="L174" title="1 of 4 branches missed.">        if (dossierMedicale != null &amp;&amp; !dossierMedicale.getSejours().contains(this)) {</span>
+<span class="fc" id="L175">            dossierMedicale.addSejour(this);</span>
         }
-<span class="nc" id="L177">    }</span>
+<span class="fc" id="L177">    }</span>
     
     // Transient getters and setters (not in database)
     /*@ pure @*/
     public String getChambre() {
-<span class="nc" id="L182">        return chambre;</span>
+<span class="fc" id="L182">        return chambre;</span>
     }
     
     public void setChambre(String chambre) {
-<span class="nc" id="L186">        this.chambre = chambre;</span>
-<span class="nc" id="L187">    }</span>
+<span class="fc" id="L186">        this.chambre = chambre;</span>
+<span class="fc" id="L187">    }</span>
     
     /*@ pure @*/
     public String getNotes() {
-<span class="nc" id="L191">        return notes;</span>
+<span class="fc" id="L191">        return notes;</span>
     }
     
     public void setNotes(String notes) {
-<span class="nc" id="L195">        this.notes = notes;</span>
-<span class="nc" id="L196">    }</span>
+<span class="fc" id="L195">        this.notes = notes;</span>
+<span class="fc" id="L196">    }</span>
     
     // Helper method to get dossier_medicale_id for database operations
     /*@ pure @*/
     public int getDossierMedicaleId() {
-<span class="nc bnc" id="L201" title="All 2 branches missed.">        return dossierMedicale != null ? dossierMedicale.getId() : 0;</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        return dossierMedicale != null ? dossierMedicale.getId() : 0;</span>
     }
     
     /**
@@ -211,7 +211,7 @@ public class Sejour {
       @ pure
       @*/
     public double calculateTotalCost() {
-<span class="nc" id="L214">        return fraisSejour + prixExtras;</span>
+<span class="fc" id="L214">        return fraisSejour + prixExtras;</span>
     }
     
     /**
@@ -223,20 +223,20 @@ public class Sejour {
       @ pure
       @*/
     public long calculateStayDuration() {
-<span class="nc bnc" id="L226" title="All 4 branches missed.">        if (dateEntree == null || dateSortie == null) {</span>
-<span class="nc" id="L227">            return 0;</span>
+<span class="fc bfc" id="L226" title="All 4 branches covered.">        if (dateEntree == null || dateSortie == null) {</span>
+<span class="fc" id="L227">            return 0;</span>
         }
         
-<span class="nc" id="L230">        LocalDate dateIn = dateEntree.toLocalDate();</span>
-<span class="nc" id="L231">        LocalDate dateOut = dateSortie.toLocalDate();</span>
-<span class="nc" id="L232">        return ChronoUnit.DAYS.between(dateIn, dateOut);</span>
+<span class="fc" id="L230">        LocalDate dateIn = dateEntree.toLocalDate();</span>
+<span class="fc" id="L231">        LocalDate dateOut = dateSortie.toLocalDate();</span>
+<span class="fc" id="L232">        return ChronoUnit.DAYS.between(dateIn, dateOut);</span>
     }
     
     @Override
     public String toString() {
-<span class="nc" id="L237">        return &quot;Séjour #&quot; + id + &quot; - &quot; + typeSejour + </span>
-<span class="nc bnc" id="L238" title="All 2 branches missed.">               &quot; (&quot; + (dateEntree != null ? dateEntree.toLocalDate() : &quot;N/A&quot;) + </span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">               &quot; à &quot; + (dateSortie != null ? dateSortie.toLocalDate() : &quot;N/A&quot;) + &quot;)&quot;;</span>
+<span class="fc" id="L237">        return &quot;Séjour #&quot; + id + &quot; - &quot; + typeSejour + </span>
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">               &quot; (&quot; + (dateEntree != null ? dateEntree.toLocalDate() : &quot;N/A&quot;) + </span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">               &quot; à &quot; + (dateSortie != null ? dateSortie.toLocalDate() : &quot;N/A&quot;) + &quot;)&quot;;</span>
     }
 } 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -15,8 +15,8 @@ public class Staff extends Users{
       @ ensures telephone == null;
       @*/
     public Staff() {
-<span class="nc" id="L18">        super();</span>
-<span class="nc" id="L19">    }</span>
+<span class="fc" id="L18">        super();</span>
+<span class="fc" id="L19">    }</span>
 
     /*@ 
       @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);
@@ -29,29 +29,29 @@ public class Staff extends Users{
       @*/
     public Staff(int id, String email, String password, List&lt;String&gt; roles,String type,
                  String nom, String prenom, String telephone) {
-<span class="nc" id="L32">        super(id, email, password, roles, nom, prenom, type);</span>
-<span class="nc" id="L33">        this.telephone = telephone;</span>
-<span class="nc" id="L34">    }</span>
+<span class="fc" id="L32">        super(id, email, password, roles, nom, prenom, type);</span>
+<span class="fc" id="L33">        this.telephone = telephone;</span>
+<span class="fc" id="L34">    }</span>
 
     /*@ pure @*/
     public String getTelephone() {
-<span class="nc" id="L38">        return telephone;</span>
+<span class="fc" id="L38">        return telephone;</span>
     }
 
     /*@ assignable this.telephone; @*/
     public void setTelephone(String telephone) {
-<span class="nc" id="L43">        this.telephone = telephone;</span>
-<span class="nc" id="L44">    }</span>
+<span class="fc" id="L43">        this.telephone = telephone;</span>
+<span class="fc" id="L44">    }</span>
 
 
     @Override
     public String toString() {
-<span class="nc" id="L49">        return &quot;Staff{&quot; +</span>
-<span class="nc" id="L50">                &quot;id=&quot; + getId() +</span>
-<span class="nc" id="L51">                &quot;, email='&quot; + getEmail() + '\'' +</span>
-<span class="nc" id="L52">                &quot;, nom='&quot; + getNom() + '\'' +</span>
-<span class="nc" id="L53">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
-<span class="nc" id="L54">                &quot;, roles=&quot; + getRoles() +</span>
+<span class="fc" id="L49">        return &quot;Staff{&quot; +</span>
+<span class="fc" id="L50">                &quot;id=&quot; + getId() +</span>
+<span class="fc" id="L51">                &quot;, email='&quot; + getEmail() + '\'' +</span>
+<span class="fc" id="L52">                &quot;, nom='&quot; + getNom() + '\'' +</span>
+<span class="fc" id="L53">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
+<span class="fc" id="L54">                &quot;, roles=&quot; + getRoles() +</span>
                 &quot;, telephone='&quot; + telephone + '\'' +
                 '}';
     }

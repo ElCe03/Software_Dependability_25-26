@@ -22,7 +22,7 @@ public class Users {
     private String password;
     
     /*@ spec_public non_null @*/
-<span class="nc" id="L25">    @ElementCollection(fetch = FetchType.EAGER)</span>
+<span class="fc" id="L25">    @ElementCollection(fetch = FetchType.EAGER)</span>
     private List&lt;String&gt; roles = new ArrayList&lt;String&gt;();
     /*@ spec_public nullable @*/
     private String nom;
@@ -42,9 +42,9 @@ public class Users {
       @ ensures roles != null &amp;&amp; roles.isEmpty();
       @ ensures id == 0;
       @*/
-<span class="nc" id="L45">    public Users() {</span>
-<span class="nc" id="L46">        this.roles = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L47">    }</span>
+<span class="fc" id="L45">    public Users() {</span>
+<span class="fc" id="L46">        this.roles = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L47">    }</span>
 
     /*@ 
       @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);
@@ -56,52 +56,52 @@ public class Users {
       @ ensures (roles != null) ==&gt; this.roles == roles;
       @ ensures (roles == null) ==&gt; (this.roles != null &amp;&amp; this.roles.isEmpty());
       @*/
-<span class="nc" id="L59">    public Users(int id, String email, String password, List&lt;String&gt; roles, String nom, String prenom, String type) {</span>
-<span class="nc" id="L60">        this.id = id;</span>
-<span class="nc" id="L61">        this.email = email;</span>
-<span class="nc" id="L62">        this.password = password;</span>
-<span class="nc bnc" id="L63" title="All 2 branches missed.">        this.roles = roles != null ? roles : new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L64">        this.nom = nom;</span>
-<span class="nc" id="L65">        this.prenom = prenom;</span>
-<span class="nc" id="L66">        this.type = type;</span>
-<span class="nc" id="L67">    }</span>
+<span class="fc" id="L59">    public Users(int id, String email, String password, List&lt;String&gt; roles, String nom, String prenom, String type) {</span>
+<span class="fc" id="L60">        this.id = id;</span>
+<span class="fc" id="L61">        this.email = email;</span>
+<span class="fc" id="L62">        this.password = password;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        this.roles = roles != null ? roles : new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L64">        this.nom = nom;</span>
+<span class="fc" id="L65">        this.prenom = prenom;</span>
+<span class="fc" id="L66">        this.type = type;</span>
+<span class="fc" id="L67">    }</span>
 
     /*@ 
       @ ensures roles != null; // Garantito dall'inizializzazione del campo
       @*/
-<span class="nc" id="L72">    public Users(int i, String dupont, String jean, String mail, String roleMedecin, String médecin) {</span>
+<span class="fc" id="L72">    public Users(int i, String dupont, String jean, String mail, String roleMedecin, String médecin) {</span>
 
-<span class="nc" id="L74">    }</span>
+<span class="fc" id="L74">    }</span>
 
     /*@ ensures \result == id; pure @*/
     public int getId() {
-<span class="nc" id="L78">        return id;</span>
+<span class="fc" id="L78">        return id;</span>
     }
 
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
-<span class="nc" id="L83">        this.id = id;</span>
-<span class="nc" id="L84">    }</span>
+<span class="fc" id="L83">        this.id = id;</span>
+<span class="fc" id="L84">    }</span>
 
     /*@ ensures \result == email; pure @*/
     public String getEmail() {
-<span class="nc" id="L88">        return email;</span>
+<span class="fc" id="L88">        return email;</span>
     }
 
     /*@ assignable this.email; ensures this.email == email; @*/
     public void setEmail(String email) {
-<span class="nc" id="L93">        this.email = email;</span>
-<span class="nc" id="L94">    }</span>
+<span class="fc" id="L93">        this.email = email;</span>
+<span class="fc" id="L94">    }</span>
 
     /*@ ensures \result == password; pure @*/
     public String getPassword() {
-<span class="nc" id="L98">        return password;</span>
+<span class="fc" id="L98">        return password;</span>
     }
 
     /*@ assignable this.password; ensures this.password == password; @*/
     public void setPassword(String password) {
-<span class="nc" id="L103">        this.password = password;</span>
-<span class="nc" id="L104">    }</span>
+<span class="fc" id="L103">        this.password = password;</span>
+<span class="fc" id="L104">    }</span>
 
     /*@ 
       @ ensures \result != null; // Garanzia fondamentale per i client
@@ -109,7 +109,7 @@ public class Users {
       @ pure 
       @*/
     public List&lt;String&gt; getRoles() {
-<span class="nc" id="L112">        return roles;</span>
+<span class="fc" id="L112">        return roles;</span>
     }
 
     /*@ 
@@ -118,42 +118,42 @@ public class Users {
       @ ensures this.roles == roles;
       @*/
     public void setRoles(List&lt;String&gt; roles) {
-<span class="nc" id="L121">        this.roles = roles;</span>
-<span class="nc" id="L122">    }</span>
+<span class="fc" id="L121">        this.roles = roles;</span>
+<span class="fc" id="L122">    }</span>
 
     /*@ ensures \result == nom; pure @*/
     public String getNom() {
-<span class="nc" id="L126">        return nom;</span>
+<span class="fc" id="L126">        return nom;</span>
     }
 
     /*@ assignable this.nom; ensures this.nom == nom; @*/
     public void setNom(String nom) {
-<span class="nc" id="L131">        this.nom = nom;</span>
-<span class="nc" id="L132">    }</span>
+<span class="fc" id="L131">        this.nom = nom;</span>
+<span class="fc" id="L132">    }</span>
 
     /*@ ensures \result == prenom; pure @*/
     public String getPrenom() {
-<span class="nc" id="L136">        return prenom;</span>
+<span class="fc" id="L136">        return prenom;</span>
     }
 
     /*@ assignable this.prenom; ensures this.prenom == prenom; @*/
     public void setPrenom(String prenom) {
-<span class="nc" id="L141">        this.prenom = prenom;</span>
-<span class="nc" id="L142">    }</span>
+<span class="fc" id="L141">        this.prenom = prenom;</span>
+<span class="fc" id="L142">    }</span>
 
     /*@ ensures \result == type; pure @*/
     public String getType() {
-<span class="nc" id="L146">        return type;</span>
+<span class="fc" id="L146">        return type;</span>
     }
 
     /*@ assignable this.type; ensures this.type == type; @*/
     public void setType(String type) {
-<span class="nc" id="L151">        this.type = type;</span>
-<span class="nc" id="L152">    }</span>
+<span class="fc" id="L151">        this.type = type;</span>
+<span class="fc" id="L152">    }</span>
     
     @Override
     public String toString() {
-<span class="nc" id="L156">        return &quot;User{&quot; +</span>
+<span class="fc" id="L156">        return &quot;User{&quot; +</span>
                 &quot;id=&quot; + id +
                 &quot;, email='&quot; + email + '\'' +
                 &quot;, nom='&quot; + nom + '\'' +

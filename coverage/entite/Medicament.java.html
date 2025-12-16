@@ -26,9 +26,9 @@ public class Medicament {
       @ ensures prix_medicament == 0.0;
       @ ensures quantite_stock == 0;
       @*/
-<span class="nc" id="L29">    public Medicament() {</span>
+<span class="fc" id="L29">    public Medicament() {</span>
 
-<span class="nc" id="L31">    }</span>
+<span class="fc" id="L31">    }</span>
 
     /*@ 
       @ requires id &gt;= 0;
@@ -43,16 +43,16 @@ public class Medicament {
       @ ensures this.date_expiration == date_expiration;
       @*/
     public Medicament(int id, String nom_medicament, String description_medicament, String type_medicament, double prix_medicament, int quantite_stock,
-<span class="nc" id="L46">                      LocalDate date_entree, LocalDate date_expiration) {</span>
-<span class="nc" id="L47">        this.id = id;</span>
-<span class="nc" id="L48">        this.nom_medicament = nom_medicament;</span>
-<span class="nc" id="L49">        this.description_medicament = description_medicament;</span>
-<span class="nc" id="L50">        this.type_medicament = type_medicament;</span>
-<span class="nc" id="L51">        this.prix_medicament = prix_medicament;</span>
-<span class="nc" id="L52">        this.quantite_stock = quantite_stock;</span>
-<span class="nc" id="L53">        this.date_entree = date_entree;</span>
-<span class="nc" id="L54">        this.date_expiration = date_expiration;</span>
-<span class="nc" id="L55">    }</span>
+<span class="fc" id="L46">                      LocalDate date_entree, LocalDate date_expiration) {</span>
+<span class="fc" id="L47">        this.id = id;</span>
+<span class="fc" id="L48">        this.nom_medicament = nom_medicament;</span>
+<span class="fc" id="L49">        this.description_medicament = description_medicament;</span>
+<span class="fc" id="L50">        this.type_medicament = type_medicament;</span>
+<span class="fc" id="L51">        this.prix_medicament = prix_medicament;</span>
+<span class="fc" id="L52">        this.quantite_stock = quantite_stock;</span>
+<span class="fc" id="L53">        this.date_entree = date_entree;</span>
+<span class="fc" id="L54">        this.date_expiration = date_expiration;</span>
+<span class="fc" id="L55">    }</span>
 
 
     /*@ 
@@ -66,55 +66,55 @@ public class Medicament {
     // Constructeur sans l'id (l'id sera géré par la base de données)
     public Medicament(String nom_medicament, String description_medicament,
                       String type_medicament, double prix_medicament,
-<span class="nc" id="L69">                      int quantite_Stock, LocalDate date_entree, LocalDate date_expiration) {</span>
-<span class="nc" id="L70">        this.nom_medicament = nom_medicament;</span>
-<span class="nc" id="L71">        this.description_medicament = description_medicament;</span>
-<span class="nc" id="L72">        this.type_medicament = type_medicament;</span>
-<span class="nc" id="L73">        this.prix_medicament = prix_medicament;</span>
-<span class="nc" id="L74">        this.quantite_stock = quantite_Stock;</span>
-<span class="nc" id="L75">        this.date_entree = date_entree;</span>
-<span class="nc" id="L76">        this.date_expiration = date_expiration;</span>
-<span class="nc" id="L77">    }</span>
+<span class="fc" id="L69">                      int quantite_Stock, LocalDate date_entree, LocalDate date_expiration) {</span>
+<span class="fc" id="L70">        this.nom_medicament = nom_medicament;</span>
+<span class="fc" id="L71">        this.description_medicament = description_medicament;</span>
+<span class="fc" id="L72">        this.type_medicament = type_medicament;</span>
+<span class="fc" id="L73">        this.prix_medicament = prix_medicament;</span>
+<span class="fc" id="L74">        this.quantite_stock = quantite_Stock;</span>
+<span class="fc" id="L75">        this.date_entree = date_entree;</span>
+<span class="fc" id="L76">        this.date_expiration = date_expiration;</span>
+<span class="fc" id="L77">    }</span>
 
     // Getters et Setters
 
     /*@ ensures \result == id; pure @*/
     public int getId() {
-<span class="nc" id="L83">        return id;</span>
+<span class="fc" id="L83">        return id;</span>
     }
 
     /*@ requires id &gt;= 0; assignable this.id; ensures this.id == id; @*/
     public void setId(int id) {
-<span class="nc" id="L88">        this.id = id;</span>
-<span class="nc" id="L89">    }</span>
+<span class="fc" id="L88">        this.id = id;</span>
+<span class="fc" id="L89">    }</span>
 
     public String getNom_medicament() {
-<span class="nc" id="L92">        return nom_medicament;</span>
+<span class="fc" id="L92">        return nom_medicament;</span>
     }
 
     public void setNom_medicament(String nom_medicament) {
-<span class="nc" id="L96">        this.nom_medicament = nom_medicament;</span>
-<span class="nc" id="L97">    }</span>
+<span class="fc" id="L96">        this.nom_medicament = nom_medicament;</span>
+<span class="fc" id="L97">    }</span>
 
     public String getDescription_medicament() {
-<span class="nc" id="L100">        return description_medicament;</span>
+<span class="fc" id="L100">        return description_medicament;</span>
     }
 
     public void setDescription_medicament(String description_medicament) {
-<span class="nc" id="L104">        this.description_medicament = description_medicament;</span>
-<span class="nc" id="L105">    }</span>
+<span class="fc" id="L104">        this.description_medicament = description_medicament;</span>
+<span class="fc" id="L105">    }</span>
 
     public String getType_medicament() {
-<span class="nc" id="L108">        return type_medicament;</span>
+<span class="fc" id="L108">        return type_medicament;</span>
     }
 
     public void setType_medicament(String type_medicament) {
-<span class="nc" id="L112">        this.type_medicament = type_medicament;</span>
-<span class="nc" id="L113">    }</span>
+<span class="fc" id="L112">        this.type_medicament = type_medicament;</span>
+<span class="fc" id="L113">    }</span>
 
     /*@ ensures \result == prix_medicament; pure @*/
     public double getPrix_medicament() {
-<span class="nc" id="L117">        return prix_medicament;</span>
+<span class="fc" id="L117">        return prix_medicament;</span>
     }
 
     /*@ 
@@ -123,12 +123,12 @@ public class Medicament {
       @ ensures this.prix_medicament == prix_medicament;
       @*/
     public void setPrix_medicament(double prix_medicament) {
-<span class="nc" id="L126">        this.prix_medicament = prix_medicament;</span>
-<span class="nc" id="L127">    }</span>
+<span class="fc" id="L126">        this.prix_medicament = prix_medicament;</span>
+<span class="fc" id="L127">    }</span>
 
     /*@ ensures \result == quantite_stock; pure @*/
     public int getQuantite_stock() {
-<span class="nc" id="L131">        return quantite_stock;</span>
+<span class="fc" id="L131">        return quantite_stock;</span>
     }
 
     /*@ 
@@ -137,11 +137,11 @@ public class Medicament {
       @ ensures this.quantite_stock == quantite_Stock;
       @*/
     public void setQuantite_stock(int quantite_Stock) {
-<span class="nc" id="L140">        this.quantite_stock = quantite_Stock;</span>
-<span class="nc" id="L141">    }</span>
+<span class="fc" id="L140">        this.quantite_stock = quantite_Stock;</span>
+<span class="fc" id="L141">    }</span>
 
     public LocalDate getDate_entree() {
-<span class="nc" id="L144">        return date_entree;</span>
+<span class="fc" id="L144">        return date_entree;</span>
     }
 
     /*@ 
@@ -150,11 +150,11 @@ public class Medicament {
       @ ensures this.date_entree == date_entree;
       @*/
     public void setDate_entree(LocalDate date_entree) {
-<span class="nc" id="L153">        this.date_entree = date_entree;</span>
-<span class="nc" id="L154">    }</span>
+<span class="fc" id="L153">        this.date_entree = date_entree;</span>
+<span class="fc" id="L154">    }</span>
 
     public LocalDate getDate_expiration() {
-<span class="nc" id="L157">        return date_expiration;</span>
+<span class="fc" id="L157">        return date_expiration;</span>
     }
 
     /*@ 
@@ -163,12 +163,12 @@ public class Medicament {
       @ ensures this.date_expiration == date_expiration;
       @*/
     public void setDate_expiration(LocalDate date_expiration) {
-<span class="nc" id="L166">        this.date_expiration = date_expiration;</span>
-<span class="nc" id="L167">    }</span>
+<span class="fc" id="L166">        this.date_expiration = date_expiration;</span>
+<span class="fc" id="L167">    }</span>
 
     @Override
     public String toString() {
-<span class="nc" id="L171">        return this.nom_medicament;</span>
+<span class="fc" id="L171">        return this.nom_medicament;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

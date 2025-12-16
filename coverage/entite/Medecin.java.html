@@ -18,8 +18,8 @@ public class Medecin extends Users{
       @ ensures telephone == null;
       @*/
     public Medecin() {
-<span class="nc" id="L21">        super();</span>
-<span class="nc" id="L22">    }</span>
+<span class="fc" id="L21">        super();</span>
+<span class="fc" id="L22">    }</span>
 
     /*@ 
       @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);
@@ -34,40 +34,40 @@ public class Medecin extends Users{
       @*/
     public Medecin(int id, String email, String password, List&lt;String&gt; roles, String nom, String prenom,String type,
                    String specialite, String telephone) {
-<span class="nc" id="L37">        super(id, email, password, roles, nom, prenom,type);</span>
-<span class="nc" id="L38">        this.specialite = specialite;</span>
-<span class="nc" id="L39">        this.telephone = telephone;</span>
-<span class="nc" id="L40">    }</span>
+<span class="fc" id="L37">        super(id, email, password, roles, nom, prenom,type);</span>
+<span class="fc" id="L38">        this.specialite = specialite;</span>
+<span class="fc" id="L39">        this.telephone = telephone;</span>
+<span class="fc" id="L40">    }</span>
 
     /*@ pure @*/
     public String getSpecialite() {
-<span class="nc" id="L44">        return specialite;</span>
+<span class="fc" id="L44">        return specialite;</span>
     }
 
     /*@ assignable this.specialite; @*/
     public void setSpecialite(String specialite) {
-<span class="nc" id="L49">        this.specialite = specialite;</span>
-<span class="nc" id="L50">    }</span>
+<span class="fc" id="L49">        this.specialite = specialite;</span>
+<span class="fc" id="L50">    }</span>
 
     /*@ pure @*/
     public String getTelephone() {
-<span class="nc" id="L54">        return telephone;</span>
+<span class="fc" id="L54">        return telephone;</span>
     }
 
     /*@ assignable this.telephone; @*/
     public void setTelephone(String telephone) {
-<span class="nc" id="L59">        this.telephone = telephone;</span>
-<span class="nc" id="L60">    }</span>
+<span class="fc" id="L59">        this.telephone = telephone;</span>
+<span class="fc" id="L60">    }</span>
 
 
     @Override
     public String toString() {
-<span class="nc" id="L65">        return &quot;Medecin{&quot; +</span>
-<span class="nc" id="L66">                &quot;id=&quot; + getId() +</span>
-<span class="nc" id="L67">                &quot;, email='&quot; + getEmail() + '\'' +</span>
-<span class="nc" id="L68">                &quot;, nom='&quot; + getNom() + '\'' +</span>
-<span class="nc" id="L69">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
-<span class="nc" id="L70">                &quot;, roles=&quot; + getRoles() +</span>
+<span class="fc" id="L65">        return &quot;Medecin{&quot; +</span>
+<span class="fc" id="L66">                &quot;id=&quot; + getId() +</span>
+<span class="fc" id="L67">                &quot;, email='&quot; + getEmail() + '\'' +</span>
+<span class="fc" id="L68">                &quot;, nom='&quot; + getNom() + '\'' +</span>
+<span class="fc" id="L69">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
+<span class="fc" id="L70">                &quot;, roles=&quot; + getRoles() +</span>
                 &quot;, specialite='&quot; + specialite + '\'' +
                 &quot;, telephone='&quot; + telephone + '\'' +
                 '}';

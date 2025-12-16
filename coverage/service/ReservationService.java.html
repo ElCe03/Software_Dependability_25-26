@@ -12,91 +12,91 @@ import java.util.logging.Logger;
 
 public class ReservationService {
 
-<span class="nc" id="L15">    private static final Logger LOGGER = Logger.getLogger(ReservationService.class.getName());</span>
+<span class="fc" id="L15">    private static final Logger LOGGER = Logger.getLogger(ReservationService.class.getName());</span>
 
     private Connection connection;
 
-<span class="nc" id="L19">    public ReservationService() {</span>
-<span class="nc" id="L20">    }</span>
+<span class="fc" id="L19">    public ReservationService() {</span>
+<span class="fc" id="L20">    }</span>
 
     public void setConnection(Connection connection) {
-<span class="nc" id="L23">        this.connection = connection;</span>
-<span class="nc" id="L24">    }</span>
+<span class="fc" id="L23">        this.connection = connection;</span>
+<span class="fc" id="L24">    }</span>
 
     private Connection getConnection() {
-<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (this.connection == null) {</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        if (this.connection == null) {</span>
 <span class="nc" id="L28">            this.connection = DataSource.getInstance().getConnection();</span>
         }
-<span class="nc" id="L30">        return this.connection;</span>
+<span class="fc" id="L30">        return this.connection;</span>
     }
     
     public void addReservation(Connection conn, reservation reservation) throws SQLException {
-<span class="nc bnc" id="L34" title="All 2 branches missed.">        Connection activeConn = (conn != null) ? conn : getConnection();</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        Connection activeConn = (conn != null) ? conn : getConnection();</span>
         
-<span class="nc" id="L36">        String query = &quot;INSERT INTO reservation (salle_id, date_debut, date_fin) VALUES (?, ?, ?)&quot;;</span>
-<span class="nc" id="L37">        try (PreparedStatement ps = activeConn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {</span>
-<span class="nc" id="L38">            ps.setInt(1, reservation.getSalle().getId());</span>
-<span class="nc" id="L39">            ps.setTimestamp(2, reservation.getDate_debut());</span>
-<span class="nc" id="L40">            ps.setTimestamp(3, reservation.getDate_fin());</span>
+<span class="fc" id="L36">        String query = &quot;INSERT INTO reservation (salle_id, date_debut, date_fin) VALUES (?, ?, ?)&quot;;</span>
+<span class="fc" id="L37">        try (PreparedStatement ps = activeConn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {</span>
+<span class="fc" id="L38">            ps.setInt(1, reservation.getSalle().getId());</span>
+<span class="fc" id="L39">            ps.setTimestamp(2, reservation.getDate_debut());</span>
+<span class="fc" id="L40">            ps.setTimestamp(3, reservation.getDate_fin());</span>
 
-<span class="nc" id="L42">            ps.executeUpdate();</span>
+<span class="fc" id="L42">            ps.executeUpdate();</span>
 
-<span class="nc" id="L44">            try (ResultSet rs = ps.getGeneratedKeys()) {</span>
-<span class="nc bnc" id="L45" title="All 2 branches missed.">                if (rs.next()) {</span>
-<span class="nc" id="L46">                    reservation.setId(rs.getInt(1));</span>
+<span class="fc" id="L44">            try (ResultSet rs = ps.getGeneratedKeys()) {</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L46">                    reservation.setId(rs.getInt(1));</span>
                 }
             }
         }
-<span class="nc" id="L50">    }</span>
+<span class="fc" id="L50">    }</span>
 
     public List&lt;reservation&gt; getReservationsForSalle(int salleId) throws SQLException {
-<span class="nc" id="L53">        List&lt;reservation&gt; reservations = new ArrayList&lt;reservation&gt;();</span>
-<span class="nc" id="L54">        String query = &quot;SELECT * FROM reservation WHERE salle_id = ?&quot;;</span>
+<span class="fc" id="L53">        List&lt;reservation&gt; reservations = new ArrayList&lt;reservation&gt;();</span>
+<span class="fc" id="L54">        String query = &quot;SELECT * FROM reservation WHERE salle_id = ?&quot;;</span>
 
-<span class="nc" id="L56">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
-<span class="nc" id="L57">            ps.setInt(1, salleId);</span>
+<span class="fc" id="L56">        try (PreparedStatement ps = getConnection().prepareStatement(query)) {</span>
+<span class="fc" id="L57">            ps.setInt(1, salleId);</span>
 
-<span class="nc" id="L59">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="nc bnc" id="L60" title="All 2 branches missed.">                while (rs.next()) {</span>
-<span class="nc" id="L61">                    reservation res = new reservation();</span>
-<span class="nc" id="L62">                    res.setId(rs.getInt(&quot;id&quot;));</span>
-<span class="nc" id="L63">                    res.setDate_debut(rs.getTimestamp(&quot;date_debut&quot;));</span>
-<span class="nc" id="L64">                    res.setDate_fin(rs.getTimestamp(&quot;date_fin&quot;));</span>
+<span class="fc" id="L59">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">                while (rs.next()) {</span>
+<span class="fc" id="L61">                    reservation res = new reservation();</span>
+<span class="fc" id="L62">                    res.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="fc" id="L63">                    res.setDate_debut(rs.getTimestamp(&quot;date_debut&quot;));</span>
+<span class="fc" id="L64">                    res.setDate_fin(rs.getTimestamp(&quot;date_fin&quot;));</span>
                     // You'll need to set the Salle object here
-<span class="nc" id="L66">                    reservations.add(res);</span>
-<span class="nc" id="L67">                }</span>
+<span class="fc" id="L66">                    reservations.add(res);</span>
+<span class="fc" id="L67">                }</span>
             }
         }
-<span class="nc" id="L70">        return reservations;</span>
+<span class="fc" id="L70">        return reservations;</span>
     }
 
     public void terminerReservation(Connection conn, int reservationId) throws SQLException {
         // Requête pour libérer la salle
-<span class="nc" id="L75">        String updateSalleQuery = &quot;UPDATE salle s JOIN reservation r ON s.id = r.salle_id &quot; +</span>
+<span class="fc" id="L75">        String updateSalleQuery = &quot;UPDATE salle s JOIN reservation r ON s.id = r.salle_id &quot; +</span>
                 &quot;SET s.status = 'Libre' WHERE r.id = ?&quot;;
 
         // Requête pour supprimer la réservation
-<span class="nc" id="L79">        String deleteReservationQuery = &quot;DELETE FROM reservation WHERE id = ?&quot;;</span>
+<span class="fc" id="L79">        String deleteReservationQuery = &quot;DELETE FROM reservation WHERE id = ?&quot;;</span>
 
         try {
-<span class="nc" id="L82">            conn.setAutoCommit(false);</span>
-<span class="nc" id="L83">            LOGGER.info(&quot;Début de la transaction pour terminer la réservation&quot;);</span>
+<span class="fc" id="L82">            conn.setAutoCommit(false);</span>
+<span class="fc" id="L83">            LOGGER.info(&quot;Début de la transaction pour terminer la réservation&quot;);</span>
 
-<span class="nc" id="L85">            try (PreparedStatement psSalle = conn.prepareStatement(updateSalleQuery);</span>
-<span class="nc" id="L86">                 PreparedStatement psReservation = conn.prepareStatement(deleteReservationQuery)) {</span>
+<span class="fc" id="L85">            try (PreparedStatement psSalle = conn.prepareStatement(updateSalleQuery);</span>
+<span class="fc" id="L86">                 PreparedStatement psReservation = conn.prepareStatement(deleteReservationQuery)) {</span>
 
                 // 1. Libérer la salle
-<span class="nc" id="L89">                psSalle.setInt(1, reservationId);</span>
-<span class="nc" id="L90">                int salleUpdated = psSalle.executeUpdate();</span>
-<span class="nc" id="L91">                LOGGER.info(salleUpdated + &quot; salle(s) mise(s) à jour&quot;);</span>
+<span class="fc" id="L89">                psSalle.setInt(1, reservationId);</span>
+<span class="fc" id="L90">                int salleUpdated = psSalle.executeUpdate();</span>
+<span class="fc" id="L91">                LOGGER.info(salleUpdated + &quot; salle(s) mise(s) à jour&quot;);</span>
 
                 // 2. Supprimer la réservation
-<span class="nc" id="L94">                psReservation.setInt(1, reservationId);</span>
-<span class="nc" id="L95">                int reservationDeleted = psReservation.executeUpdate();</span>
-<span class="nc" id="L96">                LOGGER.info(reservationDeleted + &quot; réservation(s) supprimée(s)&quot;);</span>
+<span class="fc" id="L94">                psReservation.setInt(1, reservationId);</span>
+<span class="fc" id="L95">                int reservationDeleted = psReservation.executeUpdate();</span>
+<span class="fc" id="L96">                LOGGER.info(reservationDeleted + &quot; réservation(s) supprimée(s)&quot;);</span>
 
-<span class="nc" id="L98">                conn.commit();</span>
-<span class="nc" id="L99">                LOGGER.info(&quot;Transaction confirmée - Réservation terminée avec succès&quot;);</span>
+<span class="fc" id="L98">                conn.commit();</span>
+<span class="fc" id="L99">                LOGGER.info(&quot;Transaction confirmée - Réservation terminée avec succès&quot;);</span>
             }
 <span class="nc" id="L101">        } catch (SQLException e) {</span>
             try {
@@ -111,53 +111,53 @@ public class ReservationService {
 <span class="nc" id="L111">            throw e;</span>
         } finally {
             try {
-<span class="nc bnc" id="L114" title="All 2 branches missed.">                if (conn != null) {</span>
-<span class="nc" id="L115">                    conn.setAutoCommit(true);</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">                if (conn != null) {</span>
+<span class="fc" id="L115">                    conn.setAutoCommit(true);</span>
                 }
 <span class="nc" id="L117">            } catch (SQLException e) {</span>
 <span class="nc" id="L118">                LOGGER.warning(&quot;Erreur lors du rétablissement de l'auto-commit: &quot; + e.getMessage());</span>
-<span class="nc" id="L119">            }</span>
+<span class="fc" id="L119">            }</span>
         }
-<span class="nc" id="L121">    }</span>
+<span class="fc" id="L121">    }</span>
 
     public List&lt;reservation&gt; getAllReservations() throws SQLException {
-<span class="nc" id="L124">        List&lt;reservation&gt; reservations = new ArrayList&lt;reservation&gt;();</span>
-<span class="nc" id="L125">        String query = &quot;SELECT r.id, r.salle_id, r.date_debut, r.date_fin, &quot; +</span>
+<span class="fc" id="L124">        List&lt;reservation&gt; reservations = new ArrayList&lt;reservation&gt;();</span>
+<span class="fc" id="L125">        String query = &quot;SELECT r.id, r.salle_id, r.date_debut, r.date_fin, &quot; +</span>
                 &quot;s.nom as salle_nom, s.status as salle_status, s.capacite, s.type_salle &quot; +
                 &quot;FROM reservation r JOIN salle s ON r.salle_id = s.id &quot; +
                 &quot;ORDER BY r.date_debut DESC&quot;;
 
-<span class="nc" id="L130">        LOGGER.info(&quot;Exécution de la requête pour obtenir toutes les réservations&quot;);</span>
+<span class="fc" id="L130">        LOGGER.info(&quot;Exécution de la requête pour obtenir toutes les réservations&quot;);</span>
 
-<span class="nc" id="L132">        try (PreparedStatement ps = getConnection().prepareStatement(query);</span>
-<span class="nc" id="L133">             ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc" id="L132">        try (PreparedStatement ps = getConnection().prepareStatement(query);</span>
+<span class="fc" id="L133">             ResultSet rs = ps.executeQuery()) {</span>
 
-<span class="nc bnc" id="L135" title="All 2 branches missed.">            while (rs.next()) {</span>
-<span class="nc" id="L136">                reservation res = new reservation();</span>
-<span class="nc" id="L137">                res.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">            while (rs.next()) {</span>
+<span class="fc" id="L136">                reservation res = new reservation();</span>
+<span class="fc" id="L137">                res.setId(rs.getInt(&quot;id&quot;));</span>
 
                 // Création de l'objet Salle avec toutes les informations nécessaires
-<span class="nc" id="L140">                salle salle = new salle();</span>
-<span class="nc" id="L141">                salle.setId(rs.getInt(&quot;salle_id&quot;));</span>
-<span class="nc" id="L142">                salle.setNom(rs.getString(&quot;salle_nom&quot;));</span>
-<span class="nc" id="L143">                salle.setStatus(rs.getString(&quot;salle_status&quot;));</span>
-<span class="nc" id="L144">                salle.setCapacite(rs.getInt(&quot;capacite&quot;));</span>
-<span class="nc" id="L145">                salle.setType_salle(rs.getString(&quot;type_salle&quot;));</span>
+<span class="fc" id="L140">                salle salle = new salle();</span>
+<span class="fc" id="L141">                salle.setId(rs.getInt(&quot;salle_id&quot;));</span>
+<span class="fc" id="L142">                salle.setNom(rs.getString(&quot;salle_nom&quot;));</span>
+<span class="fc" id="L143">                salle.setStatus(rs.getString(&quot;salle_status&quot;));</span>
+<span class="fc" id="L144">                salle.setCapacite(rs.getInt(&quot;capacite&quot;));</span>
+<span class="fc" id="L145">                salle.setType_salle(rs.getString(&quot;type_salle&quot;));</span>
 
-<span class="nc" id="L147">                res.setSalle(salle);</span>
-<span class="nc" id="L148">                res.setDate_debut(rs.getTimestamp(&quot;date_debut&quot;));</span>
-<span class="nc" id="L149">                res.setDate_fin(rs.getTimestamp(&quot;date_fin&quot;));</span>
+<span class="fc" id="L147">                res.setSalle(salle);</span>
+<span class="fc" id="L148">                res.setDate_debut(rs.getTimestamp(&quot;date_debut&quot;));</span>
+<span class="fc" id="L149">                res.setDate_fin(rs.getTimestamp(&quot;date_fin&quot;));</span>
 
-<span class="nc" id="L151">                reservations.add(res);</span>
-<span class="nc" id="L152">            }</span>
+<span class="fc" id="L151">                reservations.add(res);</span>
+<span class="fc" id="L152">            }</span>
 
-<span class="nc" id="L154">            LOGGER.info(reservations.size() + &quot; réservations récupérées avec succès&quot;);</span>
+<span class="fc" id="L154">            LOGGER.info(reservations.size() + &quot; réservations récupérées avec succès&quot;);</span>
 <span class="nc" id="L155">        } catch (SQLException e) {</span>
 <span class="nc" id="L156">            LOGGER.severe(&quot;Erreur lors de la récupération des réservations: &quot; + e.getMessage());</span>
 <span class="nc" id="L157">            throw e;</span>
-<span class="nc" id="L158">        }</span>
+<span class="fc" id="L158">        }</span>
 
-<span class="nc" id="L160">        return reservations;</span>
+<span class="fc" id="L160">        return reservations;</span>
     }
 
     public void terminerReservation(int reservationId) throws SQLException {

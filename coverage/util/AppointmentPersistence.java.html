@@ -16,33 +16,33 @@ import java.util.List;
 
 <span class="nc" id="L17">public class AppointmentPersistence {</span>
     private static final String APPOINTMENTS_FILE = &quot;appointments.json&quot;;
-<span class="nc" id="L19">    private static final Gson gson = new GsonBuilder()</span>
-<span class="nc" id="L20">            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())</span>
-<span class="nc" id="L21">            .create();</span>
+<span class="fc" id="L19">    private static final Gson gson = new GsonBuilder()</span>
+<span class="fc" id="L20">            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())</span>
+<span class="fc" id="L21">            .create();</span>
 
     public static void saveAppointments(List&lt;Appointment&gt; appointments) {
-<span class="nc" id="L24">        try (FileWriter writer = new FileWriter(APPOINTMENTS_FILE)) {</span>
-<span class="nc" id="L25">            gson.toJson(appointments, writer);</span>
+<span class="fc" id="L24">        try (FileWriter writer = new FileWriter(APPOINTMENTS_FILE)) {</span>
+<span class="fc" id="L25">            gson.toJson(appointments, writer);</span>
 <span class="nc" id="L26">        } catch (IOException e) {</span>
 <span class="nc" id="L27">            e.printStackTrace();</span>
-<span class="nc" id="L28">        }</span>
-<span class="nc" id="L29">    }</span>
+<span class="fc" id="L28">        }</span>
+<span class="fc" id="L29">    }</span>
 
     public static List&lt;Appointment&gt; loadAppointments() {
-<span class="nc" id="L32">        List&lt;Appointment&gt; appointments = new ArrayList&lt;Appointment&gt;();</span>
-<span class="nc" id="L33">        File file = new File(APPOINTMENTS_FILE);</span>
-<span class="nc bnc" id="L34" title="All 2 branches missed.">        if (!file.exists()) {</span>
-<span class="nc" id="L35">            return appointments;</span>
+<span class="fc" id="L32">        List&lt;Appointment&gt; appointments = new ArrayList&lt;Appointment&gt;();</span>
+<span class="fc" id="L33">        File file = new File(APPOINTMENTS_FILE);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (!file.exists()) {</span>
+<span class="fc" id="L35">            return appointments;</span>
         }
 
-<span class="nc" id="L38">        try (FileReader reader = new FileReader(file)) {</span>
-<span class="nc" id="L39">            Type listType = new TypeToken&lt;ArrayList&lt;Appointment&gt;&gt;(){}.getType();</span>
-<span class="nc" id="L40">            appointments = gson.fromJson(reader, listType);</span>
+<span class="fc" id="L38">        try (FileReader reader = new FileReader(file)) {</span>
+<span class="fc" id="L39">            Type listType = new TypeToken&lt;ArrayList&lt;Appointment&gt;&gt;(){}.getType();</span>
+<span class="fc" id="L40">            appointments = gson.fromJson(reader, listType);</span>
 <span class="nc" id="L41">        } catch (IOException e) {</span>
 <span class="nc" id="L42">            e.printStackTrace();</span>
-<span class="nc" id="L43">        }</span>
+<span class="fc" id="L43">        }</span>
 
-<span class="nc" id="L45">        return appointments;</span>
+<span class="fc" id="L45">        return appointments;</span>
     }
 } 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

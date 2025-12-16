@@ -16,45 +16,45 @@ public class UserServiceE {
 <span class="nc" id="L16">    }</span>
     
     // 2. Costruttore per i TEST (usato da UserServiceETest)
-<span class="nc" id="L19">    public UserServiceE(Connection connection) {</span>
-<span class="nc" id="L20">        this.connection = connection;</span>
-<span class="nc" id="L21">    }</span>
+<span class="fc" id="L19">    public UserServiceE(Connection connection) {</span>
+<span class="fc" id="L20">        this.connection = connection;</span>
+<span class="fc" id="L21">    }</span>
     
     public boolean ajouterUser(User user) {
-<span class="nc" id="L24">        String sql = &quot;INSERT INTO users (nom, prenom, email, telephone, type, adresse, date_naissance, roles, password, specialite) &quot; +</span>
+<span class="fc" id="L24">        String sql = &quot;INSERT INTO users (nom, prenom, email, telephone, type, adresse, date_naissance, roles, password, specialite) &quot; +</span>
                 &quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;;
                 
-<span class="nc" id="L27">        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {</span>
-<span class="nc" id="L28">            pstmt.setString(1, user.getNom());</span>
-<span class="nc" id="L29">            pstmt.setString(2, user.getPrenom());</span>
-<span class="nc" id="L30">            pstmt.setString(3, user.getEmail());</span>
-<span class="nc" id="L31">            pstmt.setString(4, user.getTelephone());</span>
-<span class="nc" id="L32">            pstmt.setString(5, user.getType());</span>
-<span class="nc" id="L33">            pstmt.setString(6, user.getAdresse());</span>
+<span class="fc" id="L27">        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {</span>
+<span class="fc" id="L28">            pstmt.setString(1, user.getNom());</span>
+<span class="fc" id="L29">            pstmt.setString(2, user.getPrenom());</span>
+<span class="fc" id="L30">            pstmt.setString(3, user.getEmail());</span>
+<span class="fc" id="L31">            pstmt.setString(4, user.getTelephone());</span>
+<span class="fc" id="L32">            pstmt.setString(5, user.getType());</span>
+<span class="fc" id="L33">            pstmt.setString(6, user.getAdresse());</span>
             
-<span class="nc bnc" id="L35" title="All 2 branches missed.">            if (user.getDateNaissance() != null) {</span>
-<span class="nc" id="L36">                pstmt.setDate(7, Date.valueOf(user.getDateNaissance()));</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">            if (user.getDateNaissance() != null) {</span>
+<span class="fc" id="L36">                pstmt.setDate(7, Date.valueOf(user.getDateNaissance()));</span>
             } else {
 <span class="nc" id="L38">                pstmt.setNull(7, Types.DATE);</span>
             }
             
-<span class="nc" id="L41">            String rolesJson = convertRolesToJson(user.getRoles());</span>
-<span class="nc" id="L42">            pstmt.setString(8, rolesJson);</span>
+<span class="fc" id="L41">            String rolesJson = convertRolesToJson(user.getRoles());</span>
+<span class="fc" id="L42">            pstmt.setString(8, rolesJson);</span>
             
-<span class="nc" id="L44">            pstmt.setString(9, user.getPassword());</span>
-<span class="nc" id="L45">            pstmt.setString(10, user.getSpecialite());</span>
+<span class="fc" id="L44">            pstmt.setString(9, user.getPassword());</span>
+<span class="fc" id="L45">            pstmt.setString(10, user.getSpecialite());</span>
             
-<span class="nc" id="L47">            int affectedRows = pstmt.executeUpdate();</span>
+<span class="fc" id="L47">            int affectedRows = pstmt.executeUpdate();</span>
             
-<span class="nc bnc" id="L49" title="All 2 branches missed.">            if (affectedRows &gt; 0) {</span>
-<span class="nc" id="L50">                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {</span>
-<span class="nc bnc" id="L51" title="All 2 branches missed.">                    if (generatedKeys.next()) {</span>
-<span class="nc" id="L52">                        user.setId(generatedKeys.getInt(1));</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (affectedRows &gt; 0) {</span>
+<span class="fc" id="L50">                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">                    if (generatedKeys.next()) {</span>
+<span class="fc" id="L52">                        user.setId(generatedKeys.getInt(1));</span>
                     }
                 }
-<span class="nc" id="L55">                return true;</span>
+<span class="fc" id="L55">                return true;</span>
             }
-<span class="nc bnc" id="L57" title="All 2 branches missed.">        } catch (SQLException e) {</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        } catch (SQLException e) {</span>
 <span class="nc" id="L58">            System.err.println(&quot;Erreur ajout: &quot; + e.getMessage());</span>
 <span class="nc" id="L59">            e.printStackTrace();</span>
 <span class="nc" id="L60">        }</span>
@@ -62,30 +62,30 @@ public class UserServiceE {
     }
     
     public boolean modifierUser(User user) {
-<span class="nc" id="L65">        String sql = &quot;UPDATE users SET nom = ?, prenom = ?, email = ?, telephone = ?, &quot; +</span>
+<span class="fc" id="L65">        String sql = &quot;UPDATE users SET nom = ?, prenom = ?, email = ?, telephone = ?, &quot; +</span>
                 &quot;type = ?, adresse = ?, date_naissance = ?, roles = ?, password = ?, specialite = ? WHERE id = ?&quot;;
                 
-<span class="nc" id="L68">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
-<span class="nc" id="L69">            pstmt.setString(1, user.getNom());</span>
-<span class="nc" id="L70">            pstmt.setString(2, user.getPrenom());</span>
-<span class="nc" id="L71">            pstmt.setString(3, user.getEmail());</span>
-<span class="nc" id="L72">            pstmt.setString(4, user.getTelephone());</span>
-<span class="nc" id="L73">            pstmt.setString(5, user.getType());</span>
-<span class="nc" id="L74">            pstmt.setString(6, user.getAdresse());</span>
+<span class="fc" id="L68">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="fc" id="L69">            pstmt.setString(1, user.getNom());</span>
+<span class="fc" id="L70">            pstmt.setString(2, user.getPrenom());</span>
+<span class="fc" id="L71">            pstmt.setString(3, user.getEmail());</span>
+<span class="fc" id="L72">            pstmt.setString(4, user.getTelephone());</span>
+<span class="fc" id="L73">            pstmt.setString(5, user.getType());</span>
+<span class="fc" id="L74">            pstmt.setString(6, user.getAdresse());</span>
             
-<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (user.getDateNaissance() != null) {</span>
-<span class="nc" id="L77">                pstmt.setDate(7, Date.valueOf(user.getDateNaissance()));</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (user.getDateNaissance() != null) {</span>
+<span class="fc" id="L77">                pstmt.setDate(7, Date.valueOf(user.getDateNaissance()));</span>
             } else {
 <span class="nc" id="L79">                pstmt.setNull(7, Types.DATE);</span>
             }
             
-<span class="nc" id="L82">            String rolesJson = convertRolesToJson(user.getRoles());</span>
-<span class="nc" id="L83">            pstmt.setString(8, rolesJson);</span>
-<span class="nc" id="L84">            pstmt.setString(9, user.getPassword());</span>
-<span class="nc" id="L85">            pstmt.setString(10, user.getSpecialite());</span>
-<span class="nc" id="L86">            pstmt.setInt(11, user.getId());</span>
+<span class="fc" id="L82">            String rolesJson = convertRolesToJson(user.getRoles());</span>
+<span class="fc" id="L83">            pstmt.setString(8, rolesJson);</span>
+<span class="fc" id="L84">            pstmt.setString(9, user.getPassword());</span>
+<span class="fc" id="L85">            pstmt.setString(10, user.getSpecialite());</span>
+<span class="fc" id="L86">            pstmt.setInt(11, user.getId());</span>
             
-<span class="nc bnc" id="L88" title="All 2 branches missed.">            return pstmt.executeUpdate() &gt; 0;</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            return pstmt.executeUpdate() &gt; 0;</span>
 <span class="nc" id="L89">        } catch (SQLException e) {</span>
 <span class="nc" id="L90">            e.printStackTrace();</span>
         }
@@ -93,10 +93,10 @@ public class UserServiceE {
     }
     
     public boolean supprimerUser(int userId) {
-<span class="nc" id="L96">        String sql = &quot;DELETE FROM users WHERE id = ?&quot;;</span>
-<span class="nc" id="L97">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
-<span class="nc" id="L98">            pstmt.setInt(1, userId);</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">            return pstmt.executeUpdate() &gt; 0;</span>
+<span class="fc" id="L96">        String sql = &quot;DELETE FROM users WHERE id = ?&quot;;</span>
+<span class="fc" id="L97">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="fc" id="L98">            pstmt.setInt(1, userId);</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            return pstmt.executeUpdate() &gt; 0;</span>
 <span class="nc" id="L100">        } catch (SQLException e) {</span>
 <span class="nc" id="L101">            e.printStackTrace();</span>
         }
@@ -104,15 +104,15 @@ public class UserServiceE {
     }
     
     public User recupererUserParId(int userId) {
-<span class="nc" id="L107">        String sql = &quot;SELECT * FROM users WHERE id = ?&quot;;</span>
-<span class="nc" id="L108">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
-<span class="nc" id="L109">            pstmt.setInt(1, userId);</span>
-<span class="nc" id="L110">            try (ResultSet rs = pstmt.executeQuery()) {</span>
-<span class="nc bnc" id="L111" title="All 2 branches missed.">                if (rs.next()) {</span>
-<span class="nc" id="L112">                    return extractUserFromResultSet(rs);</span>
+<span class="fc" id="L107">        String sql = &quot;SELECT * FROM users WHERE id = ?&quot;;</span>
+<span class="fc" id="L108">        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {</span>
+<span class="fc" id="L109">            pstmt.setInt(1, userId);</span>
+<span class="fc" id="L110">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L112">                    return extractUserFromResultSet(rs);</span>
                 }
-<span class="nc bnc" id="L114" title="All 2 branches missed.">            }</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">        } catch (SQLException e) {</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">            }</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        } catch (SQLException e) {</span>
 <span class="nc" id="L116">            e.printStackTrace();</span>
 <span class="nc" id="L117">        }</span>
 <span class="nc" id="L118">        return null;</span>
@@ -149,48 +149,48 @@ public class UserServiceE {
     }
     
     private String convertRolesToJson(List&lt;String&gt; roles) {
-<span class="nc bnc" id="L152" title="All 4 branches missed.">        if (roles == null || roles.isEmpty()) return &quot;[]&quot;;</span>
-<span class="nc" id="L153">        StringBuilder sb = new StringBuilder(&quot;[&quot;);</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int i = 0; i &lt; roles.size(); i++) {</span>
-<span class="nc" id="L155">            sb.append(&quot;\&quot;&quot;).append(roles.get(i)).append(&quot;\&quot;&quot;);</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">            if (i &lt; roles.size() - 1) sb.append(&quot;,&quot;);</span>
+<span class="pc bpc" id="L152" title="2 of 4 branches missed.">        if (roles == null || roles.isEmpty()) return &quot;[]&quot;;</span>
+<span class="fc" id="L153">        StringBuilder sb = new StringBuilder(&quot;[&quot;);</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        for (int i = 0; i &lt; roles.size(); i++) {</span>
+<span class="fc" id="L155">            sb.append(&quot;\&quot;&quot;).append(roles.get(i)).append(&quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">            if (i &lt; roles.size() - 1) sb.append(&quot;,&quot;);</span>
         }
-<span class="nc" id="L158">        sb.append(&quot;]&quot;);</span>
-<span class="nc" id="L159">        return sb.toString();</span>
+<span class="fc" id="L158">        sb.append(&quot;]&quot;);</span>
+<span class="fc" id="L159">        return sb.toString();</span>
     }
     
     private List&lt;String&gt; convertJsonToRoles(String rolesJson) {
-<span class="nc" id="L163">        List&lt;String&gt; roles = new ArrayList&lt;&gt;();</span>
-<span class="nc bnc" id="L164" title="All 4 branches missed.">        if (rolesJson != null &amp;&amp; !rolesJson.isEmpty()) {</span>
+<span class="fc" id="L163">        List&lt;String&gt; roles = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L164" title="2 of 4 branches missed.">        if (rolesJson != null &amp;&amp; !rolesJson.isEmpty()) {</span>
             try {
-<span class="nc" id="L166">                String cleanJson = rolesJson.replace(&quot;[&quot;, &quot;&quot;).replace(&quot;]&quot;, &quot;&quot;).replace(&quot;\&quot;&quot;, &quot;&quot;);</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">                if (!cleanJson.isEmpty()) {</span>
-<span class="nc" id="L168">                    String[] roleArray = cleanJson.split(&quot;,&quot;);</span>
-<span class="nc bnc" id="L169" title="All 2 branches missed.">                    for (String role : roleArray) roles.add(role.trim());</span>
+<span class="fc" id="L166">                String cleanJson = rolesJson.replace(&quot;[&quot;, &quot;&quot;).replace(&quot;]&quot;, &quot;&quot;).replace(&quot;\&quot;&quot;, &quot;&quot;);</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">                if (!cleanJson.isEmpty()) {</span>
+<span class="fc" id="L168">                    String[] roleArray = cleanJson.split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">                    for (String role : roleArray) roles.add(role.trim());</span>
                 }
-<span class="nc" id="L171">            } catch (Exception e) { e.printStackTrace(); }</span>
+<span class="pc" id="L171">            } catch (Exception e) { e.printStackTrace(); }</span>
         }
-<span class="nc" id="L173">        return roles;</span>
+<span class="fc" id="L173">        return roles;</span>
     }
     
     private User extractUserFromResultSet(ResultSet rs) throws SQLException {
-<span class="nc" id="L177">        User user = new User();</span>
-<span class="nc" id="L178">        user.setId(rs.getInt(&quot;id&quot;));</span>
-<span class="nc" id="L179">        user.setNom(rs.getString(&quot;nom&quot;));</span>
-<span class="nc" id="L180">        user.setPrenom(rs.getString(&quot;prenom&quot;));</span>
-<span class="nc" id="L181">        user.setEmail(rs.getString(&quot;email&quot;));</span>
-<span class="nc" id="L182">        user.setPassword(rs.getString(&quot;password&quot;));</span>
-<span class="nc" id="L183">        user.setTelephone(rs.getString(&quot;telephone&quot;));</span>
-<span class="nc bnc" id="L184" title="All 2 branches missed.">        user.setType(rs.getString(&quot;type&quot;) != null ? rs.getString(&quot;type&quot;) : &quot;&quot;);</span>
-<span class="nc" id="L185">        user.setAdresse(rs.getString(&quot;adresse&quot;));</span>
+<span class="fc" id="L177">        User user = new User();</span>
+<span class="fc" id="L178">        user.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="fc" id="L179">        user.setNom(rs.getString(&quot;nom&quot;));</span>
+<span class="fc" id="L180">        user.setPrenom(rs.getString(&quot;prenom&quot;));</span>
+<span class="fc" id="L181">        user.setEmail(rs.getString(&quot;email&quot;));</span>
+<span class="fc" id="L182">        user.setPassword(rs.getString(&quot;password&quot;));</span>
+<span class="fc" id="L183">        user.setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        user.setType(rs.getString(&quot;type&quot;) != null ? rs.getString(&quot;type&quot;) : &quot;&quot;);</span>
+<span class="fc" id="L185">        user.setAdresse(rs.getString(&quot;adresse&quot;));</span>
         
-<span class="nc" id="L187">        try { user.setSpecialite(rs.getString(&quot;specialite&quot;)); } catch (SQLException e) {}</span>
+<span class="pc" id="L187">        try { user.setSpecialite(rs.getString(&quot;specialite&quot;)); } catch (SQLException e) {}</span>
         
-<span class="nc" id="L189">        Date sqlDate = rs.getDate(&quot;date_naissance&quot;);</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (sqlDate != null) user.setDateNaissance(sqlDate.toLocalDate());</span>
+<span class="fc" id="L189">        Date sqlDate = rs.getDate(&quot;date_naissance&quot;);</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">        if (sqlDate != null) user.setDateNaissance(sqlDate.toLocalDate());</span>
         
-<span class="nc" id="L192">        user.setRoles(convertJsonToRoles(rs.getString(&quot;roles&quot;)));</span>
-<span class="nc" id="L193">        return user;</span>
+<span class="fc" id="L192">        user.setRoles(convertJsonToRoles(rs.getString(&quot;roles&quot;)));</span>
+<span class="fc" id="L193">        return user;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

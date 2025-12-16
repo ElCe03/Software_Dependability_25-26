@@ -18,7 +18,7 @@ public class Equipement {
       @ ensures category == null;
       @*/
     // Constructeurs
-<span class="nc" id="L21">    public Equipement() {}</span>
+<span class="fc" id="L21">    public Equipement() {}</span>
 
     /*@ 
       @ requires id &gt;= 0;
@@ -29,13 +29,13 @@ public class Equipement {
       @ ensures this.statut == statut;
       @ ensures this.category == category;
       @*/
-<span class="nc" id="L32">    public Equipement(int id, String nom, String type, String statut, String category) {</span>
-<span class="nc" id="L33">        this.id = id;</span>
-<span class="nc" id="L34">        this.nom = nom;</span>
-<span class="nc" id="L35">        this.type = type;</span>
-<span class="nc" id="L36">        this.statut = statut;</span>
-<span class="nc" id="L37">        this.category = category;</span>
-<span class="nc" id="L38">    }</span>
+<span class="fc" id="L32">    public Equipement(int id, String nom, String type, String statut, String category) {</span>
+<span class="fc" id="L33">        this.id = id;</span>
+<span class="fc" id="L34">        this.nom = nom;</span>
+<span class="fc" id="L35">        this.type = type;</span>
+<span class="fc" id="L36">        this.statut = statut;</span>
+<span class="fc" id="L37">        this.category = category;</span>
+<span class="fc" id="L38">    }</span>
 
     /*@ 
       @ ensures this.id == 0; // Default int value
@@ -44,18 +44,18 @@ public class Equipement {
       @ ensures this.statut == statut;
       @ ensures this.category == category;
       @*/
-<span class="nc" id="L47">    public Equipement(String nom, String type, String statut, String category) {</span>
-<span class="nc" id="L48">        this.nom = nom;</span>
-<span class="nc" id="L49">        this.type = type;</span>
-<span class="nc" id="L50">        this.statut = statut;</span>
-<span class="nc" id="L51">        this.category = category;</span>
-<span class="nc" id="L52">    }</span>
+<span class="fc" id="L47">    public Equipement(String nom, String type, String statut, String category) {</span>
+<span class="fc" id="L48">        this.nom = nom;</span>
+<span class="fc" id="L49">        this.type = type;</span>
+<span class="fc" id="L50">        this.statut = statut;</span>
+<span class="fc" id="L51">        this.category = category;</span>
+<span class="fc" id="L52">    }</span>
 
     // Getters et Setters
 
     /*@ ensures \result == id; pure @*/
     public int getId() {
-<span class="nc" id="L58">        return id;</span>
+<span class="fc" id="L58">        return id;</span>
     }
 
     /*@ 
@@ -64,53 +64,53 @@ public class Equipement {
       @ ensures this.id == id;
       @*/
     public void setId(int id) {
-<span class="nc" id="L67">        this.id = id;</span>
-<span class="nc" id="L68">    }</span>
+<span class="fc" id="L67">        this.id = id;</span>
+<span class="fc" id="L68">    }</span>
 
     /*@ pure @*/
     public String getNom() {
-<span class="nc" id="L72">        return nom;</span>
+<span class="fc" id="L72">        return nom;</span>
     }
 
     /*@ assignable this.nom; @*/
     public void setNom(String nom) {
-<span class="nc" id="L77">        this.nom = nom;</span>
-<span class="nc" id="L78">    }</span>
+<span class="fc" id="L77">        this.nom = nom;</span>
+<span class="fc" id="L78">    }</span>
 
     /*@ pure @*/
     public String getType() {
-<span class="nc" id="L82">        return type;</span>
+<span class="fc" id="L82">        return type;</span>
     }
 
     /*@ assignable this.type; @*/
     public void setType(String type) {
-<span class="nc" id="L87">        this.type = type;</span>
-<span class="nc" id="L88">    }</span>
+<span class="fc" id="L87">        this.type = type;</span>
+<span class="fc" id="L88">    }</span>
 
     /*@ pure @*/
     public String getStatut() {
-<span class="nc" id="L92">        return statut;</span>
+<span class="fc" id="L92">        return statut;</span>
     }
 
     /*@ assignable this.statut; @*/
     public void setStatut(String statut) {
-<span class="nc" id="L97">        this.statut = statut;</span>
-<span class="nc" id="L98">    }</span>
+<span class="fc" id="L97">        this.statut = statut;</span>
+<span class="fc" id="L98">    }</span>
 
     /*@ pure @*/
     public String getCategory() {
-<span class="nc" id="L102">        return category;</span>
+<span class="fc" id="L102">        return category;</span>
     }
 
     /*@ assignable this.category; @*/
     public void setCategory(String category) {
-<span class="nc" id="L107">        this.category = category;</span>
-<span class="nc" id="L108">    }</span>
+<span class="fc" id="L107">        this.category = category;</span>
+<span class="fc" id="L108">    }</span>
 
     // toString pour affichage (facultatif)
     @Override
     public String toString() {
-<span class="nc" id="L113">        return &quot;Equipement{&quot; +</span>
+<span class="fc" id="L113">        return &quot;Equipement{&quot; +</span>
                 &quot;id=&quot; + id +
                 &quot;, nom='&quot; + nom + '\'' +
                 &quot;, type='&quot; + type + '\'' +

@@ -15,8 +15,8 @@ public class Pharmacien extends Users {
       @ ensures telephone == null;
       @*/
     public Pharmacien() {
-<span class="nc" id="L18">        super();</span>
-<span class="nc" id="L19">    }</span>
+<span class="fc" id="L18">        super();</span>
+<span class="fc" id="L19">    }</span>
 
     /*@ 
       @ requires roles != null ==&gt; (\forall int i; 0 &lt;= i &amp;&amp; i &lt; roles.size(); roles.get(i) != null);
@@ -30,29 +30,29 @@ public class Pharmacien extends Users {
       @*/
     public Pharmacien(int id, String email, String password, List&lt;String&gt; roles,String type,
                       String nom, String prenom, String telephone) {
-<span class="nc" id="L33">        super(id, email, password, roles, nom, prenom, type);</span>
-<span class="nc" id="L34">        this.telephone = telephone;</span>
-<span class="nc" id="L35">    }</span>
+<span class="fc" id="L33">        super(id, email, password, roles, nom, prenom, type);</span>
+<span class="fc" id="L34">        this.telephone = telephone;</span>
+<span class="fc" id="L35">    }</span>
 
     /*@ pure @*/
     public String getTelephone() {
-<span class="nc" id="L39">        return telephone;</span>
+<span class="fc" id="L39">        return telephone;</span>
     }
 
     /*@ assignable this.telephone; @*/
     public void setTelephone(String telephone) {
-<span class="nc" id="L44">        this.telephone = telephone;</span>
-<span class="nc" id="L45">    }</span>
+<span class="fc" id="L44">        this.telephone = telephone;</span>
+<span class="fc" id="L45">    }</span>
 
 
     @Override
     public String toString() {
-<span class="nc" id="L50">        return &quot;Pharmacien{&quot; +</span>
-<span class="nc" id="L51">                &quot;id=&quot; + getId() +</span>
-<span class="nc" id="L52">                &quot;, email='&quot; + getEmail() + '\'' +</span>
-<span class="nc" id="L53">                &quot;, nom='&quot; + getNom() + '\'' +</span>
-<span class="nc" id="L54">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
-<span class="nc" id="L55">                &quot;, roles=&quot; + getRoles() +</span>
+<span class="fc" id="L50">        return &quot;Pharmacien{&quot; +</span>
+<span class="fc" id="L51">                &quot;id=&quot; + getId() +</span>
+<span class="fc" id="L52">                &quot;, email='&quot; + getEmail() + '\'' +</span>
+<span class="fc" id="L53">                &quot;, nom='&quot; + getNom() + '\'' +</span>
+<span class="fc" id="L54">                &quot;, prenom='&quot; + getPrenom() + '\'' +</span>
+<span class="fc" id="L55">                &quot;, roles=&quot; + getRoles() +</span>
                 &quot;, telephone='&quot; + telephone + '\'' +
                 '}';
     }
