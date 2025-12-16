@@ -15,7 +15,7 @@ public class DataSource {
     private Connection connection;
     private static volatile DataSource instance;
 
-<span class="nc" id="L18">    private DataSource() {</span>
+<span class="fc" id="L18">    private DataSource() {</span>
 <span class="nc" id="L19">        loadProperties();</span>
 
         try {
@@ -34,22 +34,22 @@ public class DataSource {
 <span class="nc" id="L34">    }</span>
 
     private void loadProperties() {
-<span class="nc" id="L37">        try (InputStream input = getClass().getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
-<span class="nc" id="L38">            Properties prop = new Properties();</span>
+<span class="fc" id="L37">        try (InputStream input = getClass().getClassLoader().getResourceAsStream(&quot;config.properties&quot;)) {</span>
+<span class="fc" id="L38">            Properties prop = new Properties();</span>
 
-<span class="nc bnc" id="L40" title="All 2 branches missed.">            if (input == null) {</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">            if (input == null) {</span>
 <span class="nc" id="L41">                System.err.println(&quot;❌ Errore: Impossibile trovare config.properties&quot;);</span>
 <span class="nc" id="L42">                throw new RuntimeException(&quot;config.properties not found&quot;);</span>
             }
 
-<span class="nc" id="L45">            prop.load(input);</span>
+<span class="fc" id="L45">            prop.load(input);</span>
 
-<span class="nc" id="L47">            this.url = prop.getProperty(&quot;db.url&quot;);</span>
-<span class="nc" id="L48">            this.username = prop.getProperty(&quot;db.username&quot;);</span>
-<span class="nc" id="L49">            this.password = prop.getProperty(&quot;db.password&quot;);</span>
+<span class="fc" id="L47">            this.url = prop.getProperty(&quot;db.url&quot;);</span>
+<span class="fc" id="L48">            this.username = prop.getProperty(&quot;db.username&quot;);</span>
+<span class="fc" id="L49">            this.password = prop.getProperty(&quot;db.password&quot;);</span>
 
-<span class="nc bnc" id="L51" title="All 6 branches missed.">            if (this.url == null || this.username == null || this.password == null) {</span>
-<span class="nc" id="L52">                throw new RuntimeException(&quot;Configurazioni database mancanti nel file properties!&quot;);</span>
+<span class="pc bpc" id="L51" title="5 of 6 branches missed.">            if (this.url == null || this.username == null || this.password == null) {</span>
+<span class="fc" id="L52">                throw new RuntimeException(&quot;Configurazioni database mancanti nel file properties!&quot;);</span>
             }
 
 <span class="nc" id="L55">        } catch (IOException ex) {</span>
@@ -59,9 +59,9 @@ public class DataSource {
 <span class="nc" id="L59">    }</span>
 
     public static DataSource getInstance() {
-<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (instance == null) {</span>
-<span class="nc" id="L63">            synchronized (DataSource.class) {</span>
-<span class="nc bnc" id="L64" title="All 2 branches missed.">                if (instance == null) {</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (instance == null) {</span>
+<span class="fc" id="L63">            synchronized (DataSource.class) {</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">                if (instance == null) {</span>
 <span class="nc" id="L65">                    instance = new DataSource();</span>
                 }
 <span class="nc" id="L67">            }</span>

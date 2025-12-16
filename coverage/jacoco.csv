@@ -2,7 +2,7 @@ GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_
 roar,entite,Users,0,118,0,2,0,37,0,19,0,18
 roar,entite,Medicament,0,113,0,0,0,46,0,20,0,20
 roar,entite,Staff,0,38,0,0,0,14,0,5,0,5
-roar,entite,Sejour,16,170,3,11,4,56,5,30,2,26
+roar,entite,Sejour,8,178,3,11,0,60,3,32,0,28
 roar,entite,MedicamentCommande,0,25,0,0,0,10,0,5,0,5
 roar,entite,etage,0,49,0,0,0,19,0,10,0,10
 roar,entite,Pharmacien,0,38,0,0,0,14,0,5,0,5
@@ -34,34 +34,35 @@ roar,util,EmailService.new Task() {...},177,0,0,0,25,0,2,0,2,0
 roar,util,DossierMedicaleValidator,13,221,7,61,4,59,8,30,1,3
 roar,util,DossierMedicaleValidator.ValidationResult,0,31,0,0,0,10,0,5,0,5
 roar,util,QRCodeGenerator,31,42,0,0,7,9,2,1,2,1
-roar,util,DataSource,147,0,16,0,43,0,12,0,4,0
+roar,util,DataSource,99,48,12,4,30,13,9,3,1,3
 roar,util,EmailService.1.new Authenticator() {...},12,0,0,0,2,0,2,0,2,0
 roar,util,AppointmentPersistence.new TypeToken() {...},0,3,0,0,0,1,0,1,0,1
 roar,util,AppointmentPersistence,9,55,0,2,5,16,1,4,1,3
 roar,test,MainFx,92,0,6,0,27,0,7,0,4,0
 roar,test,Launcher,6,0,0,0,3,0,2,0,2,0
 roar,test,Main,182,0,6,0,49,0,5,0,2,0
-roar,service,SejourService,1099,0,106,0,311,0,65,0,12,0
+roar,service,SejourService,728,375,70,36,219,94,59,7,8,5
 roar,service,serviceservice,221,0,10,0,73,0,12,0,7,0
-roar,service,EtageService,426,3,24,0,128,1,20,1,8,1
+roar,service,EtageService,78,371,9,15,23,111,10,13,1,10
 roar,service,CommandeService,117,344,9,13,34,100,8,13,0,10
-roar,service,UserService,1077,3,166,0,266,1,88,1,5,1
+roar,service,UserService,375,723,100,66,91,181,76,15,1,7
 roar,service,EquipementService,254,205,14,8,78,65,14,9,4,8
-roar,service,UserService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+roar,service,UserService.new TypeReference() {...},0,6,0,0,0,1,0,1,0,1
 roar,service,TwilioSMSService,266,0,36,0,63,0,26,0,8,0
-roar,service,UserService.new TypeReference() {...},6,0,0,0,1,0,1,0,1,0
+roar,service,UserService.new TypeReference() {...},0,6,0,0,0,1,0,1,0,1
 roar,service,ReservationService,58,244,8,8,20,71,7,10,1,8
 roar,service,TypeReference,3,0,0,0,1,0,1,0,1,0
-roar,service,DossierMedicaleService,892,0,64,0,239,0,49,0,17,0
+roar,service,DossierMedicaleService,479,540,52,24,136,138,46,13,11,10
 roar,service,ConsultationService,195,148,10,6,59,40,10,9,4,7
 roar,service,MailService.new Authenticator() {...},9,0,0,0,2,0,2,0,2,0
 roar,service,MedicamentService,49,359,5,11,16,103,5,13,0,10
-roar,service,PDFService,800,0,24,0,116,0,17,0,5,0
+roar,service,PDFService,55,794,4,26,12,112,6,16,2,5
 roar,service,EmailSender.new Authenticator() {...},9,0,0,0,2,0,2,0,2,0
-roar,service,DepartemntService,379,3,14,0,113,1,14,1,7,1
+roar,service,DepartemntService,79,318,4,10,22,97,6,11,2,8
 roar,service,MailService,118,0,6,0,35,0,6,0,3,0
 roar,service,EmailSender,141,0,10,0,39,0,10,0,5,0
-roar,service,SalleService,758,8,40,0,208,2,32,2,12,2
+roar,service,SalleService,557,212,37,7,150,58,31,7,10,6
+roar,service,PDFService.new PDFService.AlertStrategy() {...},16,0,0,0,5,0,3,0,3,0
 roar,service,EntretienService,46,225,6,8,14,68,6,9,0,8
 roar,service,UserServiceE,123,389,22,22,39,81,23,10,3,8
 roar,org.example.roar,HelloController,8,0,0,0,3,0,2,0,2,0
@@ -90,7 +91,7 @@ roar,controllers,StaffDashboardController,84,0,0,0,26,0,5,0,5,0
 roar,controllers,AjouterUtilisateurController,546,0,41,0,152,0,32,0,8,0
 roar,controllers,CommandeListController.new TableCell() {...},47,0,2,0,11,0,4,0,3,0
 roar,controllers,CommandeListController.new TableCell() {...},47,0,2,0,11,0,4,0,3,0
-roar,controllers,DepartementController,796,101,30,14,184,23,41,9,24,4
+roar,controllers,DepartementController,841,86,36,14,199,20,50,9,30,4
 roar,controllers,MedicamentListController,733,0,33,0,164,0,57,0,39,0
 roar,controllers,ServiceListController,1366,0,46,0,296,0,61,0,36,0
 roar,controllers,FrontController,292,0,0,0,88,0,10,0,10,0
@@ -106,7 +107,7 @@ roar,controllers,DepartementController.new TableCell() {...},91,0,8,0,23,0,6,0,2
 roar,controllers,DepartementController.new TableCell() {...},102,0,2,0,20,0,5,0,4,0
 roar,controllers,EquipementCategoryController,325,0,14,0,94,0,23,0,16,0
 roar,controllers,PatientDashboardControllerE.new TableCell() {...},68,0,14,0,18,0,9,0,2,0
-roar,controllers,SalleController,1177,82,80,10,250,23,76,4,33,2
+roar,controllers,SalleController,1207,72,84,10,260,21,82,4,37,2
 roar,controllers,MedicalServicesController.new TableCell() {...},47,0,2,0,11,0,4,0,3,0
 roar,controllers,MedicalServicesController.new TableCell() {...},47,0,2,0,11,0,4,0,3,0
 roar,controllers,TranslatorFallback,356,0,14,0,72,0,10,0,3,0

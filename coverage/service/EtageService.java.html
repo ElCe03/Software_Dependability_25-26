@@ -8,199 +8,213 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-<span class="fc" id="L11">public class EtageService {</span>
+public class EtageService {
+
+    @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection getConnection() throws SQLException;
+    }
+
+    private ConnectionProvider connectionProvider;
+
+<span class="fc" id="L20">    public EtageService() {</span>
+<span class="pc" id="L21">        this.connectionProvider = () -&gt; DataSource.getInstance().getConnection();</span>
+<span class="fc" id="L22">    }</span>
+
+<span class="fc" id="L24">    public EtageService(ConnectionProvider connectionProvider) {</span>
+<span class="fc" id="L25">        this.connectionProvider = connectionProvider;</span>
+<span class="fc" id="L26">    }</span>
 
     public void addEtage(etage e) {
-<span class="nc" id="L14">        String query = &quot;INSERT INTO etage (numero, departement_id) VALUES (?, ?)&quot;;</span>
-<span class="nc" id="L15">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L16">             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {</span>
+<span class="fc" id="L29">        String query = &quot;INSERT INTO etage (numero, departement_id) VALUES (?, ?)&quot;;</span>
+<span class="fc" id="L30">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L31">             PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {</span>
 
-<span class="nc" id="L18">            ps.setInt(1, e.getNumero());</span>
-<span class="nc" id="L19">            ps.setInt(2, e.getDepartement().getId());</span>
-<span class="nc" id="L20">            ps.executeUpdate();</span>
+<span class="fc" id="L33">            ps.setInt(1, e.getNumero());</span>
+<span class="fc" id="L34">            ps.setInt(2, e.getDepartement().getId());</span>
+<span class="fc" id="L35">            ps.executeUpdate();</span>
 
-<span class="nc" id="L22">            try (ResultSet rs = ps.getGeneratedKeys()) {</span>
-<span class="nc bnc" id="L23" title="All 2 branches missed.">                if (rs.next()) {</span>
-<span class="nc" id="L24">                    e.setId(rs.getInt(1));</span>
+<span class="fc" id="L37">            try (ResultSet rs = ps.getGeneratedKeys()) {</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L39">                    e.setId(rs.getInt(1));</span>
                 }
             }
-<span class="nc" id="L27">        } catch (SQLException ex) {</span>
-<span class="nc" id="L28">            System.err.println(&quot;Error adding etage: &quot; + ex.getMessage());</span>
-<span class="nc" id="L29">        }</span>
-<span class="nc" id="L30">    }</span>
+<span class="nc" id="L42">        } catch (SQLException ex) {</span>
+<span class="nc" id="L43">            System.err.println(&quot;Error adding etage: &quot; + ex.getMessage());</span>
+<span class="fc" id="L44">        }</span>
+<span class="fc" id="L45">    }</span>
 
     public List&lt;etage&gt; getAllEtages() {
-<span class="nc" id="L33">        List&lt;etage&gt; list = new ArrayList&lt;etage&gt;();</span>
-<span class="nc" id="L34">        String query = &quot;SELECT e.*, d.nom as departement_nom, d.adresse &quot; +</span>
+<span class="fc" id="L48">        List&lt;etage&gt; list = new ArrayList&lt;etage&gt;();</span>
+<span class="fc" id="L49">        String query = &quot;SELECT e.*, d.nom as departement_nom, d.adresse &quot; +</span>
                 &quot;FROM etage e JOIN departement d ON e.departement_id = d.id&quot;;
 
-<span class="nc" id="L37">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L38">             Statement stmt = conn.createStatement();</span>
-<span class="nc" id="L39">             ResultSet rs = stmt.executeQuery(query)) {</span>
+<span class="fc" id="L52">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L53">             Statement stmt = conn.createStatement();</span>
+<span class="fc" id="L54">             ResultSet rs = stmt.executeQuery(query)) {</span>
 
-<span class="nc bnc" id="L41" title="All 2 branches missed.">            while (rs.next()) {</span>
-<span class="nc" id="L42">                departement d = new departement(</span>
-<span class="nc" id="L43">                        rs.getInt(&quot;departement_id&quot;),</span>
-<span class="nc" id="L44">                        rs.getString(&quot;departement_nom&quot;),</span>
-<span class="nc" id="L45">                        rs.getString(&quot;adresse&quot;),</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            while (rs.next()) {</span>
+<span class="fc" id="L57">                departement d = new departement(</span>
+<span class="fc" id="L58">                        rs.getInt(&quot;departement_id&quot;),</span>
+<span class="fc" id="L59">                        rs.getString(&quot;departement_nom&quot;),</span>
+<span class="fc" id="L60">                        rs.getString(&quot;adresse&quot;),</span>
                         null // image non récupérée ici
                 );
 
-<span class="nc" id="L49">                list.add(new etage(</span>
-<span class="nc" id="L50">                        rs.getInt(&quot;id&quot;),</span>
-<span class="nc" id="L51">                        rs.getInt(&quot;numero&quot;),</span>
+<span class="fc" id="L64">                list.add(new etage(</span>
+<span class="fc" id="L65">                        rs.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L66">                        rs.getInt(&quot;numero&quot;),</span>
                         d
                 ));
-<span class="nc" id="L54">            }</span>
-<span class="nc" id="L55">        } catch (SQLException ex) {</span>
-<span class="nc" id="L56">            System.err.println(&quot;Error fetching etages: &quot; + ex.getMessage());</span>
-<span class="nc" id="L57">        }</span>
-<span class="nc" id="L58">        return list;</span>
+<span class="fc" id="L69">            }</span>
+<span class="nc" id="L70">        } catch (SQLException ex) {</span>
+<span class="nc" id="L71">            System.err.println(&quot;Error fetching etages: &quot; + ex.getMessage());</span>
+<span class="fc" id="L72">        }</span>
+<span class="fc" id="L73">        return list;</span>
     }
 
     public void updateEtage(etage e) {
-<span class="nc" id="L62">        String query = &quot;UPDATE etage SET numero=?, departement_id=? WHERE id=?&quot;;</span>
-<span class="nc" id="L63">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L64">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="fc" id="L77">        String query = &quot;UPDATE etage SET numero=?, departement_id=? WHERE id=?&quot;;</span>
+<span class="fc" id="L78">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L79">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
 
-<span class="nc" id="L66">            ps.setInt(1, e.getNumero());</span>
-<span class="nc" id="L67">            ps.setInt(2, e.getDepartement().getId());</span>
-<span class="nc" id="L68">            ps.setInt(3, e.getId());</span>
-<span class="nc" id="L69">            ps.executeUpdate();</span>
+<span class="fc" id="L81">            ps.setInt(1, e.getNumero());</span>
+<span class="fc" id="L82">            ps.setInt(2, e.getDepartement().getId());</span>
+<span class="fc" id="L83">            ps.setInt(3, e.getId());</span>
+<span class="fc" id="L84">            ps.executeUpdate();</span>
 
-<span class="nc" id="L71">        } catch (SQLException ex) {</span>
-<span class="nc" id="L72">            System.err.println(&quot;Error updating etage: &quot; + ex.getMessage());</span>
-<span class="nc" id="L73">        }</span>
-<span class="nc" id="L74">    }</span>
+<span class="nc" id="L86">        } catch (SQLException ex) {</span>
+<span class="nc" id="L87">            System.err.println(&quot;Error updating etage: &quot; + ex.getMessage());</span>
+<span class="fc" id="L88">        }</span>
+<span class="fc" id="L89">    }</span>
 
     public void deleteEtage(int id) {
-<span class="nc" id="L77">        String query = &quot;DELETE FROM etage WHERE id=?&quot;;</span>
-<span class="nc" id="L78">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L79">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="fc" id="L92">        String query = &quot;DELETE FROM etage WHERE id=?&quot;;</span>
+<span class="fc" id="L93">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L94">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
 
-<span class="nc" id="L81">            ps.setInt(1, id);</span>
-<span class="nc" id="L82">            ps.executeUpdate();</span>
-<span class="nc" id="L83">        } catch (SQLException ex) {</span>
-<span class="nc" id="L84">            System.err.println(&quot;Error deleting etage: &quot; + ex.getMessage());</span>
-<span class="nc" id="L85">        }</span>
-<span class="nc" id="L86">    }</span>
+<span class="fc" id="L96">            ps.setInt(1, id);</span>
+<span class="fc" id="L97">            ps.executeUpdate();</span>
+<span class="nc" id="L98">        } catch (SQLException ex) {</span>
+<span class="nc" id="L99">            System.err.println(&quot;Error deleting etage: &quot; + ex.getMessage());</span>
+<span class="fc" id="L100">        }</span>
+<span class="fc" id="L101">    }</span>
 
     public List&lt;etage&gt; searchEtages(String searchTerm) {
-<span class="nc" id="L89">        List&lt;etage&gt; results = new ArrayList&lt;etage&gt;();</span>
-<span class="nc" id="L90">        String query = &quot;SELECT e.*, d.nom as departement_nom, d.adresse &quot; +</span>
+<span class="fc" id="L104">        List&lt;etage&gt; results = new ArrayList&lt;etage&gt;();</span>
+<span class="fc" id="L105">        String query = &quot;SELECT e.*, d.nom as departement_nom, d.adresse &quot; +</span>
                 &quot;FROM etage e JOIN departement d ON e.departement_id = d.id &quot; +
                 &quot;WHERE e.numero LIKE ? OR d.nom LIKE ? OR d.adresse LIKE ?&quot;;
 
-<span class="nc" id="L94">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L95">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="fc" id="L109">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L110">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
 
-<span class="nc" id="L97">            String like = &quot;%&quot; + searchTerm + &quot;%&quot;;</span>
-<span class="nc" id="L98">            ps.setString(1, like);</span>
-<span class="nc" id="L99">            ps.setString(2, like);</span>
-<span class="nc" id="L100">            ps.setString(3, like);</span>
+<span class="fc" id="L112">            String like = &quot;%&quot; + searchTerm + &quot;%&quot;;</span>
+<span class="fc" id="L113">            ps.setString(1, like);</span>
+<span class="fc" id="L114">            ps.setString(2, like);</span>
+<span class="fc" id="L115">            ps.setString(3, like);</span>
 
-<span class="nc" id="L102">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="nc bnc" id="L103" title="All 2 branches missed.">                while (rs.next()) {</span>
-<span class="nc" id="L104">                    departement d = new departement(</span>
-<span class="nc" id="L105">                            rs.getInt(&quot;departement_id&quot;),</span>
-<span class="nc" id="L106">                            rs.getString(&quot;departement_nom&quot;),</span>
-<span class="nc" id="L107">                            rs.getString(&quot;adresse&quot;),</span>
+<span class="fc" id="L117">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">                while (rs.next()) {</span>
+<span class="fc" id="L119">                    departement d = new departement(</span>
+<span class="fc" id="L120">                            rs.getInt(&quot;departement_id&quot;),</span>
+<span class="fc" id="L121">                            rs.getString(&quot;departement_nom&quot;),</span>
+<span class="fc" id="L122">                            rs.getString(&quot;adresse&quot;),</span>
                             null // image non récupérée ici
                     );
 
-<span class="nc" id="L111">                    results.add(new etage(</span>
-<span class="nc" id="L112">                            rs.getInt(&quot;id&quot;),</span>
-<span class="nc" id="L113">                            rs.getInt(&quot;numero&quot;),</span>
+<span class="fc" id="L126">                    results.add(new etage(</span>
+<span class="fc" id="L127">                            rs.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L128">                            rs.getInt(&quot;numero&quot;),</span>
                             d
                     ));
-<span class="nc" id="L116">                }</span>
+<span class="fc" id="L131">                }</span>
             }
-<span class="nc" id="L118">        } catch (SQLException ex) {</span>
-<span class="nc" id="L119">            System.err.println(&quot;Error searching etages: &quot; + ex.getMessage());</span>
-<span class="nc" id="L120">        }</span>
+<span class="nc" id="L133">        } catch (SQLException ex) {</span>
+<span class="nc" id="L134">            System.err.println(&quot;Error searching etages: &quot; + ex.getMessage());</span>
+<span class="fc" id="L135">        }</span>
 
-<span class="nc" id="L122">        return results;</span>
+<span class="fc" id="L137">        return results;</span>
     }
 
     public List&lt;etage&gt; getEtagesByDepartement(int departementId) {
-<span class="nc" id="L126">        List&lt;etage&gt; list = new ArrayList&lt;etage&gt;();</span>
-<span class="nc" id="L127">        String query = &quot;SELECT * FROM etage WHERE departement_id = ?&quot;;</span>
+<span class="fc" id="L141">        List&lt;etage&gt; list = new ArrayList&lt;etage&gt;();</span>
+<span class="fc" id="L142">        String query = &quot;SELECT * FROM etage WHERE departement_id = ?&quot;;</span>
 
-<span class="nc" id="L129">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L130">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="fc" id="L144">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L145">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
 
-<span class="nc" id="L132">            ps.setInt(1, departementId);</span>
+<span class="fc" id="L147">            ps.setInt(1, departementId);</span>
 
-<span class="nc" id="L134">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="fc" id="L149">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">                while (rs.next()) {</span>
                     // On suppose qu'on a déjà le département et on ne le recharge pas
-<span class="nc" id="L137">                    departement d = new departement();</span>
-<span class="nc" id="L138">                    d.setId(departementId);</span>
+<span class="fc" id="L152">                    departement d = new departement();</span>
+<span class="fc" id="L153">                    d.setId(departementId);</span>
 
-<span class="nc" id="L140">                    list.add(new etage(</span>
-<span class="nc" id="L141">                            rs.getInt(&quot;id&quot;),</span>
-<span class="nc" id="L142">                            rs.getInt(&quot;numero&quot;),</span>
+<span class="fc" id="L155">                    list.add(new etage(</span>
+<span class="fc" id="L156">                            rs.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L157">                            rs.getInt(&quot;numero&quot;),</span>
                             d
                     ));
-<span class="nc" id="L145">                }</span>
+<span class="fc" id="L160">                }</span>
             }
-<span class="nc" id="L147">        } catch (SQLException ex) {</span>
-<span class="nc" id="L148">            System.err.println(&quot;Error fetching etages by departement: &quot; + ex.getMessage());</span>
-<span class="nc" id="L149">        }</span>
-<span class="nc" id="L150">        return list;</span>
+<span class="nc" id="L162">        } catch (SQLException ex) {</span>
+<span class="nc" id="L163">            System.err.println(&quot;Error fetching etages by departement: &quot; + ex.getMessage());</span>
+<span class="fc" id="L164">        }</span>
+<span class="fc" id="L165">        return list;</span>
     }
 
-    public static etage getEtageById(int etageId) {
-<span class="nc" id="L154">        String query = &quot;SELECT e.*, d.nom as departement_nom, d.adresse &quot; +</span>
+    public etage getEtageById(int etageId) {
+<span class="fc" id="L169">        String query = &quot;SELECT e.*, d.nom as departement_nom, d.adresse &quot; +</span>
                 &quot;FROM etage e JOIN departement d ON e.departement_id = d.id WHERE e.id = ?&quot;;
-<span class="nc" id="L156">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L157">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
-<span class="nc" id="L158">            ps.setInt(1, etageId);</span>
-<span class="nc" id="L159">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">                if (rs.next()) {</span>
-<span class="nc" id="L161">                    departement d = new departement(</span>
-<span class="nc" id="L162">                            rs.getInt(&quot;departement_id&quot;),</span>
-<span class="nc" id="L163">                            rs.getString(&quot;departement_nom&quot;),</span>
-<span class="nc" id="L164">                            rs.getString(&quot;adresse&quot;),</span>
+<span class="fc" id="L171">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L172">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="fc" id="L173">            ps.setInt(1, etageId);</span>
+<span class="fc" id="L174">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L176">                    departement d = new departement(</span>
+<span class="fc" id="L177">                            rs.getInt(&quot;departement_id&quot;),</span>
+<span class="fc" id="L178">                            rs.getString(&quot;departement_nom&quot;),</span>
+<span class="fc" id="L179">                            rs.getString(&quot;adresse&quot;),</span>
                             null // image non récupérée ici
                     );
 
-<span class="nc" id="L168">                    etage e = new etage(</span>
-<span class="nc" id="L169">                            rs.getInt(&quot;id&quot;),</span>
-<span class="nc" id="L170">                            rs.getInt(&quot;numero&quot;),</span>
+<span class="fc" id="L183">                    etage e = new etage(</span>
+<span class="fc" id="L184">                            rs.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L185">                            rs.getInt(&quot;numero&quot;),</span>
                             d
                     );
-<span class="nc" id="L173">                    return e;</span>
+<span class="fc" id="L188">                    return e;</span>
                 }
-<span class="nc bnc" id="L175" title="All 2 branches missed.">            }</span>
-<span class="nc bnc" id="L176" title="All 4 branches missed.">        } catch (SQLException ex) {</span>
-<span class="nc" id="L177">            System.err.println(&quot;Error fetching etage by id: &quot; + ex.getMessage());</span>
-<span class="nc" id="L178">            ex.printStackTrace();</span>
-<span class="nc" id="L179">            throw new RuntimeException(&quot;Failed to fetch etage by id&quot;, ex);</span>
-<span class="nc" id="L180">        }</span>
-<span class="nc" id="L181">        return null;</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">            }</span>
+<span class="pc bpc" id="L191" title="2 of 4 branches missed.">        } catch (SQLException ex) {</span>
+<span class="nc" id="L192">            System.err.println(&quot;Error fetching etage by id: &quot; + ex.getMessage());</span>
+<span class="nc" id="L193">            ex.printStackTrace();</span>
+<span class="nc" id="L194">            throw new RuntimeException(&quot;Failed to fetch etage by id&quot;, ex);</span>
+<span class="nc" id="L195">        }</span>
+<span class="nc" id="L196">        return null;</span>
     }
 
     public int countEtagesByDepartement(int departementId) {
-<span class="nc" id="L185">        String query = &quot;SELECT COUNT(*) FROM etage WHERE departement_id = ?&quot;;</span>
-<span class="nc" id="L186">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L187">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
-<span class="nc" id="L188">            ps.setInt(1, departementId);</span>
-<span class="nc" id="L189">            try (ResultSet rs = ps.executeQuery()) {</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">                if (rs.next()) {</span>
-<span class="nc" id="L191">                    int count = rs.getInt(1);</span>
-<span class="nc" id="L192">                    System.out.println(&quot;Count for departement_id &quot; + departementId + &quot;: &quot; + count);</span>
-<span class="nc" id="L193">                    return count;</span>
+<span class="fc" id="L200">        String query = &quot;SELECT COUNT(*) FROM etage WHERE departement_id = ?&quot;;</span>
+<span class="fc" id="L201">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L202">             PreparedStatement ps = conn.prepareStatement(query)) {</span>
+<span class="fc" id="L203">            ps.setInt(1, departementId);</span>
+<span class="fc" id="L204">            try (ResultSet rs = ps.executeQuery()) {</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L206">                    int count = rs.getInt(1);</span>
+<span class="fc" id="L207">                    System.out.println(&quot;Count for departement_id &quot; + departementId + &quot;: &quot; + count);</span>
+<span class="fc" id="L208">                    return count;</span>
                 }
-<span class="nc bnc" id="L195" title="All 2 branches missed.">            }</span>
-<span class="nc bnc" id="L196" title="All 4 branches missed.">        } catch (SQLException ex) {</span>
-<span class="nc" id="L197">            System.err.println(&quot;Error counting etages for departement_id &quot; + departementId + &quot;: &quot; + ex.getMessage());</span>
-<span class="nc" id="L198">            ex.printStackTrace();</span>
-<span class="nc" id="L199">            throw new RuntimeException(&quot;Failed to count etages by departement&quot;, ex);</span>
-<span class="nc" id="L200">        }</span>
-<span class="nc" id="L201">        System.out.println(&quot;No etages found for departement_id &quot; + departementId);</span>
-<span class="nc" id="L202">        return 0;</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">            }</span>
+<span class="pc bpc" id="L211" title="2 of 4 branches missed.">        } catch (SQLException ex) {</span>
+<span class="nc" id="L212">            System.err.println(&quot;Error counting etages for departement_id &quot; + departementId + &quot;: &quot; + ex.getMessage());</span>
+<span class="nc" id="L213">            ex.printStackTrace();</span>
+<span class="nc" id="L214">            throw new RuntimeException(&quot;Failed to count etages by departement&quot;, ex);</span>
+<span class="nc" id="L215">        }</span>
+<span class="nc" id="L216">        System.out.println(&quot;No etages found for departement_id &quot; + departementId);</span>
+<span class="nc" id="L217">        return 0;</span>
     }
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

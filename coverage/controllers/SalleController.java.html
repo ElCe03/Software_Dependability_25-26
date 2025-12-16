@@ -98,548 +98,572 @@ import java.util.stream.Collectors;
     private TextField searchField;
 
     // Services et données
-<span class="fc" id="L101">    private final SalleService salleService = new SalleService();</span>
-<span class="fc" id="L102">    private final EtageService etageService = new EtageService();</span>
-<span class="fc" id="L103">    private final ObservableList&lt;salle&gt; salleData = FXCollections.observableArrayList();</span>
-<span class="fc" id="L104">    private final ObservableList&lt;salle&gt; filteredSalleData = FXCollections.observableArrayList();</span>
-<span class="fc" id="L105">    private String imagePath = &quot;&quot;;</span>
+    private SalleService salleService;
+    private EtageService etageService;
+    
+<span class="fc" id="L104">    private final ObservableList&lt;salle&gt; salleData = FXCollections.observableArrayList();</span>
+<span class="fc" id="L105">    private final ObservableList&lt;salle&gt; filteredSalleData = FXCollections.observableArrayList();</span>
+<span class="fc" id="L106">    private String imagePath = &quot;&quot;;</span>
     public static final String IMAGE_DIR = &quot;src/main/resources/images/&quot;;
 
+    public void setSalleService(SalleService salleService) {
+<span class="nc" id="L110">        this.salleService = salleService;</span>
+<span class="nc" id="L111">    }</span>
+
+    private SalleService getSalleService() {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (this.salleService == null) {</span>
+<span class="nc" id="L115">            this.salleService = new SalleService();</span>
+        }
+<span class="nc" id="L117">        return this.salleService;</span>
+    }
+
+
+    public void setEtageService(EtageService etageService) {
+<span class="nc" id="L122">        this.etageService = etageService;</span>
+<span class="nc" id="L123">    }</span>
+
+    private EtageService getEtageService() {
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (this.etageService == null) {</span>
+<span class="nc" id="L127">            this.etageService = new EtageService();</span>
+        }
+<span class="nc" id="L129">        return this.etageService;</span>
+    }
+    
     @FXML
     public void initialize() {
-<span class="nc" id="L110">        createImageDirectory();</span>
-<span class="nc" id="L111">        setupForm();</span>
-<span class="nc" id="L112">        setupTable();</span>
-<span class="nc" id="L113">        loadSalles();</span>
-<span class="nc" id="L114">        setupSearch();</span>
-<span class="nc" id="L115">    }</span>
+<span class="nc" id="L134">        createImageDirectory();</span>
+<span class="nc" id="L135">        setupForm();</span>
+<span class="nc" id="L136">        setupTable();</span>
+<span class="nc" id="L137">        loadSalles();</span>
+<span class="nc" id="L138">        setupSearch();</span>
+<span class="nc" id="L139">    }</span>
 
     private void createImageDirectory() {
-<span class="nc" id="L118">        File imageDir = new File(IMAGE_DIR);</span>
-<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (!imageDir.exists()) {</span>
-<span class="nc" id="L120">            imageDir.mkdirs();</span>
+<span class="nc" id="L142">        File imageDir = new File(IMAGE_DIR);</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (!imageDir.exists()) {</span>
+<span class="nc" id="L144">            imageDir.mkdirs();</span>
         }
-<span class="nc" id="L122">    }</span>
+<span class="nc" id="L146">    }</span>
 
     private void setupForm() {
         // Configuration des ComboBox
-<span class="nc" id="L126">        typeCombo.setItems(FXCollections.observableArrayList(</span>
+<span class="nc" id="L150">        typeCombo.setItems(FXCollections.observableArrayList(</span>
                 &quot;Consultation&quot;, &quot;Bloc opératoire&quot;, &quot;Réanimation&quot;, &quot;Chambre&quot;));
-<span class="nc" id="L128">        statusCombo.setItems(FXCollections.observableArrayList(</span>
+<span class="nc" id="L152">        statusCombo.setItems(FXCollections.observableArrayList(</span>
                 &quot;Disponible&quot;, &quot;Occupée&quot;, &quot;En maintenance&quot;));
 
         // Configuration du Spinner pour la priorité (1-10)
-<span class="nc" id="L132">        prioriteSpinner.setValueFactory(</span>
+<span class="nc" id="L156">        prioriteSpinner.setValueFactory(</span>
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));
 
         // Chargement des étages
-<span class="nc" id="L136">        List&lt;etage&gt; etages = etageService.getAllEtages();</span>
-<span class="nc" id="L137">        etageCombo.setItems(FXCollections.observableArrayList(etages));</span>
+<span class="nc" id="L160">        List&lt;etage&gt; etages = getEtageService().getAllEtages();</span>
+<span class="nc" id="L161">        etageCombo.setItems(FXCollections.observableArrayList(etages));</span>
 
         // Afficher le numéro de l'étage dans le ComboBox
-<span class="nc" id="L140">        etageCombo.setCellFactory(combo -&gt; new ListCell&lt;etage&gt;() {</span>
+<span class="nc" id="L164">        etageCombo.setCellFactory(combo -&gt; new ListCell&lt;etage&gt;() {</span>
             @Override
             protected void updateItem(etage item, boolean empty) {
-<span class="nc" id="L143">                super.updateItem(item, empty);</span>
-<span class="nc bnc" id="L144" title="All 4 branches missed.">                setText(empty || item == null ? &quot;&quot; : String.valueOf(item.getNumero()));</span>
-<span class="nc" id="L145">            }</span>
+<span class="nc" id="L167">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L168" title="All 4 branches missed.">                setText(empty || item == null ? &quot;&quot; : String.valueOf(item.getNumero()));</span>
+<span class="nc" id="L169">            }</span>
         });
-<span class="nc" id="L147">        etageCombo.setButtonCell(new ListCell&lt;etage&gt;() {</span>
+<span class="nc" id="L171">        etageCombo.setButtonCell(new ListCell&lt;etage&gt;() {</span>
             @Override
             protected void updateItem(etage item, boolean empty) {
-<span class="nc" id="L150">                super.updateItem(item, empty);</span>
-<span class="nc bnc" id="L151" title="All 4 branches missed.">                setText(empty || item == null ? &quot;&quot; : String.valueOf(item.getNumero()));</span>
-<span class="nc" id="L152">            }</span>
+<span class="nc" id="L174">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L175" title="All 4 branches missed.">                setText(empty || item == null ? &quot;&quot; : String.valueOf(item.getNumero()));</span>
+<span class="nc" id="L176">            }</span>
         });
-<span class="nc" id="L154">    }</span>
+<span class="nc" id="L178">    }</span>
 
     private void setupTable() {
         // Configuration des colonnes de données
-<span class="nc" id="L158">        nomColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom&quot;));</span>
-<span class="nc" id="L159">        capaciteColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;capacite&quot;));</span>
-<span class="nc" id="L160">        typeColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;type_salle&quot;));</span>
-<span class="nc" id="L161">        statusColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;status&quot;));</span>
-<span class="nc" id="L162">        prioriteColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;priorite&quot;));</span>
-<span class="nc" id="L163">        etageColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;etage&quot;));</span>
-<span class="nc" id="L164">        imageColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;image&quot;));</span>
+<span class="nc" id="L182">        nomColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom&quot;));</span>
+<span class="nc" id="L183">        capaciteColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;capacite&quot;));</span>
+<span class="nc" id="L184">        typeColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;type_salle&quot;));</span>
+<span class="nc" id="L185">        statusColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;status&quot;));</span>
+<span class="nc" id="L186">        prioriteColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;priorite&quot;));</span>
+<span class="nc" id="L187">        etageColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;etage&quot;));</span>
+<span class="nc" id="L188">        imageColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;image&quot;));</span>
 
         // Bind column widths to TableView width for responsiveness
-<span class="nc" id="L167">        nomColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
-<span class="nc" id="L168">        capaciteColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.1));</span>
-<span class="nc" id="L169">        typeColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
-<span class="nc" id="L170">        statusColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
-<span class="nc" id="L171">        prioriteColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.1));</span>
-<span class="nc" id="L172">        etageColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.1));</span>
-<span class="nc" id="L173">        imageColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
-<span class="nc" id="L174">        actionsColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
+<span class="nc" id="L191">        nomColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
+<span class="nc" id="L192">        capaciteColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.1));</span>
+<span class="nc" id="L193">        typeColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
+<span class="nc" id="L194">        statusColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
+<span class="nc" id="L195">        prioriteColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.1));</span>
+<span class="nc" id="L196">        etageColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.1));</span>
+<span class="nc" id="L197">        imageColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
+<span class="nc" id="L198">        actionsColumn.prefWidthProperty().bind(salleTable.widthProperty().multiply(0.15));</span>
 
         // Configuration de la colonne status
-<span class="nc" id="L177">        statusColumn.setCellFactory(column -&gt; new TableCell&lt;salle, String&gt;() {</span>
+<span class="nc" id="L201">        statusColumn.setCellFactory(column -&gt; new TableCell&lt;salle, String&gt;() {</span>
             @Override
             protected void updateItem(String status, boolean empty) {
-<span class="nc" id="L180">                super.updateItem(status, empty);</span>
-<span class="nc" id="L181">                setText(null);</span>
-<span class="nc" id="L182">                setStyle(&quot;&quot;);</span>
+<span class="nc" id="L204">                super.updateItem(status, empty);</span>
+<span class="nc" id="L205">                setText(null);</span>
+<span class="nc" id="L206">                setStyle(&quot;&quot;);</span>
 
-<span class="nc bnc" id="L184" title="All 4 branches missed.">                if (!empty &amp;&amp; status != null) {</span>
-<span class="nc" id="L185">                    setText(status);</span>
-<span class="nc bnc" id="L186" title="All 4 branches missed.">                    switch (status) {</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">                if (!empty &amp;&amp; status != null) {</span>
+<span class="nc" id="L209">                    setText(status);</span>
+<span class="nc bnc" id="L210" title="All 4 branches missed.">                    switch (status) {</span>
                         case &quot;Occupée&quot;:
-<span class="nc" id="L188">                            setStyle(&quot;-fx-text-fill: #EF5350; -fx-background-color: #FFEBEE;&quot;);</span>
-<span class="nc" id="L189">                            break;</span>
+<span class="nc" id="L212">                            setStyle(&quot;-fx-text-fill: #EF5350; -fx-background-color: #FFEBEE;&quot;);</span>
+<span class="nc" id="L213">                            break;</span>
                         case &quot;Disponible&quot;:
-<span class="nc" id="L191">                            setStyle(&quot;-fx-text-fill: #66BB6A; -fx-background-color: #E8F5E9;&quot;);</span>
-<span class="nc" id="L192">                            break;</span>
+<span class="nc" id="L215">                            setStyle(&quot;-fx-text-fill: #66BB6A; -fx-background-color: #E8F5E9;&quot;);</span>
+<span class="nc" id="L216">                            break;</span>
                         case &quot;En maintenance&quot;:
-<span class="nc" id="L194">                            setStyle(&quot;-fx-text-fill: #FFCA28; -fx-background-color: #FFF8E1;&quot;);</span>
-<span class="nc" id="L195">                            break;</span>
+<span class="nc" id="L218">                            setStyle(&quot;-fx-text-fill: #FFCA28; -fx-background-color: #FFF8E1;&quot;);</span>
+<span class="nc" id="L219">                            break;</span>
                         default:
-<span class="nc" id="L197">                            setStyle(&quot;-fx-text-fill: #333333;&quot;);</span>
+<span class="nc" id="L221">                            setStyle(&quot;-fx-text-fill: #333333;&quot;);</span>
                     }
                 }
-<span class="nc" id="L200">            }</span>
+<span class="nc" id="L224">            }</span>
         });
 
         // Configuration de la colonne image
-<span class="nc" id="L204">        imageColumn.setCellFactory(column -&gt; new TableCell&lt;salle, String&gt;() {</span>
-<span class="nc" id="L205">            private final ImageView imageView = new ImageView();</span>
-<span class="nc" id="L206">            private final Label label = new Label();</span>
+<span class="nc" id="L228">        imageColumn.setCellFactory(column -&gt; new TableCell&lt;salle, String&gt;() {</span>
+<span class="nc" id="L229">            private final ImageView imageView = new ImageView();</span>
+<span class="nc" id="L230">            private final Label label = new Label();</span>
 
             {
-<span class="nc" id="L209">                imageView.setFitHeight(40);</span>
-<span class="nc" id="L210">                imageView.setFitWidth(40);</span>
-<span class="nc" id="L211">                imageView.setPreserveRatio(true);</span>
-<span class="nc" id="L212">                label.setStyle(&quot;-fx-text-fill: #666666;&quot;);</span>
-<span class="nc" id="L213">            }</span>
+<span class="nc" id="L233">                imageView.setFitHeight(40);</span>
+<span class="nc" id="L234">                imageView.setFitWidth(40);</span>
+<span class="nc" id="L235">                imageView.setPreserveRatio(true);</span>
+<span class="nc" id="L236">                label.setStyle(&quot;-fx-text-fill: #666666;&quot;);</span>
+<span class="nc" id="L237">            }</span>
 
             @Override
             protected void updateItem(String imageName, boolean empty) {
-<span class="nc" id="L217">                super.updateItem(imageName, empty);</span>
+<span class="nc" id="L241">                super.updateItem(imageName, empty);</span>
 
-<span class="nc" id="L219">                setGraphic(null);</span>
-<span class="nc" id="L220">                setText(null);</span>
+<span class="nc" id="L243">                setGraphic(null);</span>
+<span class="nc" id="L244">                setText(null);</span>
 
-<span class="nc bnc" id="L222" title="All 6 branches missed.">                if (!empty &amp;&amp; imageName != null &amp;&amp; !imageName.isEmpty()) {</span>
+<span class="nc bnc" id="L246" title="All 6 branches missed.">                if (!empty &amp;&amp; imageName != null &amp;&amp; !imageName.isEmpty()) {</span>
                     try {
-<span class="nc" id="L224">                        File imageFile = new File(IMAGE_DIR + imageName);</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">                        if (imageFile.exists()) {</span>
-<span class="nc" id="L226">                            imageView.setImage(new Image(imageFile.toURI().toString()));</span>
-<span class="nc" id="L227">                            setGraphic(imageView);</span>
+<span class="nc" id="L248">                        File imageFile = new File(IMAGE_DIR + imageName);</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">                        if (imageFile.exists()) {</span>
+<span class="nc" id="L250">                            imageView.setImage(new Image(imageFile.toURI().toString()));</span>
+<span class="nc" id="L251">                            setGraphic(imageView);</span>
                         } else {
-<span class="nc" id="L229">                            label.setText(&quot;Image manquante&quot;);</span>
-<span class="nc" id="L230">                            setGraphic(label);</span>
+<span class="nc" id="L253">                            label.setText(&quot;Image manquante&quot;);</span>
+<span class="nc" id="L254">                            setGraphic(label);</span>
                         }
-<span class="nc" id="L232">                    } catch (Exception e) {</span>
-<span class="nc" id="L233">                        label.setText(&quot;Erreur&quot;);</span>
-<span class="nc" id="L234">                        setGraphic(label);</span>
-<span class="nc" id="L235">                    }</span>
+<span class="nc" id="L256">                    } catch (Exception e) {</span>
+<span class="nc" id="L257">                        label.setText(&quot;Erreur&quot;);</span>
+<span class="nc" id="L258">                        setGraphic(label);</span>
+<span class="nc" id="L259">                    }</span>
                 }
-<span class="nc" id="L237">            }</span>
+<span class="nc" id="L261">            }</span>
         });
 
         // Configuration de la colonne d'étage
-<span class="nc" id="L241">        etageColumn.setCellFactory(column -&gt; new TableCell&lt;salle, etage&gt;() {</span>
+<span class="nc" id="L265">        etageColumn.setCellFactory(column -&gt; new TableCell&lt;salle, etage&gt;() {</span>
             @Override
             protected void updateItem(etage etage, boolean empty) {
-<span class="nc" id="L244">                super.updateItem(etage, empty);</span>
-<span class="nc bnc" id="L245" title="All 4 branches missed.">                if (empty || etage == null) {</span>
-<span class="nc" id="L246">                    setText(null);</span>
+<span class="nc" id="L268">                super.updateItem(etage, empty);</span>
+<span class="nc bnc" id="L269" title="All 4 branches missed.">                if (empty || etage == null) {</span>
+<span class="nc" id="L270">                    setText(null);</span>
                 } else {
-<span class="nc" id="L248">                    setText(String.valueOf(etage.getNumero()));</span>
+<span class="nc" id="L272">                    setText(String.valueOf(etage.getNumero()));</span>
                 }
-<span class="nc" id="L250">            }</span>
+<span class="nc" id="L274">            }</span>
         });
 
         // Configuration de la colonne d'actions
-<span class="nc" id="L254">        actionsColumn.setCellFactory(column -&gt; new TableCell&lt;salle, Void&gt;() {</span>
-<span class="nc" id="L255">            private final HBox buttons = new HBox(5);</span>
-<span class="nc" id="L256">            private final Button editBtn = new Button(&quot;✏&quot;);</span>
-<span class="nc" id="L257">            private final Button deleteBtn = new Button(&quot;🗑&quot;);</span>
+<span class="nc" id="L278">        actionsColumn.setCellFactory(column -&gt; new TableCell&lt;salle, Void&gt;() {</span>
+<span class="nc" id="L279">            private final HBox buttons = new HBox(5);</span>
+<span class="nc" id="L280">            private final Button editBtn = new Button(&quot;✏&quot;);</span>
+<span class="nc" id="L281">            private final Button deleteBtn = new Button(&quot;🗑&quot;);</span>
 
             {
-<span class="nc" id="L260">                buttons.setStyle(&quot;-fx-alignment: CENTER;&quot;);</span>
-<span class="nc" id="L261">                editBtn.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
-<span class="nc" id="L262">                deleteBtn.setStyle(&quot;-fx-background-color: #EF5350; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
+<span class="nc" id="L284">                buttons.setStyle(&quot;-fx-alignment: CENTER;&quot;);</span>
+<span class="nc" id="L285">                editBtn.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
+<span class="nc" id="L286">                deleteBtn.setStyle(&quot;-fx-background-color: #EF5350; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
 
-<span class="nc" id="L264">                editBtn.setOnAction(event -&gt; {</span>
-<span class="nc" id="L265">                    salle salle = getTableView().getItems().get(getIndex());</span>
-<span class="nc" id="L266">                    showEditDialog(salle);</span>
-<span class="nc" id="L267">                });</span>
+<span class="nc" id="L288">                editBtn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L289">                    salle salle = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L290">                    showEditDialog(salle);</span>
+<span class="nc" id="L291">                });</span>
 
-<span class="nc" id="L269">                deleteBtn.setOnAction(event -&gt; {</span>
-<span class="nc" id="L270">                    salle salle = getTableView().getItems().get(getIndex());</span>
-<span class="nc" id="L271">                    confirmAndDelete(salle);</span>
-<span class="nc" id="L272">                });</span>
+<span class="nc" id="L293">                deleteBtn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L294">                    salle salle = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L295">                    confirmAndDelete(salle);</span>
+<span class="nc" id="L296">                });</span>
 
-<span class="nc" id="L274">                buttons.getChildren().addAll(editBtn, deleteBtn);</span>
-<span class="nc" id="L275">            }</span>
+<span class="nc" id="L298">                buttons.getChildren().addAll(editBtn, deleteBtn);</span>
+<span class="nc" id="L299">            }</span>
 
             @Override
             protected void updateItem(Void item, boolean empty) {
-<span class="nc" id="L279">                super.updateItem(item, empty);</span>
-<span class="nc bnc" id="L280" title="All 2 branches missed.">                if (!empty) {</span>
-<span class="nc" id="L281">                    setGraphic(buttons);</span>
+<span class="nc" id="L303">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">                if (!empty) {</span>
+<span class="nc" id="L305">                    setGraphic(buttons);</span>
                 } else {
-<span class="nc" id="L283">                    setGraphic(null);</span>
+<span class="nc" id="L307">                    setGraphic(null);</span>
                 }
-<span class="nc" id="L285">            }</span>
+<span class="nc" id="L309">            }</span>
         });
-<span class="nc" id="L287">    }</span>
+<span class="nc" id="L311">    }</span>
 
     private void loadSalles() {
-<span class="nc" id="L290">        salleData.clear();</span>
-<span class="nc" id="L291">        salleData.addAll(salleService.getAll());</span>
-<span class="nc" id="L292">        filteredSalleData.setAll(salleData);</span>
-<span class="nc" id="L293">        salleTable.setItems(filteredSalleData);</span>
-<span class="nc" id="L294">    }</span>
+<span class="nc" id="L314">        salleData.clear();</span>
+<span class="nc" id="L315">        salleData.addAll(getSalleService().getAll());</span>
+<span class="nc" id="L316">        filteredSalleData.setAll(salleData);</span>
+<span class="nc" id="L317">        salleTable.setItems(filteredSalleData);</span>
+<span class="nc" id="L318">    }</span>
 
     private void setupSearch() {
-<span class="nc" id="L297">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
-<span class="nc" id="L298">            filterSalles(newValue);</span>
-<span class="nc" id="L299">        });</span>
-<span class="nc" id="L300">    }</span>
+<span class="nc" id="L321">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
+<span class="nc" id="L322">            filterSalles(newValue);</span>
+<span class="nc" id="L323">        });</span>
+<span class="nc" id="L324">    }</span>
 
     private void filterSalles(String searchText) {
-<span class="nc bnc" id="L303" title="All 4 branches missed.">        if (searchText == null || searchText.isEmpty()) {</span>
-<span class="nc" id="L304">            filteredSalleData.setAll(salleData);</span>
+<span class="nc bnc" id="L327" title="All 4 branches missed.">        if (searchText == null || searchText.isEmpty()) {</span>
+<span class="nc" id="L328">            filteredSalleData.setAll(salleData);</span>
         } else {
-<span class="nc" id="L306">            String lowerCaseFilter = searchText.toLowerCase();</span>
-<span class="nc" id="L307">            List&lt;salle&gt; filteredList = salleData.stream()</span>
-<span class="nc" id="L308">                    .filter(salle -&gt; {</span>
-<span class="nc bnc" id="L309" title="All 2 branches missed.">                        boolean matchesNom = salle.getNom() != null &amp;&amp;</span>
-<span class="nc bnc" id="L310" title="All 2 branches missed.">                                salle.getNom().toLowerCase().contains(lowerCaseFilter);</span>
-<span class="nc bnc" id="L311" title="All 2 branches missed.">                        boolean matchesType = salle.getType_salle() != null &amp;&amp;</span>
-<span class="nc bnc" id="L312" title="All 2 branches missed.">                                salle.getType_salle().toLowerCase().contains(lowerCaseFilter);</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">                        boolean matchesStatus = salle.getStatus() != null &amp;&amp;</span>
-<span class="nc bnc" id="L314" title="All 2 branches missed.">                                salle.getStatus().toLowerCase().contains(lowerCaseFilter);</span>
-<span class="nc bnc" id="L315" title="All 2 branches missed.">                        boolean matchesEtage = salle.getEtage() != null &amp;&amp;</span>
-<span class="nc bnc" id="L316" title="All 2 branches missed.">                                String.valueOf(salle.getEtage().getNumero()).contains(lowerCaseFilter);</span>
-<span class="nc bnc" id="L317" title="All 8 branches missed.">                        return matchesNom || matchesType || matchesStatus || matchesEtage;</span>
+<span class="nc" id="L330">            String lowerCaseFilter = searchText.toLowerCase();</span>
+<span class="nc" id="L331">            List&lt;salle&gt; filteredList = salleData.stream()</span>
+<span class="nc" id="L332">                    .filter(salle -&gt; {</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">                        boolean matchesNom = salle.getNom() != null &amp;&amp;</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">                                salle.getNom().toLowerCase().contains(lowerCaseFilter);</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">                        boolean matchesType = salle.getType_salle() != null &amp;&amp;</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">                                salle.getType_salle().toLowerCase().contains(lowerCaseFilter);</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">                        boolean matchesStatus = salle.getStatus() != null &amp;&amp;</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                                salle.getStatus().toLowerCase().contains(lowerCaseFilter);</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                        boolean matchesEtage = salle.getEtage() != null &amp;&amp;</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">                                String.valueOf(salle.getEtage().getNumero()).contains(lowerCaseFilter);</span>
+<span class="nc bnc" id="L341" title="All 8 branches missed.">                        return matchesNom || matchesType || matchesStatus || matchesEtage;</span>
                     })
-<span class="nc" id="L319">                    .collect(Collectors.toList());</span>
-<span class="nc" id="L320">            filteredSalleData.setAll(filteredList);</span>
+<span class="nc" id="L343">                    .collect(Collectors.toList());</span>
+<span class="nc" id="L344">            filteredSalleData.setAll(filteredList);</span>
         }
-<span class="nc" id="L322">    }</span>
+<span class="nc" id="L346">    }</span>
 
     @FXML
     private void handleExportCSV(ActionEvent event) {
-<span class="nc" id="L326">        FileChooser fileChooser = new FileChooser();</span>
-<span class="nc" id="L327">        fileChooser.setTitle(&quot;Exporter les salles en CSV&quot;);</span>
-<span class="nc" id="L328">        fileChooser.setInitialFileName(&quot;salles_export.csv&quot;);</span>
-<span class="nc" id="L329">        fileChooser.getExtensionFilters().add(</span>
+<span class="nc" id="L350">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L351">        fileChooser.setTitle(&quot;Exporter les salles en CSV&quot;);</span>
+<span class="nc" id="L352">        fileChooser.setInitialFileName(&quot;salles_export.csv&quot;);</span>
+<span class="nc" id="L353">        fileChooser.getExtensionFilters().add(</span>
                 new FileChooser.ExtensionFilter(&quot;Fichiers CSV&quot;, &quot;*.csv&quot;)
         );
 
-<span class="nc" id="L333">        Stage stage = (Stage) salleTable.getScene().getWindow();</span>
-<span class="nc" id="L334">        File file = fileChooser.showSaveDialog(stage);</span>
+<span class="nc" id="L357">        Stage stage = (Stage) salleTable.getScene().getWindow();</span>
+<span class="nc" id="L358">        File file = fileChooser.showSaveDialog(stage);</span>
 
-<span class="nc bnc" id="L336" title="All 2 branches missed.">        if (file != null) {</span>
-<span class="nc" id="L337">            try (FileWriter writer = new FileWriter(file)) {</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">        if (file != null) {</span>
+<span class="nc" id="L361">            try (FileWriter writer = new FileWriter(file)) {</span>
                 // Write CSV headers
-<span class="nc" id="L339">                writer.append(&quot;Nom,Capacité,Type,Status,Priorité,Étage,Image\n&quot;);</span>
+<span class="nc" id="L363">                writer.append(&quot;Nom,Capacité,Type,Status,Priorité,Étage,Image\n&quot;);</span>
 
                 // Write data rows
-<span class="nc bnc" id="L342" title="All 2 branches missed.">                for (salle s : filteredSalleData) {</span>
-<span class="nc" id="L343">                    writer.append(escapeCsvField(s.getNom())).append(&quot;,&quot;);</span>
-<span class="nc" id="L344">                    writer.append(String.valueOf(s.getCapacite())).append(&quot;,&quot;);</span>
-<span class="nc" id="L345">                    writer.append(escapeCsvField(s.getType_salle())).append(&quot;,&quot;);</span>
-<span class="nc" id="L346">                    writer.append(escapeCsvField(s.getStatus())).append(&quot;,&quot;);</span>
-<span class="nc" id="L347">                    writer.append(String.valueOf(s.getPriorite())).append(&quot;,&quot;);</span>
-<span class="nc bnc" id="L348" title="All 2 branches missed.">                    writer.append(s.getEtage() != null ? String.valueOf(s.getEtage().getNumero()) : &quot;&quot;).append(&quot;,&quot;);</span>
-<span class="nc" id="L349">                    writer.append(escapeCsvField(s.getImage())).append(&quot;\n&quot;);</span>
-<span class="nc" id="L350">                }</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">                for (salle s : filteredSalleData) {</span>
+<span class="nc" id="L367">                    writer.append(escapeCsvField(s.getNom())).append(&quot;,&quot;);</span>
+<span class="nc" id="L368">                    writer.append(String.valueOf(s.getCapacite())).append(&quot;,&quot;);</span>
+<span class="nc" id="L369">                    writer.append(escapeCsvField(s.getType_salle())).append(&quot;,&quot;);</span>
+<span class="nc" id="L370">                    writer.append(escapeCsvField(s.getStatus())).append(&quot;,&quot;);</span>
+<span class="nc" id="L371">                    writer.append(String.valueOf(s.getPriorite())).append(&quot;,&quot;);</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">                    writer.append(s.getEtage() != null ? String.valueOf(s.getEtage().getNumero()) : &quot;&quot;).append(&quot;,&quot;);</span>
+<span class="nc" id="L373">                    writer.append(escapeCsvField(s.getImage())).append(&quot;\n&quot;);</span>
+<span class="nc" id="L374">                }</span>
 
-<span class="nc" id="L352">                writer.flush();</span>
-<span class="nc" id="L353">                showAlert(&quot;Succès&quot;, &quot;Les données ont été exportées avec succès dans &quot; + file.getAbsolutePath(), Alert.AlertType.INFORMATION);</span>
-<span class="nc" id="L354">            } catch (IOException e) {</span>
-<span class="nc" id="L355">                showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'exportation CSV: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
-<span class="nc" id="L356">            }</span>
+<span class="nc" id="L376">                writer.flush();</span>
+<span class="nc" id="L377">                showAlert(&quot;Succès&quot;, &quot;Les données ont été exportées avec succès dans &quot; + file.getAbsolutePath(), Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L378">            } catch (IOException e) {</span>
+<span class="nc" id="L379">                showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'exportation CSV: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L380">            }</span>
         }
-<span class="nc" id="L358">    }</span>
+<span class="nc" id="L382">    }</span>
 
     private String escapeCsvField(String field) {
-<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (field == null) {</span>
-<span class="nc" id="L362">            return &quot;&quot;;</span>
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        if (field == null) {</span>
+<span class="nc" id="L386">            return &quot;&quot;;</span>
         }
         // Escape commas and quotes in the field
-<span class="nc bnc" id="L365" title="All 4 branches missed.">        if (field.contains(&quot;,&quot;) || field.contains(&quot;\&quot;&quot;)) {</span>
-<span class="nc" id="L366">            field = field.replace(&quot;\&quot;&quot;, &quot;\&quot;\&quot;&quot;); // Escape quotes by doubling them</span>
-<span class="nc" id="L367">            return &quot;\&quot;&quot; + field + &quot;\&quot;&quot;; // Wrap the field in quotes</span>
+<span class="nc bnc" id="L389" title="All 4 branches missed.">        if (field.contains(&quot;,&quot;) || field.contains(&quot;\&quot;&quot;)) {</span>
+<span class="nc" id="L390">            field = field.replace(&quot;\&quot;&quot;, &quot;\&quot;\&quot;&quot;); // Escape quotes by doubling them</span>
+<span class="nc" id="L391">            return &quot;\&quot;&quot; + field + &quot;\&quot;&quot;; // Wrap the field in quotes</span>
         }
-<span class="nc" id="L369">        return field;</span>
+<span class="nc" id="L393">        return field;</span>
     }
 
     @FXML
     private void handleBrowseImage(ActionEvent event) {
-<span class="nc" id="L374">        FileChooser fileChooser = new FileChooser();</span>
-<span class="nc" id="L375">        fileChooser.setTitle(&quot;Choisir une image&quot;);</span>
-<span class="nc" id="L376">        fileChooser.getExtensionFilters().addAll(</span>
+<span class="nc" id="L398">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L399">        fileChooser.setTitle(&quot;Choisir une image&quot;);</span>
+<span class="nc" id="L400">        fileChooser.getExtensionFilters().addAll(</span>
                 new FileChooser.ExtensionFilter(&quot;Images&quot;, &quot;.png&quot;, &quot;.jpg&quot;, &quot;.jpeg&quot;, &quot;.gif&quot;)
         );
 
-<span class="nc" id="L380">        File selectedFile = fileChooser.showOpenDialog(null);</span>
-<span class="nc bnc" id="L381" title="All 2 branches missed.">        if (selectedFile != null) {</span>
+<span class="nc" id="L404">        File selectedFile = fileChooser.showOpenDialog(null);</span>
+<span class="nc bnc" id="L405" title="All 2 branches missed.">        if (selectedFile != null) {</span>
             try {
-<span class="nc" id="L383">                String fileName = System.currentTimeMillis() + &quot;_&quot; + selectedFile.getName();</span>
-<span class="nc" id="L384">                File destFile = new File(IMAGE_DIR + fileName);</span>
-<span class="nc" id="L385">                Files.copy(selectedFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
+<span class="nc" id="L407">                String fileName = System.currentTimeMillis() + &quot;_&quot; + selectedFile.getName();</span>
+<span class="nc" id="L408">                File destFile = new File(IMAGE_DIR + fileName);</span>
+<span class="nc" id="L409">                Files.copy(selectedFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
 
-<span class="nc" id="L387">                imagePath = fileName;</span>
-<span class="nc" id="L388">                imageField.setText(fileName);</span>
-<span class="nc" id="L389">                imagePreview.setImage(new Image(destFile.toURI().toString()));</span>
-<span class="nc" id="L390">                imageError.setText(&quot;&quot;);</span>
-<span class="nc" id="L391">            } catch (IOException e) {</span>
-<span class="nc" id="L392">                showAlert(&quot;Erreur&quot;, &quot;Impossible de charger l'image: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
-<span class="nc" id="L393">            }</span>
+<span class="nc" id="L411">                imagePath = fileName;</span>
+<span class="nc" id="L412">                imageField.setText(fileName);</span>
+<span class="nc" id="L413">                imagePreview.setImage(new Image(destFile.toURI().toString()));</span>
+<span class="nc" id="L414">                imageError.setText(&quot;&quot;);</span>
+<span class="nc" id="L415">            } catch (IOException e) {</span>
+<span class="nc" id="L416">                showAlert(&quot;Erreur&quot;, &quot;Impossible de charger l'image: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L417">            }</span>
         }
-<span class="nc" id="L395">    }</span>
+<span class="nc" id="L419">    }</span>
 
     @FXML
     private void handleSave(ActionEvent event) {
-<span class="nc bnc" id="L399" title="All 2 branches missed.">        if (!validateForm()) return;</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        if (!validateForm()) return;</span>
 
-<span class="nc" id="L401">        salle salle = new salle();</span>
-<span class="nc" id="L402">        salle.setNom(nomField.getText());</span>
-<span class="nc" id="L403">        salle.setCapacite(Integer.parseInt(capaciteField.getText()));</span>
-<span class="nc" id="L404">        salle.setType_salle(typeCombo.getValue());</span>
-<span class="nc" id="L405">        salle.setStatus(statusCombo.getValue());</span>
-<span class="nc" id="L406">        salle.setPriorite(prioriteSpinner.getValue());</span>
-<span class="nc" id="L407">        salle.setEtage(etageCombo.getValue());</span>
-<span class="nc" id="L408">        salle.setImage(imagePath);</span>
+<span class="nc" id="L425">        salle salle = new salle();</span>
+<span class="nc" id="L426">        salle.setNom(nomField.getText());</span>
+<span class="nc" id="L427">        salle.setCapacite(Integer.parseInt(capaciteField.getText()));</span>
+<span class="nc" id="L428">        salle.setType_salle(typeCombo.getValue());</span>
+<span class="nc" id="L429">        salle.setStatus(statusCombo.getValue());</span>
+<span class="nc" id="L430">        salle.setPriorite(prioriteSpinner.getValue());</span>
+<span class="nc" id="L431">        salle.setEtage(etageCombo.getValue());</span>
+<span class="nc" id="L432">        salle.setImage(imagePath);</span>
 
-<span class="nc" id="L410">        salleService.addSalle(salle);</span>
-<span class="nc" id="L411">        showAlert(&quot;Succès&quot;, &quot;Salle ajoutée avec succès&quot;, Alert.AlertType.INFORMATION);</span>
-<span class="nc" id="L412">        resetForm();</span>
-<span class="nc" id="L413">        loadSalles();</span>
-<span class="nc" id="L414">    }</span>
+<span class="nc" id="L434">        getSalleService().addSalle(salle);</span>
+<span class="nc" id="L435">        showAlert(&quot;Succès&quot;, &quot;Salle ajoutée avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L436">        resetForm();</span>
+<span class="nc" id="L437">        loadSalles();</span>
+<span class="nc" id="L438">    }</span>
 
     private void showEditDialog(salle salle) {
         // Populate form with salle data
-<span class="nc" id="L418">        nomField.setText(salle.getNom());</span>
-<span class="nc" id="L419">        capaciteField.setText(String.valueOf(salle.getCapacite()));</span>
-<span class="nc" id="L420">        typeCombo.setValue(salle.getType_salle());</span>
-<span class="nc" id="L421">        statusCombo.setValue(salle.getStatus());</span>
-<span class="nc" id="L422">        prioriteSpinner.getValueFactory().setValue(salle.getPriorite());</span>
-<span class="nc" id="L423">        etageCombo.setValue(salle.getEtage());</span>
-<span class="nc" id="L424">        imageField.setText(salle.getImage());</span>
-<span class="nc" id="L425">        imagePath = salle.getImage();</span>
+<span class="nc" id="L442">        nomField.setText(salle.getNom());</span>
+<span class="nc" id="L443">        capaciteField.setText(String.valueOf(salle.getCapacite()));</span>
+<span class="nc" id="L444">        typeCombo.setValue(salle.getType_salle());</span>
+<span class="nc" id="L445">        statusCombo.setValue(salle.getStatus());</span>
+<span class="nc" id="L446">        prioriteSpinner.getValueFactory().setValue(salle.getPriorite());</span>
+<span class="nc" id="L447">        etageCombo.setValue(salle.getEtage());</span>
+<span class="nc" id="L448">        imageField.setText(salle.getImage());</span>
+<span class="nc" id="L449">        imagePath = salle.getImage();</span>
 
         // Load image preview
-<span class="nc bnc" id="L428" title="All 4 branches missed.">        if (salle.getImage() != null &amp;&amp; !salle.getImage().isEmpty()) {</span>
-<span class="nc" id="L429">            File imageFile = new File(IMAGE_DIR + salle.getImage());</span>
-<span class="nc bnc" id="L430" title="All 2 branches missed.">            if (imageFile.exists()) {</span>
-<span class="nc" id="L431">                imagePreview.setImage(new Image(imageFile.toURI().toString()));</span>
+<span class="nc bnc" id="L452" title="All 4 branches missed.">        if (salle.getImage() != null &amp;&amp; !salle.getImage().isEmpty()) {</span>
+<span class="nc" id="L453">            File imageFile = new File(IMAGE_DIR + salle.getImage());</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">            if (imageFile.exists()) {</span>
+<span class="nc" id="L455">                imagePreview.setImage(new Image(imageFile.toURI().toString()));</span>
             } else {
-<span class="nc" id="L433">                imagePreview.setImage(null);</span>
+<span class="nc" id="L457">                imagePreview.setImage(null);</span>
             }
-<span class="nc" id="L435">        } else {</span>
-<span class="nc" id="L436">            imagePreview.setImage(null);</span>
+<span class="nc" id="L459">        } else {</span>
+<span class="nc" id="L460">            imagePreview.setImage(null);</span>
         }
 
         // Change save button behavior to update instead of add
-<span class="nc" id="L440">        saveBtn.setOnAction(event -&gt; {</span>
-<span class="nc bnc" id="L441" title="All 2 branches missed.">            if (!validateForm()) return;</span>
+<span class="nc" id="L464">        saveBtn.setOnAction(event -&gt; {</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">            if (!validateForm()) return;</span>
 
             // Update salle object
-<span class="nc" id="L444">            salle.setNom(nomField.getText());</span>
-<span class="nc" id="L445">            salle.setCapacite(Integer.parseInt(capaciteField.getText()));</span>
-<span class="nc" id="L446">            salle.setType_salle(typeCombo.getValue());</span>
-<span class="nc" id="L447">            salle.setStatus(statusCombo.getValue());</span>
-<span class="nc" id="L448">            salle.setPriorite(prioriteSpinner.getValue());</span>
-<span class="nc" id="L449">            salle.setEtage(etageCombo.getValue());</span>
-<span class="nc" id="L450">            salle.setImage(imagePath);</span>
+<span class="nc" id="L468">            salle.setNom(nomField.getText());</span>
+<span class="nc" id="L469">            salle.setCapacite(Integer.parseInt(capaciteField.getText()));</span>
+<span class="nc" id="L470">            salle.setType_salle(typeCombo.getValue());</span>
+<span class="nc" id="L471">            salle.setStatus(statusCombo.getValue());</span>
+<span class="nc" id="L472">            salle.setPriorite(prioriteSpinner.getValue());</span>
+<span class="nc" id="L473">            salle.setEtage(etageCombo.getValue());</span>
+<span class="nc" id="L474">            salle.setImage(imagePath);</span>
 
             // Update in database
-<span class="nc" id="L453">            salleService.updateSalle(salle);</span>
-<span class="nc" id="L454">            showAlert(&quot;Succès&quot;, &quot;Salle mise à jour avec succès&quot;, Alert.AlertType.INFORMATION);</span>
-<span class="nc" id="L455">            resetForm();</span>
-<span class="nc" id="L456">            loadSalles();</span>
+<span class="nc" id="L477">            getSalleService().updateSalle(salle);</span>
+<span class="nc" id="L478">            showAlert(&quot;Succès&quot;, &quot;Salle mise à jour avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L479">            resetForm();</span>
+<span class="nc" id="L480">            loadSalles();</span>
 
             // Restore default save behavior
-<span class="nc" id="L459">            saveBtn.setOnAction(this::handleSave);</span>
-<span class="nc" id="L460">        });</span>
-<span class="nc" id="L461">    }</span>
+<span class="nc" id="L483">            saveBtn.setOnAction(this::handleSave);</span>
+<span class="nc" id="L484">        });</span>
+<span class="nc" id="L485">    }</span>
 
     private void confirmAndDelete(salle salle) {
-<span class="nc" id="L464">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
-<span class="nc" id="L465">        alert.setTitle(&quot;Confirmer la suppression&quot;);</span>
-<span class="nc" id="L466">        alert.setHeaderText(null);</span>
-<span class="nc" id="L467">        alert.setContentText(&quot;Voulez-vous vraiment supprimer la salle &quot; + salle.getNom() + &quot; ?&quot;);</span>
+<span class="nc" id="L488">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L489">        alert.setTitle(&quot;Confirmer la suppression&quot;);</span>
+<span class="nc" id="L490">        alert.setHeaderText(null);</span>
+<span class="nc" id="L491">        alert.setContentText(&quot;Voulez-vous vraiment supprimer la salle &quot; + salle.getNom() + &quot; ?&quot;);</span>
 
-<span class="nc" id="L469">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
-<span class="nc bnc" id="L470" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
-<span class="nc" id="L471">            salleService.deleteSalle(salle.getId());</span>
-<span class="nc" id="L472">            showAlert(&quot;Succès&quot;, &quot;Salle supprimée avec succès&quot;, Alert.AlertType.INFORMATION);</span>
-<span class="nc" id="L473">            loadSalles();</span>
+<span class="nc" id="L493">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
+<span class="nc bnc" id="L494" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L495">            getSalleService().deleteSalle(salle.getId());</span>
+<span class="nc" id="L496">            showAlert(&quot;Succès&quot;, &quot;Salle supprimée avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L497">            loadSalles();</span>
         }
-<span class="nc" id="L475">    }</span>
+<span class="nc" id="L499">    }</span>
 
     private void showReservationDialog(salle selectedSalle) {
         try {
-<span class="nc" id="L479">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/reservationDialog.fxml&quot;));</span>
-<span class="nc" id="L480">            DialogPane dialogPane = loader.load();</span>
-<span class="nc" id="L481">            ReservationDialogController controller = loader.getController();</span>
-<span class="nc bnc" id="L482" title="All 2 branches missed.">            if (controller == null) {</span>
-<span class="nc" id="L483">                showAlert(&quot;Erreur&quot;, &quot;Controller non chargé pour reservationDialog.fxml&quot;, Alert.AlertType.ERROR);</span>
-<span class="nc" id="L484">                return;</span>
+<span class="nc" id="L503">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/reservationDialog.fxml&quot;));</span>
+<span class="nc" id="L504">            DialogPane dialogPane = loader.load();</span>
+<span class="nc" id="L505">            ReservationDialogController controller = loader.getController();</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">            if (controller == null) {</span>
+<span class="nc" id="L507">                showAlert(&quot;Erreur&quot;, &quot;Controller non chargé pour reservationDialog.fxml&quot;, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L508">                return;</span>
             }
-<span class="nc" id="L486">            controller.setSalle(selectedSalle);</span>
+<span class="nc" id="L510">            controller.setSalle(selectedSalle);</span>
 
-<span class="nc" id="L488">            Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
-<span class="nc" id="L489">            dialog.setDialogPane(dialogPane);</span>
-<span class="nc" id="L490">            dialog.setTitle(&quot;Réserver Salle&quot;);</span>
+<span class="nc" id="L512">            Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L513">            dialog.setDialogPane(dialogPane);</span>
+<span class="nc" id="L514">            dialog.setTitle(&quot;Réserver Salle&quot;);</span>
 
             // Pass the dialog to the controller
-<span class="nc" id="L493">            controller.setDialog(dialog);</span>
+<span class="nc" id="L517">            controller.setDialog(dialog);</span>
 
-<span class="nc" id="L495">            Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
-<span class="nc bnc" id="L496" title="All 4 branches missed.">            if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
-<span class="nc" id="L497">                loadSalles(); // Refresh the TableView</span>
+<span class="nc" id="L519">            Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
+<span class="nc bnc" id="L520" title="All 4 branches missed.">            if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L521">                loadSalles(); // Refresh the TableView</span>
             }
-<span class="nc" id="L499">        } catch (IOException e) {</span>
-<span class="nc" id="L500">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'ouverture de la fenêtre de réservation: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
-<span class="nc" id="L501">        }</span>
-<span class="nc" id="L502">    }</span>
+<span class="nc" id="L523">        } catch (IOException e) {</span>
+<span class="nc" id="L524">            showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'ouverture de la fenêtre de réservation: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L525">        }</span>
+<span class="nc" id="L526">    }</span>
 
     private boolean validateForm() {
-<span class="nc" id="L505">        boolean isValid = true;</span>
-<span class="nc" id="L506">        clearErrors();</span>
+<span class="nc" id="L529">        boolean isValid = true;</span>
+<span class="nc" id="L530">        clearErrors();</span>
 
-<span class="nc bnc" id="L508" title="All 2 branches missed.">        if (nomField.getText().isEmpty()) {</span>
-<span class="nc" id="L509">            nomError.setText(&quot;Le nom est obligatoire&quot;);</span>
-<span class="nc" id="L510">            isValid = false;</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">        if (nomField.getText().isEmpty()) {</span>
+<span class="nc" id="L533">            nomError.setText(&quot;Le nom est obligatoire&quot;);</span>
+<span class="nc" id="L534">            isValid = false;</span>
         }
 
-<span class="nc bnc" id="L513" title="All 2 branches missed.">        if (capaciteField.getText().isEmpty()) {</span>
-<span class="nc" id="L514">            capaciteError.setText(&quot;La capacité est obligatoire&quot;);</span>
-<span class="nc" id="L515">            isValid = false;</span>
+<span class="nc bnc" id="L537" title="All 2 branches missed.">        if (capaciteField.getText().isEmpty()) {</span>
+<span class="nc" id="L538">            capaciteError.setText(&quot;La capacité est obligatoire&quot;);</span>
+<span class="nc" id="L539">            isValid = false;</span>
         } else {
             try {
-<span class="nc" id="L518">                Integer.parseInt(capaciteField.getText());</span>
-<span class="nc" id="L519">            } catch (NumberFormatException e) {</span>
-<span class="nc" id="L520">                capaciteError.setText(&quot;Doit être un nombre valide&quot;);</span>
-<span class="nc" id="L521">                isValid = false;</span>
-<span class="nc" id="L522">            }</span>
+<span class="nc" id="L542">                Integer.parseInt(capaciteField.getText());</span>
+<span class="nc" id="L543">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L544">                capaciteError.setText(&quot;Doit être un nombre valide&quot;);</span>
+<span class="nc" id="L545">                isValid = false;</span>
+<span class="nc" id="L546">            }</span>
         }
 
-<span class="nc bnc" id="L525" title="All 2 branches missed.">        if (typeCombo.getValue() == null) {</span>
-<span class="nc" id="L526">            typeError.setText(&quot;Le type est obligatoire&quot;);</span>
-<span class="nc" id="L527">            isValid = false;</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">        if (typeCombo.getValue() == null) {</span>
+<span class="nc" id="L550">            typeError.setText(&quot;Le type est obligatoire&quot;);</span>
+<span class="nc" id="L551">            isValid = false;</span>
         }
 
-<span class="nc bnc" id="L530" title="All 2 branches missed.">        if (statusCombo.getValue() == null) {</span>
-<span class="nc" id="L531">            statusError.setText(&quot;Le statut est obligatoire&quot;);</span>
-<span class="nc" id="L532">            isValid = false;</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">        if (statusCombo.getValue() == null) {</span>
+<span class="nc" id="L555">            statusError.setText(&quot;Le statut est obligatoire&quot;);</span>
+<span class="nc" id="L556">            isValid = false;</span>
         }
 
-<span class="nc bnc" id="L535" title="All 2 branches missed.">        if (etageCombo.getValue() == null) {</span>
-<span class="nc" id="L536">            etageError.setText(&quot;L'étage est obligatoire&quot;);</span>
-<span class="nc" id="L537">            isValid = false;</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">        if (etageCombo.getValue() == null) {</span>
+<span class="nc" id="L560">            etageError.setText(&quot;L'étage est obligatoire&quot;);</span>
+<span class="nc" id="L561">            isValid = false;</span>
         }
 
-<span class="nc" id="L540">        return isValid;</span>
+<span class="nc" id="L564">        return isValid;</span>
     }
 
     private void clearErrors() {
-<span class="nc" id="L544">        nomError.setText(&quot;&quot;);</span>
-<span class="nc" id="L545">        capaciteError.setText(&quot;&quot;);</span>
-<span class="nc" id="L546">        typeError.setText(&quot;&quot;);</span>
-<span class="nc" id="L547">        statusError.setText(&quot;&quot;);</span>
-<span class="nc" id="L548">        prioriteError.setText(&quot;&quot;);</span>
-<span class="nc" id="L549">        etageError.setText(&quot;&quot;);</span>
-<span class="nc" id="L550">        imageError.setText(&quot;&quot;);</span>
-<span class="nc" id="L551">    }</span>
+<span class="nc" id="L568">        nomError.setText(&quot;&quot;);</span>
+<span class="nc" id="L569">        capaciteError.setText(&quot;&quot;);</span>
+<span class="nc" id="L570">        typeError.setText(&quot;&quot;);</span>
+<span class="nc" id="L571">        statusError.setText(&quot;&quot;);</span>
+<span class="nc" id="L572">        prioriteError.setText(&quot;&quot;);</span>
+<span class="nc" id="L573">        etageError.setText(&quot;&quot;);</span>
+<span class="nc" id="L574">        imageError.setText(&quot;&quot;);</span>
+<span class="nc" id="L575">    }</span>
 
     @FXML
     private void handleClear(ActionEvent event) {
-<span class="nc" id="L555">        resetForm();</span>
-<span class="nc" id="L556">    }</span>
+<span class="nc" id="L579">        resetForm();</span>
+<span class="nc" id="L580">    }</span>
 
     private void resetForm() {
-<span class="nc" id="L559">        nomField.clear();</span>
-<span class="nc" id="L560">        capaciteField.clear();</span>
-<span class="nc" id="L561">        typeCombo.getSelectionModel().clearSelection();</span>
-<span class="nc" id="L562">        statusCombo.getSelectionModel().clearSelection();</span>
-<span class="nc" id="L563">        prioriteSpinner.getValueFactory().setValue(1);</span>
-<span class="nc" id="L564">        etageCombo.getSelectionModel().clearSelection();</span>
-<span class="nc" id="L565">        imageField.clear();</span>
-<span class="nc" id="L566">        imagePreview.setImage(null);</span>
-<span class="nc" id="L567">        imagePath = &quot;&quot;;</span>
-<span class="nc" id="L568">        clearErrors();</span>
-<span class="nc" id="L569">    }</span>
+<span class="nc" id="L583">        nomField.clear();</span>
+<span class="nc" id="L584">        capaciteField.clear();</span>
+<span class="nc" id="L585">        typeCombo.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L586">        statusCombo.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L587">        prioriteSpinner.getValueFactory().setValue(1);</span>
+<span class="nc" id="L588">        etageCombo.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L589">        imageField.clear();</span>
+<span class="nc" id="L590">        imagePreview.setImage(null);</span>
+<span class="nc" id="L591">        imagePath = &quot;&quot;;</span>
+<span class="nc" id="L592">        clearErrors();</span>
+<span class="nc" id="L593">    }</span>
 
     private void showAlert(String title, String message, Alert.AlertType alertType) {
-<span class="nc" id="L572">        Alert alert = new Alert(alertType);</span>
-<span class="nc" id="L573">        alert.setTitle(title);</span>
-<span class="nc" id="L574">        alert.setHeaderText(null);</span>
-<span class="nc" id="L575">        alert.setContentText(message);</span>
-<span class="nc" id="L576">        alert.showAndWait();</span>
-<span class="nc" id="L577">    }</span>
+<span class="nc" id="L596">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L597">        alert.setTitle(title);</span>
+<span class="nc" id="L598">        alert.setHeaderText(null);</span>
+<span class="nc" id="L599">        alert.setContentText(message);</span>
+<span class="nc" id="L600">        alert.showAndWait();</span>
+<span class="nc" id="L601">    }</span>
 
     @FXML
     private void showDepartements(ActionEvent event) {
-<span class="nc" id="L581">        loadView(&quot;/departement.fxml&quot;, event);</span>
-<span class="nc" id="L582">    }</span>
+<span class="nc" id="L605">        loadView(&quot;/departement.fxml&quot;, event);</span>
+<span class="nc" id="L606">    }</span>
 
     @FXML
     private void showReservation(ActionEvent event) {
-<span class="nc" id="L586">        loadView(&quot;/reservation_list.fxml&quot;, event);</span>
-<span class="nc" id="L587">    }</span>
+<span class="nc" id="L610">        loadView(&quot;/reservation_list.fxml&quot;, event);</span>
+<span class="nc" id="L611">    }</span>
 
     @FXML
     private void showEtages(ActionEvent event) {
-<span class="nc" id="L591">        loadView(&quot;/etage.fxml&quot;, event);</span>
-<span class="nc" id="L592">    }</span>
+<span class="nc" id="L615">        loadView(&quot;/etage.fxml&quot;, event);</span>
+<span class="nc" id="L616">    }</span>
 
     @FXML
     private void showSalles(ActionEvent event) {
         // Already on salle view
-<span class="nc" id="L597">    }</span>
+<span class="nc" id="L621">    }</span>
 
     @FXML
     public void Acceuil(ActionEvent event) {
-<span class="nc" id="L601">        loadView(&quot;/interface.fxml&quot;, event);</span>
-<span class="nc" id="L602">    }</span>
+<span class="nc" id="L625">        loadView(&quot;/interface.fxml&quot;, event);</span>
+<span class="nc" id="L626">    }</span>
 
     private void loadView(String fxmlPath, ActionEvent event) {
         try {
-<span class="nc" id="L606">            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));</span>
-<span class="nc" id="L607">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
-<span class="nc" id="L608">            stage.setScene(new Scene(root));</span>
-<span class="nc" id="L609">            stage.show();</span>
-<span class="nc" id="L610">        } catch (IOException e) {</span>
-<span class="nc" id="L611">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger la vue: &quot; + fxmlPath, Alert.AlertType.ERROR);</span>
-<span class="nc" id="L612">        }</span>
-<span class="nc" id="L613">    }</span>
+<span class="nc" id="L630">            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));</span>
+<span class="nc" id="L631">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L632">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L633">            stage.show();</span>
+<span class="nc" id="L634">        } catch (IOException e) {</span>
+<span class="nc" id="L635">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger la vue: &quot; + fxmlPath, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L636">        }</span>
+<span class="nc" id="L637">    }</span>
 
     // Dans SalleController.java
     salle buildSalleFromFields(String nom, String capaciteStr, String type, String status,
                                int priorite, etage etage, String image) {
 
-<span class="pc bpc" id="L619" title="2 of 6 branches missed.">        if (nom == null || nom.isEmpty() ||</span>
-<span class="pc bpc" id="L620" title="3 of 8 branches missed.">                capaciteStr == null || capaciteStr.isEmpty() ||</span>
+<span class="pc bpc" id="L643" title="2 of 6 branches missed.">        if (nom == null || nom.isEmpty() ||</span>
+<span class="pc bpc" id="L644" title="3 of 8 branches missed.">                capaciteStr == null || capaciteStr.isEmpty() ||</span>
                 type == null || status == null || etage == null) {
-<span class="fc" id="L622">            throw new IllegalArgumentException(&quot;Champs manquants&quot;);</span>
+<span class="fc" id="L646">            throw new IllegalArgumentException(&quot;Champs manquants&quot;);</span>
         }
 
         int capacite;
         try {
-<span class="fc" id="L627">            capacite = Integer.parseInt(capaciteStr);</span>
-<span class="pc bpc" id="L628" title="1 of 2 branches missed.">            if (capacite &lt;= 0) throw new NumberFormatException();</span>
-<span class="fc" id="L629">        } catch (NumberFormatException e) {</span>
-<span class="fc" id="L630">            throw new IllegalArgumentException(&quot;Capacité invalide&quot;);</span>
-<span class="fc" id="L631">        }</span>
+<span class="fc" id="L651">            capacite = Integer.parseInt(capaciteStr);</span>
+<span class="pc bpc" id="L652" title="1 of 2 branches missed.">            if (capacite &lt;= 0) throw new NumberFormatException();</span>
+<span class="fc" id="L653">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L654">            throw new IllegalArgumentException(&quot;Capacité invalide&quot;);</span>
+<span class="fc" id="L655">        }</span>
 
-<span class="fc" id="L633">        salle s = new salle();</span>
-<span class="fc" id="L634">        s.setNom(nom);</span>
-<span class="fc" id="L635">        s.setCapacite(capacite);</span>
-<span class="fc" id="L636">        s.setType_salle(type);</span>
-<span class="fc" id="L637">        s.setStatus(status);</span>
-<span class="fc" id="L638">        s.setPriorite(priorite);</span>
-<span class="fc" id="L639">        s.setEtage(etage);</span>
-<span class="fc" id="L640">        s.setImage(image);</span>
+<span class="fc" id="L657">        salle s = new salle();</span>
+<span class="fc" id="L658">        s.setNom(nom);</span>
+<span class="fc" id="L659">        s.setCapacite(capacite);</span>
+<span class="fc" id="L660">        s.setType_salle(type);</span>
+<span class="fc" id="L661">        s.setStatus(status);</span>
+<span class="fc" id="L662">        s.setPriorite(priorite);</span>
+<span class="fc" id="L663">        s.setEtage(etage);</span>
+<span class="fc" id="L664">        s.setImage(image);</span>
 
-<span class="fc" id="L642">        return s;</span>
+<span class="fc" id="L666">        return s;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

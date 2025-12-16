@@ -11,7 +11,23 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-<span class="fc" id="L14">public class UserService {</span>
+public class UserService {
+
+   @FunctionalInterface
+    public interface ConnectionProvider {
+        Connection getConnection() throws SQLException;
+    }
+
+    private ConnectionProvider connectionProvider;
+
+ 
+<span class="fc" id="L24">    public UserService() {</span>
+<span class="pc" id="L25">        this.connectionProvider = () -&gt; DataSource.getInstance().getConnection();</span>
+<span class="fc" id="L26">    }</span>
+
+<span class="fc" id="L28">    public UserService(ConnectionProvider connectionProvider) {</span>
+<span class="fc" id="L29">        this.connectionProvider = connectionProvider;</span>
+<span class="fc" id="L30">    }</span>
 
     /*@ 
       @ requires email != null &amp;&amp; !email.isEmpty();
@@ -23,75 +39,77 @@ import java.util.List;
       @ signals (JsonProcessingException e) true;
       @*/
     public Users authenticate(String email, String password) throws SQLException, JsonProcessingException {
-<span class="nc" id="L26">        String query = &quot;SELECT id, nom, prenom, email, password, roles, type, adresse, telephone, date_naissance, specialite FROM users WHERE email = ?&quot;;</span>
+<span class="fc" id="L42">        String query = &quot;SELECT id, nom, prenom, email, password, roles, type, adresse, telephone, date_naissance, specialite FROM users WHERE email = ?&quot;;</span>
 
-<span class="nc" id="L28">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L29">             PreparedStatement pstmt = conn.prepareStatement(query)) {</span>
-<span class="nc" id="L30">            pstmt.setString(1, email);</span>
-<span class="nc" id="L31">            try (ResultSet rs = pstmt.executeQuery()) {</span>
-<span class="nc bnc" id="L32" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L44">         try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L45">             PreparedStatement pstmt = conn.prepareStatement(query)) {</span>
+            
+<span class="fc" id="L47">            pstmt.setString(1, email);</span>
+            
+<span class="fc" id="L49">            try (ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">                if (rs.next()) {</span>
                     // Vérifier le mot de passe
-<span class="nc" id="L34">                    String hashedPassword = rs.getString(&quot;password&quot;);</span>
-<span class="nc bnc" id="L35" title="All 2 branches missed.">                    if (!BCrypt.checkpw(password, hashedPassword)) {</span>
-<span class="nc" id="L36">                        return null; // Mot de passe incorrect</span>
+<span class="fc" id="L52">                    String hashedPassword = rs.getString(&quot;password&quot;);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                    if (!BCrypt.checkpw(password, hashedPassword)) {</span>
+<span class="fc" id="L54">                        return null; // Mot de passe incorrect</span>
                     }
 
                     // Créer l'objet utilisateur
-<span class="nc" id="L40">                    String type = rs.getString(&quot;type&quot;);</span>
+<span class="fc" id="L58">                    String type = rs.getString(&quot;type&quot;);</span>
                     Users user;
                     
-<span class="nc bnc" id="L43" title="All 2 branches missed.">                    if (&quot;PATIENT&quot;.equals(type)) {</span>
-<span class="nc" id="L44">                        user = new Patient();</span>
-<span class="nc" id="L45">                        ((Patient) user).setAdresse(rs.getString(&quot;adresse&quot;));</span>
-<span class="nc" id="L46">                        ((Patient) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">                    if (&quot;PATIENT&quot;.equals(type)) {</span>
+<span class="fc" id="L62">                        user = new Patient();</span>
+<span class="fc" id="L63">                        ((Patient) user).setAdresse(rs.getString(&quot;adresse&quot;));</span>
+<span class="fc" id="L64">                        ((Patient) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
                         
-<span class="nc" id="L48">                        Date dateN = rs.getDate(&quot;date_naissance&quot;);</span>
-<span class="nc bnc" id="L49" title="All 2 branches missed.">                        if (dateN != null) {</span>
-<span class="nc" id="L50">                            ((Patient) user).setDateNaissance(dateN.toLocalDate());</span>
+<span class="fc" id="L66">                        Date dateN = rs.getDate(&quot;date_naissance&quot;);</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">                        if (dateN != null) {</span>
+<span class="fc" id="L68">                            ((Patient) user).setDateNaissance(dateN.toLocalDate());</span>
                         } else {
-<span class="nc" id="L52">                            ((Patient) user).setDateNaissance(null);</span>
+<span class="nc" id="L70">                            ((Patient) user).setDateNaissance(null);</span>
                         }
-<span class="nc bnc" id="L54" title="All 2 branches missed.">                    } else if (&quot;MEDECIN&quot;.equals(type)) {</span>
-<span class="nc" id="L55">                        user = new Medecin();</span>
-<span class="nc" id="L56">                        ((Medecin) user).setSpecialite(rs.getString(&quot;specialite&quot;));</span>
-<span class="nc" id="L57">                        ((Medecin) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">                    } else if (&quot;PHARMACIEN&quot;.equals(type)) {</span>
-<span class="nc" id="L59">                        user = new Pharmacien();</span>
-<span class="nc" id="L60">                        ((Pharmacien) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
-<span class="nc bnc" id="L61" title="All 2 branches missed.">                    } else if (&quot;STAFF&quot;.equals(type)) {</span>
-<span class="nc" id="L62">                        user = new Staff();</span>
-<span class="nc" id="L63">                        ((Staff) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">                    } else if (&quot;MEDECIN&quot;.equals(type)) {</span>
+<span class="fc" id="L73">                        user = new Medecin();</span>
+<span class="fc" id="L74">                        ((Medecin) user).setSpecialite(rs.getString(&quot;specialite&quot;));</span>
+<span class="fc" id="L75">                        ((Medecin) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                    } else if (&quot;PHARMACIEN&quot;.equals(type)) {</span>
+<span class="nc" id="L77">                        user = new Pharmacien();</span>
+<span class="nc" id="L78">                        ((Pharmacien) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                    } else if (&quot;STAFF&quot;.equals(type)) {</span>
+<span class="nc" id="L80">                        user = new Staff();</span>
+<span class="nc" id="L81">                        ((Staff) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
                     } else {
-<span class="nc" id="L65">                        user = new Users();</span>
+<span class="nc" id="L83">                        user = new Users();</span>
                     }
 
-<span class="nc" id="L68">                    user.setId(rs.getInt(&quot;id&quot;));</span>
-<span class="nc" id="L69">                    user.setNom(rs.getString(&quot;nom&quot;));</span>
-<span class="nc" id="L70">                    user.setPrenom(rs.getString(&quot;prenom&quot;));</span>
-<span class="nc" id="L71">                    user.setEmail(rs.getString(&quot;email&quot;));</span>
-<span class="nc" id="L72">                    user.setPassword(hashedPassword);</span>
-<span class="nc" id="L73">                    user.setType(type);</span>
+<span class="fc" id="L86">                    user.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="fc" id="L87">                    user.setNom(rs.getString(&quot;nom&quot;));</span>
+<span class="fc" id="L88">                    user.setPrenom(rs.getString(&quot;prenom&quot;));</span>
+<span class="fc" id="L89">                    user.setEmail(rs.getString(&quot;email&quot;));</span>
+<span class="fc" id="L90">                    user.setPassword(hashedPassword);</span>
+<span class="fc" id="L91">                    user.setType(type);</span>
 
-<span class="nc" id="L75">                    String rolesJson = rs.getString(&quot;roles&quot;);</span>
-<span class="nc" id="L76">                    ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L93">                    String rolesJson = rs.getString(&quot;roles&quot;);</span>
+<span class="fc" id="L94">                    ObjectMapper mapper = new ObjectMapper();</span>
                     
-<span class="nc" id="L78">                    TypeReference&lt;List&lt;String&gt;&gt; typeRef = new TypeReference&lt;List&lt;String&gt;&gt;() {};</span>
-<span class="nc" id="L79">                    List&lt;String&gt; roles = mapper.readValue(rolesJson, typeRef);</span>
+<span class="fc" id="L96">                    TypeReference&lt;List&lt;String&gt;&gt; typeRef = new TypeReference&lt;List&lt;String&gt;&gt;() {};</span>
+<span class="fc" id="L97">                    List&lt;String&gt; roles = mapper.readValue(rolesJson, typeRef);</span>
                     
-<span class="nc" id="L81">                    user.setRoles(roles);</span>
+<span class="fc" id="L99">                    user.setRoles(roles);</span>
 
-<span class="nc" id="L83">                    return user;</span>
+<span class="fc" id="L101">                    return user;</span>
                 }
-<span class="nc bnc" id="L85" title="All 4 branches missed.">            }</span>
-<span class="nc bnc" id="L86" title="All 8 branches missed.">        } catch (SQLException e) {</span>
-<span class="nc" id="L87">            System.err.println(&quot;❌ Erreur lors de l'authentification : &quot; + e.getMessage());</span>
-<span class="nc" id="L88">            throw e;</span>
-<span class="nc" id="L89">        } catch (JsonProcessingException e) {</span>
-<span class="nc" id="L90">            System.err.println(&quot;❌ Erreur lors de la désérialisation des rôles : &quot; + e.getMessage());</span>
-<span class="nc" id="L91">            throw e;</span>
-<span class="nc" id="L92">        }</span>
+<span class="pc bpc" id="L103" title="2 of 4 branches missed.">            }</span>
+<span class="pc bpc" id="L104" title="4 of 8 branches missed.">        } catch (SQLException e) {</span>
+<span class="nc" id="L105">            System.err.println(&quot;❌ Erreur lors de l'authentification : &quot; + e.getMessage());</span>
+<span class="nc" id="L106">            throw e;</span>
+<span class="nc" id="L107">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L108">            System.err.println(&quot;❌ Erreur lors de la désérialisation des rôles : &quot; + e.getMessage());</span>
+<span class="nc" id="L109">            throw e;</span>
+<span class="fc" id="L110">        }</span>
 
-<span class="nc" id="L94">        return null; // Utilisateur non trouvé</span>
+<span class="fc" id="L112">        return null; // Utilisateur non trouvé</span>
     }
 
     /*@ 
@@ -107,216 +125,218 @@ import java.util.List;
       @*/
     public void ajouterUtilisateur(Users user, String type) throws SQLException, JsonProcessingException {
         // Validation
-<span class="nc bnc" id="L110" title="All 6 branches missed.">        if (user == null || user.getEmail() == null || user.getEmail().isEmpty() ||</span>
-<span class="nc bnc" id="L111" title="All 4 branches missed.">                user.getPassword() == null || user.getPassword().isEmpty() ||</span>
-<span class="nc bnc" id="L112" title="All 4 branches missed.">                user.getNom() == null || user.getNom().isEmpty() ||</span>
-<span class="nc bnc" id="L113" title="All 4 branches missed.">                user.getPrenom() == null || user.getPrenom().isEmpty()) {</span>
-<span class="nc" id="L114">            throw new IllegalArgumentException(&quot;Tous les champs communs doivent être remplis !&quot;);</span>
+<span class="pc bpc" id="L128" title="2 of 6 branches missed.">        if (user == null || user.getEmail() == null || user.getEmail().isEmpty() ||</span>
+<span class="pc bpc" id="L129" title="2 of 4 branches missed.">                user.getPassword() == null || user.getPassword().isEmpty() ||</span>
+<span class="pc bpc" id="L130" title="2 of 4 branches missed.">                user.getNom() == null || user.getNom().isEmpty() ||</span>
+<span class="pc bpc" id="L131" title="2 of 4 branches missed.">                user.getPrenom() == null || user.getPrenom().isEmpty()) {</span>
+<span class="fc" id="L132">            throw new IllegalArgumentException(&quot;Tous les champs communs doivent être remplis !&quot;);</span>
         }
 
         // Déterminer le rôle
-<span class="nc" id="L118">        String role = &quot;ROLE_USER&quot;;</span>
-<span class="nc" id="L119">        String lowerType = type.toLowerCase();</span>
+<span class="fc" id="L136">        String role = &quot;ROLE_USER&quot;;</span>
+<span class="fc" id="L137">        String lowerType = type.toLowerCase();</span>
         
-<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (lowerType.equals(&quot;patient&quot;)) role = &quot;ROLE_PATIENT&quot;;</span>
-<span class="nc bnc" id="L122" title="All 2 branches missed.">        else if (lowerType.equals(&quot;medecin&quot;)) role = &quot;ROLE_MEDECIN&quot;;</span>
-<span class="nc bnc" id="L123" title="All 2 branches missed.">        else if (lowerType.equals(&quot;pharmacien&quot;)) role = &quot;ROLE_PHARMACIEN&quot;;</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">        else if (lowerType.equals(&quot;staff&quot;)) role = &quot;ROLE_STAFF&quot;;</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        if (lowerType.equals(&quot;patient&quot;)) role = &quot;ROLE_PATIENT&quot;;</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        else if (lowerType.equals(&quot;medecin&quot;)) role = &quot;ROLE_MEDECIN&quot;;</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        else if (lowerType.equals(&quot;pharmacien&quot;)) role = &quot;ROLE_PHARMACIEN&quot;;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        else if (lowerType.equals(&quot;staff&quot;)) role = &quot;ROLE_STAFF&quot;;</span>
 
-<span class="nc" id="L126">        List&lt;String&gt; rolesList = new ArrayList&lt;String&gt;();</span>
-<span class="nc" id="L127">        rolesList.add(role);</span>
-<span class="nc" id="L128">        user.setRoles(rolesList);</span>
-<span class="nc" id="L129">        user.setType(type);</span>
+<span class="fc" id="L144">        List&lt;String&gt; rolesList = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L145">        rolesList.add(role);</span>
+<span class="fc" id="L146">        user.setRoles(rolesList);</span>
+<span class="fc" id="L147">        user.setType(type);</span>
 
         // Requête SQL
-<span class="nc" id="L132">        String req = &quot;INSERT INTO users (nom, prenom, email, password, roles, type&quot;;</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (user instanceof Patient) {</span>
-<span class="nc" id="L134">            req += &quot;, adresse, telephone, date_naissance&quot;;</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">        } else if (user instanceof Medecin) {</span>
-<span class="nc" id="L136">            req += &quot;, specialite, telephone&quot;;</span>
-<span class="nc bnc" id="L137" title="All 4 branches missed.">        } else if (user instanceof Pharmacien || user instanceof Staff) {</span>
-<span class="nc" id="L138">            req += &quot;, telephone&quot;;</span>
+<span class="fc" id="L150">        String req = &quot;INSERT INTO users (nom, prenom, email, password, roles, type&quot;;</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (user instanceof Patient) {</span>
+<span class="fc" id="L152">            req += &quot;, adresse, telephone, date_naissance&quot;;</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        } else if (user instanceof Medecin) {</span>
+<span class="nc" id="L154">            req += &quot;, specialite, telephone&quot;;</span>
+<span class="nc bnc" id="L155" title="All 4 branches missed.">        } else if (user instanceof Pharmacien || user instanceof Staff) {</span>
+<span class="nc" id="L156">            req += &quot;, telephone&quot;;</span>
         }
-<span class="nc" id="L140">        req += &quot;) VALUES (?,?, ?, ?, ?, ?&quot;;</span>
+<span class="fc" id="L158">        req += &quot;) VALUES (?,?, ?, ?, ?, ?&quot;;</span>
 
-<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (user instanceof Patient) {</span>
-<span class="nc" id="L143">            req += &quot;, ?, ?, ?&quot;;</span>
-<span class="nc bnc" id="L144" title="All 2 branches missed.">        } else if (user instanceof Medecin) {</span>
-<span class="nc" id="L145">            req += &quot;, ?, ?&quot;;</span>
-<span class="nc bnc" id="L146" title="All 4 branches missed.">        } else if (user instanceof Pharmacien || user instanceof Staff) {</span>
-<span class="nc" id="L147">            req += &quot;, ?&quot;;</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (user instanceof Patient) {</span>
+<span class="fc" id="L161">            req += &quot;, ?, ?, ?&quot;;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        } else if (user instanceof Medecin) {</span>
+<span class="nc" id="L163">            req += &quot;, ?, ?&quot;;</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        } else if (user instanceof Pharmacien || user instanceof Staff) {</span>
+<span class="nc" id="L165">            req += &quot;, ?&quot;;</span>
         }
-<span class="nc" id="L149">        req += &quot;)&quot;;</span>
+<span class="fc" id="L167">        req += &quot;)&quot;;</span>
 
-<span class="nc" id="L151">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L152">             PreparedStatement pstmt = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {</span>
+<span class="fc" id="L169">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L170">             PreparedStatement pstmt = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS)) {</span>
+            
             // Champs communs
-<span class="nc" id="L154">            pstmt.setString(1, user.getNom());</span>
-<span class="nc" id="L155">            pstmt.setString(2, user.getPrenom());</span>
-<span class="nc" id="L156">            pstmt.setString(3, user.getEmail());</span>
-<span class="nc" id="L157">            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));</span>
-<span class="nc" id="L158">            pstmt.setString(4, hashedPassword);</span>
-<span class="nc" id="L159">            ObjectMapper mapper = new ObjectMapper();</span>
-<span class="nc" id="L160">            String rolesJson = mapper.writeValueAsString(user.getRoles());</span>
-<span class="nc" id="L161">            pstmt.setString(5, rolesJson);</span>
-<span class="nc" id="L162">            pstmt.setString(6, type.toUpperCase());</span>
+<span class="fc" id="L173">            pstmt.setString(1, user.getNom());</span>
+<span class="fc" id="L174">            pstmt.setString(2, user.getPrenom());</span>
+<span class="fc" id="L175">            pstmt.setString(3, user.getEmail());</span>
+<span class="fc" id="L176">            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));</span>
+<span class="fc" id="L177">            pstmt.setString(4, hashedPassword);</span>
+<span class="fc" id="L178">            ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L179">            String rolesJson = mapper.writeValueAsString(user.getRoles());</span>
+<span class="fc" id="L180">            pstmt.setString(5, rolesJson);</span>
+<span class="fc" id="L181">            pstmt.setString(6, type.toUpperCase());</span>
 
             // Champs spécifiques
-<span class="nc" id="L165">            int index = 7;</span>
-<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (user instanceof Patient) {</span>
-<span class="nc" id="L167">                Patient patient = (Patient) user;</span>
+<span class="fc" id="L184">            int index = 7;</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">            if (user instanceof Patient) {</span>
+<span class="fc" id="L186">                Patient patient = (Patient) user;</span>
                 
-<span class="nc" id="L169">                String adr = patient.getAdresse();</span>
-<span class="nc bnc" id="L170" title="All 2 branches missed.">                if (adr == null) adr = &quot;&quot;;</span>
-<span class="nc" id="L171">                pstmt.setString(index++, adr);</span>
+<span class="fc" id="L188">                String adr = patient.getAdresse();</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">                if (adr == null) adr = &quot;&quot;;</span>
+<span class="fc" id="L190">                pstmt.setString(index++, adr);</span>
                 
-<span class="nc" id="L173">                String tel = patient.getTelephone();</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L175">                pstmt.setString(index++, tel);</span>
+<span class="fc" id="L192">                String tel = patient.getTelephone();</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="fc" id="L194">                pstmt.setString(index++, tel);</span>
                 
-<span class="nc" id="L177">                Date sqlDate = null;</span>
-<span class="nc bnc" id="L178" title="All 2 branches missed.">                if (patient.getDateNaissance() != null) {</span>
-<span class="nc" id="L179">                    sqlDate = Date.valueOf(patient.getDateNaissance());</span>
+<span class="fc" id="L196">                Date sqlDate = null;</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">                if (patient.getDateNaissance() != null) {</span>
+<span class="nc" id="L198">                    sqlDate = Date.valueOf(patient.getDateNaissance());</span>
                 }
-<span class="nc" id="L181">                pstmt.setObject(index++, sqlDate);</span>
+<span class="fc" id="L200">                pstmt.setObject(index++, sqlDate);</span>
                 
-<span class="nc bnc" id="L183" title="All 2 branches missed.">            } else if (user instanceof Medecin) {</span>
-<span class="nc" id="L184">                Medecin medecin = (Medecin) user;</span>
+<span class="pc bnc" id="L202" title="All 2 branches missed.">            } else if (user instanceof Medecin) {</span>
+<span class="nc" id="L203">                Medecin medecin = (Medecin) user;</span>
                 
-<span class="nc" id="L186">                String spec = medecin.getSpecialite();</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">                if (spec == null) spec = &quot;&quot;;</span>
-<span class="nc" id="L188">                pstmt.setString(index++, spec);</span>
+<span class="nc" id="L205">                String spec = medecin.getSpecialite();</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                if (spec == null) spec = &quot;&quot;;</span>
+<span class="nc" id="L207">                pstmt.setString(index++, spec);</span>
                 
-<span class="nc" id="L190">                String tel = medecin.getTelephone();</span>
-<span class="nc bnc" id="L191" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L192">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L209">                String tel = medecin.getTelephone();</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L211">                pstmt.setString(index++, tel);</span>
                 
-<span class="nc bnc" id="L194" title="All 2 branches missed.">            } else if (user instanceof Pharmacien) {</span>
-<span class="nc" id="L195">                Pharmacien pharmacien = (Pharmacien) user;</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            } else if (user instanceof Pharmacien) {</span>
+<span class="nc" id="L214">                Pharmacien pharmacien = (Pharmacien) user;</span>
                 
-<span class="nc" id="L197">                String tel = pharmacien.getTelephone();</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L199">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L216">                String tel = pharmacien.getTelephone();</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L218">                pstmt.setString(index++, tel);</span>
                 
-<span class="nc bnc" id="L201" title="All 2 branches missed.">            } else if (user instanceof Staff) {</span>
-<span class="nc" id="L202">                Staff staff = (Staff) user;</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">            } else if (user instanceof Staff) {</span>
+<span class="nc" id="L221">                Staff staff = (Staff) user;</span>
                 
-<span class="nc" id="L204">                String tel = staff.getTelephone();</span>
-<span class="nc bnc" id="L205" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L206">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L223">                String tel = staff.getTelephone();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L225">                pstmt.setString(index++, tel);</span>
             }
 
-<span class="nc" id="L209">            pstmt.executeUpdate();</span>
+<span class="fc" id="L228">            pstmt.executeUpdate();</span>
 
-<span class="nc" id="L211">            try (ResultSet rs = pstmt.getGeneratedKeys()) {</span>
-<span class="nc bnc" id="L212" title="All 2 branches missed.">                if (rs.next()) {</span>
-<span class="nc" id="L213">                    user.setId(rs.getInt(1));</span>
+<span class="fc" id="L230">            try (ResultSet rs = pstmt.getGeneratedKeys()) {</span>
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">                if (rs.next()) {</span>
+<span class="fc" id="L232">                    user.setId(rs.getInt(1));</span>
                 }
             }
 
-<span class="nc" id="L217">            System.out.println(&quot;✅ Utilisateur ajouté avec succès ! ID: &quot; + user.getId());</span>
-<span class="nc" id="L218">        } catch (SQLException e) {</span>
-<span class="nc" id="L219">            System.err.println(&quot;❌ Erreur lors de l'ajout : &quot; + e.getMessage());</span>
-<span class="nc" id="L220">            throw e;</span>
-<span class="nc" id="L221">        }</span>
-<span class="nc" id="L222">    }</span>
+<span class="fc" id="L236">            System.out.println(&quot;✅ Utilisateur ajouté avec succès ! ID: &quot; + user.getId());</span>
+<span class="nc" id="L237">        } catch (SQLException e) {</span>
+<span class="nc" id="L238">            System.err.println(&quot;❌ Erreur lors de l'ajout : &quot; + e.getMessage());</span>
+<span class="nc" id="L239">            throw e;</span>
+<span class="fc" id="L240">        }</span>
+<span class="fc" id="L241">    }</span>
 
     /*@ 
       @ requires id &gt; 0;
       @*/
     public void supprimer(int id) throws SQLException {
-<span class="nc" id="L228">        String checkQuery = &quot;SELECT COUNT(*) FROM users WHERE id = ?&quot;;</span>
-<span class="nc" id="L229">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L230">             PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {</span>
-<span class="nc" id="L231">            checkStmt.setInt(1, id);</span>
-<span class="nc" id="L232">            try (ResultSet rs = checkStmt.executeQuery()) {</span>
-<span class="nc bnc" id="L233" title="All 4 branches missed.">                if (rs.next() &amp;&amp; rs.getInt(1) == 0) {</span>
-<span class="nc" id="L234">                    System.err.println(&quot;⚠️ Aucun utilisateur trouvé avec cet ID.&quot;);</span>
-<span class="nc" id="L235">                    return;</span>
+<span class="fc" id="L247">        String checkQuery = &quot;SELECT COUNT(*) FROM users WHERE id = ?&quot;;</span>
+        
+<span class="fc" id="L249">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L250">             PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {</span>
+<span class="fc" id="L251">            checkStmt.setInt(1, id);</span>
+<span class="fc" id="L252">            try (ResultSet rs = checkStmt.executeQuery()) {</span>
+<span class="pc bpc" id="L253" title="1 of 4 branches missed.">                if (rs.next() &amp;&amp; rs.getInt(1) == 0) {</span>
+<span class="fc" id="L254">                    System.err.println(&quot;⚠️ Aucun utilisateur trouvé avec cet ID.&quot;);</span>
+<span class="fc" id="L255">                    return;</span>
                 }
-<span class="nc bnc" id="L237" title="All 2 branches missed.">            }</span>
-<span class="nc bnc" id="L238" title="All 4 branches missed.">        }</span>
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">            }</span>
+<span class="pc bpc" id="L258" title="2 of 4 branches missed.">        }</span>
 
-<span class="nc" id="L240">        String req = &quot;DELETE FROM users WHERE id = ?&quot;;</span>
-<span class="nc" id="L241">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L242">             PreparedStatement pstmt = conn.prepareStatement(req)) {</span>
-<span class="nc" id="L243">            pstmt.setInt(1, id);</span>
-<span class="nc" id="L244">            pstmt.executeUpdate();</span>
-<span class="nc" id="L245">            System.out.println(&quot;✅ Utilisateur supprimé avec succès !&quot;);</span>
-<span class="nc" id="L246">        } catch (SQLException e) {</span>
-<span class="nc" id="L247">            System.err.println(&quot;❌ Erreur lors de la suppression de l'utilisateur : &quot; + e.getMessage());</span>
-<span class="nc" id="L248">            throw e;</span>
-<span class="nc" id="L249">        }</span>
-<span class="nc" id="L250">    }</span>
+<span class="fc" id="L260">        String req = &quot;DELETE FROM users WHERE id = ?&quot;;</span>
+<span class="fc" id="L261">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L262">             PreparedStatement pstmt = conn.prepareStatement(req)) {</span>
+<span class="fc" id="L263">            pstmt.setInt(1, id);</span>
+<span class="fc" id="L264">            pstmt.executeUpdate();</span>
+<span class="fc" id="L265">            System.out.println(&quot;✅ Utilisateur supprimé avec succès !&quot;);</span>
+<span class="nc" id="L266">        } catch (SQLException e) {</span>
+<span class="nc" id="L267">            System.err.println(&quot;❌ Erreur lors de la suppression de l'utilisateur : &quot; + e.getMessage());</span>
+<span class="nc" id="L268">            throw e;</span>
+<span class="fc" id="L269">        }</span>
+<span class="fc" id="L270">    }</span>
 
     /*@ 
       @ ensures \result != null;
       @ ensures (\forall int i; 0 &lt;= i &amp;&amp; i &lt; \result.size(); \result.get(i) != null);
       @*/
     public List&lt;Users&gt; listerUtilisateurs() throws SQLException {
-<span class="nc" id="L257">        List&lt;Users&gt; utilisateurs = new ArrayList&lt;Users&gt;();</span>
-<span class="nc" id="L258">        String req = &quot;SELECT id, nom, prenom, email, roles, type, adresse, telephone, date_naissance, specialite FROM users&quot;;</span>
+<span class="fc" id="L277">        List&lt;Users&gt; utilisateurs = new ArrayList&lt;Users&gt;();</span>
+<span class="fc" id="L278">        String req = &quot;SELECT id, nom, prenom, email, roles, type, adresse, telephone, date_naissance, specialite FROM users&quot;;</span>
 
-<span class="nc" id="L260">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L261">             PreparedStatement pstmt = conn.prepareStatement(req);</span>
-<span class="nc" id="L262">             ResultSet rs = pstmt.executeQuery()) {</span>
+<span class="fc" id="L280">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L281">             PreparedStatement pstmt = conn.prepareStatement(req);</span>
+<span class="fc" id="L282">             ResultSet rs = pstmt.executeQuery()) {</span>
 
-<span class="nc bnc" id="L264" title="All 2 branches missed.">            while (rs.next()) {</span>
-<span class="nc" id="L265">                String type = rs.getString(&quot;type&quot;);</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">            while (rs.next()) {</span>
+<span class="fc" id="L285">                String type = rs.getString(&quot;type&quot;);</span>
                 Users user;
 
-<span class="nc bnc" id="L268" title="All 2 branches missed.">                if (&quot;PATIENT&quot;.equals(type)) {</span>
-<span class="nc" id="L269">                    user = new Patient();</span>
-<span class="nc" id="L270">                    ((Patient) user).setAdresse(rs.getString(&quot;adresse&quot;));</span>
-<span class="nc" id="L271">                    ((Patient) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">                if (&quot;PATIENT&quot;.equals(type)) {</span>
+<span class="fc" id="L289">                    user = new Patient();</span>
+<span class="fc" id="L290">                    ((Patient) user).setAdresse(rs.getString(&quot;adresse&quot;));</span>
+<span class="fc" id="L291">                    ((Patient) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
                     
-<span class="nc" id="L273">                    Date dateN = rs.getDate(&quot;date_naissance&quot;);</span>
-<span class="nc bnc" id="L274" title="All 2 branches missed.">                    if (dateN != null) {</span>
-<span class="nc" id="L275">                        ((Patient) user).setDateNaissance(dateN.toLocalDate());</span>
+<span class="fc" id="L293">                    Date dateN = rs.getDate(&quot;date_naissance&quot;);</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">                    if (dateN != null) {</span>
+<span class="fc" id="L295">                        ((Patient) user).setDateNaissance(dateN.toLocalDate());</span>
                     } else {
-<span class="nc" id="L277">                        ((Patient) user).setDateNaissance(null);</span>
+<span class="nc" id="L297">                        ((Patient) user).setDateNaissance(null);</span>
                     }
-<span class="nc bnc" id="L279" title="All 2 branches missed.">                } else if (&quot;MEDECIN&quot;.equals(type)) {</span>
-<span class="nc" id="L280">                    user = new Medecin();</span>
-<span class="nc" id="L281">                    ((Medecin) user).setSpecialite(rs.getString(&quot;specialite&quot;));</span>
-<span class="nc" id="L282">                    ((Medecin) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
-<span class="nc bnc" id="L283" title="All 2 branches missed.">                } else if (&quot;PHARMACIEN&quot;.equals(type)) {</span>
-<span class="nc" id="L284">                    user = new Pharmacien();</span>
-<span class="nc" id="L285">                    ((Pharmacien) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
-<span class="nc bnc" id="L286" title="All 2 branches missed.">                } else if (&quot;STAFF&quot;.equals(type)) {</span>
-<span class="nc" id="L287">                    user = new Staff();</span>
-<span class="nc" id="L288">                    ((Staff) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="pc bpc" id="L299" title="1 of 2 branches missed.">                } else if (&quot;MEDECIN&quot;.equals(type)) {</span>
+<span class="nc" id="L300">                    user = new Medecin();</span>
+<span class="nc" id="L301">                    ((Medecin) user).setSpecialite(rs.getString(&quot;specialite&quot;));</span>
+<span class="nc" id="L302">                    ((Medecin) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="pc bpc" id="L303" title="1 of 2 branches missed.">                } else if (&quot;PHARMACIEN&quot;.equals(type)) {</span>
+<span class="nc" id="L304">                    user = new Pharmacien();</span>
+<span class="nc" id="L305">                    ((Pharmacien) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">                } else if (&quot;STAFF&quot;.equals(type)) {</span>
+<span class="fc" id="L307">                    user = new Staff();</span>
+<span class="fc" id="L308">                    ((Staff) user).setTelephone(rs.getString(&quot;telephone&quot;));</span>
                 } else {
-<span class="nc" id="L290">                    user = new Users();</span>
+<span class="nc" id="L310">                    user = new Users();</span>
                 }
 
-<span class="nc" id="L293">                user.setId(rs.getInt(&quot;id&quot;));</span>
-<span class="nc" id="L294">                user.setNom(rs.getString(&quot;nom&quot;));</span>
-<span class="nc" id="L295">                user.setPrenom(rs.getString(&quot;prenom&quot;));</span>
-<span class="nc" id="L296">                user.setEmail(rs.getString(&quot;email&quot;));</span>
-<span class="nc" id="L297">                user.setType(type);</span>
+<span class="fc" id="L313">                user.setId(rs.getInt(&quot;id&quot;));</span>
+<span class="fc" id="L314">                user.setNom(rs.getString(&quot;nom&quot;));</span>
+<span class="fc" id="L315">                user.setPrenom(rs.getString(&quot;prenom&quot;));</span>
+<span class="fc" id="L316">                user.setEmail(rs.getString(&quot;email&quot;));</span>
+<span class="fc" id="L317">                user.setType(type);</span>
 
-<span class="nc" id="L299">                String rolesJson = rs.getString(&quot;roles&quot;);</span>
-<span class="nc" id="L300">                ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L319">                String rolesJson = rs.getString(&quot;roles&quot;);</span>
+<span class="fc" id="L320">                ObjectMapper mapper = new ObjectMapper();</span>
                 
-<span class="nc" id="L302">                TypeReference&lt;List&lt;String&gt;&gt; typeRef = new TypeReference&lt;List&lt;String&gt;&gt;() {};</span>
-<span class="nc" id="L303">                List&lt;String&gt; roles = mapper.readValue(rolesJson, typeRef);</span>
+<span class="fc" id="L322">                TypeReference&lt;List&lt;String&gt;&gt; typeRef = new TypeReference&lt;List&lt;String&gt;&gt;() {};</span>
+<span class="fc" id="L323">                List&lt;String&gt; roles = mapper.readValue(rolesJson, typeRef);</span>
                 
-<span class="nc" id="L305">                user.setRoles(roles);</span>
+<span class="fc" id="L325">                user.setRoles(roles);</span>
 
-<span class="nc" id="L307">                utilisateurs.add(user);</span>
-<span class="nc" id="L308">            }</span>
+<span class="fc" id="L327">                utilisateurs.add(user);</span>
+<span class="fc" id="L328">            }</span>
 
-<span class="nc" id="L310">            System.out.println(&quot;📋 &quot; + utilisateurs.size() + &quot; utilisateur(s) trouvé(s).&quot;);</span>
-<span class="nc" id="L311">        } catch (SQLException e) {</span>
-<span class="nc" id="L312">            System.err.println(&quot;❌ Erreur SQL lors de la lecture : &quot; + e.getMessage());</span>
-<span class="nc" id="L313">            throw e;</span>
-<span class="nc" id="L314">        } catch (JsonProcessingException e) {</span>
-<span class="nc" id="L315">            System.err.println(&quot;❌ Erreur lors de la désérialisation des rôles : &quot; + e.getMessage());</span>
-<span class="nc" id="L316">            throw new RuntimeException(e);</span>
-<span class="nc" id="L317">        }</span>
+<span class="fc" id="L330">            System.out.println(&quot;📋 &quot; + utilisateurs.size() + &quot; utilisateur(s) trouvé(s).&quot;);</span>
+<span class="fc" id="L331">        } catch (SQLException e) {</span>
+<span class="fc" id="L332">            System.err.println(&quot;❌ Erreur SQL lors de la lecture : &quot; + e.getMessage());</span>
+<span class="fc" id="L333">            throw e;</span>
+<span class="nc" id="L334">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L335">            System.err.println(&quot;❌ Erreur lors de la désérialisation des rôles : &quot; + e.getMessage());</span>
+<span class="nc" id="L336">            throw new RuntimeException(e);</span>
+<span class="fc" id="L337">        }</span>
 
-<span class="nc" id="L319">        return utilisateurs;</span>
+<span class="fc" id="L339">        return utilisateurs;</span>
     }
 
     /*@ 
@@ -327,97 +347,98 @@ import java.util.List;
     // La méthode updateUtilisateur peut être conservée si vous voulez modifier des utilisateurs existants
     public void updateUtilisateur(Users user) throws SQLException, JsonProcessingException {
         // Validation des champs communs, y compris password
-<span class="nc bnc" id="L330" title="All 4 branches missed.">        if (user == null || user.getId() &lt;= 0 ||</span>
-<span class="nc bnc" id="L331" title="All 4 branches missed.">                user.getEmail() == null || user.getEmail().isEmpty() ||</span>
-<span class="nc bnc" id="L332" title="All 4 branches missed.">                user.getPassword() == null || user.getPassword().isEmpty() ||  // Ajout de la validation pour password</span>
-<span class="nc bnc" id="L333" title="All 4 branches missed.">                user.getNom() == null || user.getNom().isEmpty() ||</span>
-<span class="nc bnc" id="L334" title="All 4 branches missed.">                user.getPrenom() == null || user.getPrenom().isEmpty()) {</span>
-<span class="nc" id="L335">            throw new IllegalArgumentException(&quot;Tous les champs requis doivent être remplis !&quot;);</span>
+<span class="pc bpc" id="L350" title="1 of 4 branches missed.">        if (user == null || user.getId() &lt;= 0 ||</span>
+<span class="pc bpc" id="L351" title="2 of 4 branches missed.">                user.getEmail() == null || user.getEmail().isEmpty() ||</span>
+<span class="pc bpc" id="L352" title="2 of 4 branches missed.">                user.getPassword() == null || user.getPassword().isEmpty() ||  // Ajout de la validation pour password</span>
+<span class="pc bpc" id="L353" title="2 of 4 branches missed.">                user.getNom() == null || user.getNom().isEmpty() ||</span>
+<span class="pc bpc" id="L354" title="2 of 4 branches missed.">                user.getPrenom() == null || user.getPrenom().isEmpty()) {</span>
+<span class="fc" id="L355">            throw new IllegalArgumentException(&quot;Tous les champs requis doivent être remplis !&quot;);</span>
         }
-
+        
         // Requête SQL avec password inclus
-<span class="nc" id="L339">        String req = &quot;UPDATE users SET nom = ?, prenom = ?, email = ?, password = ?, roles = ?, type = ?&quot;;</span>
-<span class="nc bnc" id="L340" title="All 2 branches missed.">        if (user instanceof Patient) {</span>
-<span class="nc" id="L341">            req += &quot;, adresse = ?, telephone = ?, date_naissance = ?&quot;;</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">        } else if (user instanceof Medecin) {</span>
-<span class="nc" id="L343">            req += &quot;, specialite = ?, telephone = ?&quot;;</span>
-<span class="nc bnc" id="L344" title="All 4 branches missed.">        } else if (user instanceof Pharmacien || user instanceof Staff) {</span>
-<span class="nc" id="L345">            req += &quot;, telephone = ?&quot;;</span>
+<span class="fc" id="L359">        String req = &quot;UPDATE users SET nom = ?, prenom = ?, email = ?, password = ?, roles = ?, type = ?&quot;;</span>
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">        if (user instanceof Patient) {</span>
+<span class="nc" id="L361">            req += &quot;, adresse = ?, telephone = ?, date_naissance = ?&quot;;</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">        } else if (user instanceof Medecin) {</span>
+<span class="nc" id="L363">            req += &quot;, specialite = ?, telephone = ?&quot;;</span>
+<span class="pc bpc" id="L364" title="2 of 4 branches missed.">        } else if (user instanceof Pharmacien || user instanceof Staff) {</span>
+<span class="nc" id="L365">            req += &quot;, telephone = ?&quot;;</span>
         }
-<span class="nc" id="L347">        req += &quot; WHERE id = ?&quot;;</span>
+<span class="fc" id="L367">        req += &quot; WHERE id = ?&quot;;</span>
 
-<span class="nc" id="L349">        try (Connection conn = DataSource.getInstance().getConnection();</span>
-<span class="nc" id="L350">             PreparedStatement pstmt = conn.prepareStatement(req)) {</span>
+<span class="fc" id="L369">        try (Connection conn = this.connectionProvider.getConnection();</span>
+<span class="fc" id="L370">             PreparedStatement pstmt = conn.prepareStatement(req)) {</span>
+            
             // Champs communs
-<span class="nc" id="L352">            pstmt.setString(1, user.getNom());</span>
-<span class="nc" id="L353">            pstmt.setString(2, user.getPrenom());</span>
-<span class="nc" id="L354">            pstmt.setString(3, user.getEmail());</span>
+<span class="fc" id="L373">            pstmt.setString(1, user.getNom());</span>
+<span class="fc" id="L374">            pstmt.setString(2, user.getPrenom());</span>
+<span class="fc" id="L375">            pstmt.setString(3, user.getEmail());</span>
             // Hacher le mot de passe avant la mise à jour
-<span class="nc" id="L356">            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));</span>
-<span class="nc" id="L357">            pstmt.setString(4, hashedPassword);</span>
-<span class="nc" id="L358">            ObjectMapper mapper = new ObjectMapper();</span>
-<span class="nc" id="L359">            String rolesJson = mapper.writeValueAsString(user.getRoles());</span>
-<span class="nc" id="L360">            pstmt.setString(5, rolesJson);</span>
-<span class="nc" id="L361">            pstmt.setString(6, user.getType().toUpperCase());</span>
+<span class="fc" id="L377">            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12));</span>
+<span class="fc" id="L378">            pstmt.setString(4, hashedPassword);</span>
+<span class="fc" id="L379">            ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L380">            String rolesJson = mapper.writeValueAsString(user.getRoles());</span>
+<span class="fc" id="L381">            pstmt.setString(5, rolesJson);</span>
+<span class="fc" id="L382">            pstmt.setString(6, user.getType().toUpperCase());</span>
 
             // Champs spécifiques
-<span class="nc" id="L364">            int index = 7;</span>
-<span class="nc bnc" id="L365" title="All 2 branches missed.">            if (user instanceof Patient) {</span>
-<span class="nc" id="L366">                Patient patient = (Patient) user;</span>
+<span class="fc" id="L385">            int index = 7;</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">            if (user instanceof Patient) {</span>
+<span class="nc" id="L387">                Patient patient = (Patient) user;</span>
                 
-<span class="nc" id="L368">                String adr = patient.getAdresse();</span>
-<span class="nc bnc" id="L369" title="All 2 branches missed.">                if (adr == null) adr = &quot;&quot;;</span>
-<span class="nc" id="L370">                pstmt.setString(index++, adr);</span>
+<span class="nc" id="L389">                String adr = patient.getAdresse();</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">                if (adr == null) adr = &quot;&quot;;</span>
+<span class="nc" id="L391">                pstmt.setString(index++, adr);</span>
                 
-<span class="nc" id="L372">                String tel = patient.getTelephone();</span>
-<span class="nc bnc" id="L373" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L374">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L393">                String tel = patient.getTelephone();</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L395">                pstmt.setString(index++, tel);</span>
                 
-<span class="nc" id="L376">                Date sqlDate = null;</span>
-<span class="nc bnc" id="L377" title="All 2 branches missed.">                if (patient.getDateNaissance() != null) {</span>
-<span class="nc" id="L378">                    sqlDate = Date.valueOf(patient.getDateNaissance());</span>
+<span class="nc" id="L397">                Date sqlDate = null;</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">                if (patient.getDateNaissance() != null) {</span>
+<span class="nc" id="L399">                    sqlDate = Date.valueOf(patient.getDateNaissance());</span>
                 }
-<span class="nc" id="L380">                pstmt.setObject(index++, sqlDate);</span>
+<span class="nc" id="L401">                pstmt.setObject(index++, sqlDate);</span>
                 
-<span class="nc bnc" id="L382" title="All 2 branches missed.">            } else if (user instanceof Medecin) {</span>
-<span class="nc" id="L383">                Medecin medecin = (Medecin) user;</span>
+<span class="pc bpc" id="L403" title="1 of 2 branches missed.">            } else if (user instanceof Medecin) {</span>
+<span class="nc" id="L404">                Medecin medecin = (Medecin) user;</span>
                 
-<span class="nc" id="L385">                String spec = medecin.getSpecialite();</span>
-<span class="nc bnc" id="L386" title="All 2 branches missed.">                if (spec == null) spec = &quot;&quot;;</span>
-<span class="nc" id="L387">                pstmt.setString(index++, spec);</span>
+<span class="nc" id="L406">                String spec = medecin.getSpecialite();</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">                if (spec == null) spec = &quot;&quot;;</span>
+<span class="nc" id="L408">                pstmt.setString(index++, spec);</span>
                 
-<span class="nc" id="L389">                String tel = medecin.getTelephone();</span>
-<span class="nc bnc" id="L390" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L391">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L410">                String tel = medecin.getTelephone();</span>
+<span class="nc bnc" id="L411" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L412">                pstmt.setString(index++, tel);</span>
                 
-<span class="nc bnc" id="L393" title="All 2 branches missed.">            } else if (user instanceof Pharmacien) {</span>
-<span class="nc" id="L394">                Pharmacien pharmacien = (Pharmacien) user;</span>
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">            } else if (user instanceof Pharmacien) {</span>
+<span class="nc" id="L415">                Pharmacien pharmacien = (Pharmacien) user;</span>
                 
-<span class="nc" id="L396">                String tel = pharmacien.getTelephone();</span>
-<span class="nc bnc" id="L397" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L398">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L417">                String tel = pharmacien.getTelephone();</span>
+<span class="nc bnc" id="L418" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L419">                pstmt.setString(index++, tel);</span>
                 
-<span class="nc bnc" id="L400" title="All 2 branches missed.">            } else if (user instanceof Staff) {</span>
-<span class="nc" id="L401">                Staff staff = (Staff) user;</span>
+<span class="pc bpc" id="L421" title="1 of 2 branches missed.">            } else if (user instanceof Staff) {</span>
+<span class="nc" id="L422">                Staff staff = (Staff) user;</span>
                 
-<span class="nc" id="L403">                String tel = staff.getTelephone();</span>
-<span class="nc bnc" id="L404" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
-<span class="nc" id="L405">                pstmt.setString(index++, tel);</span>
+<span class="nc" id="L424">                String tel = staff.getTelephone();</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">                if (tel == null) tel = &quot;&quot;;</span>
+<span class="nc" id="L426">                pstmt.setString(index++, tel);</span>
             }
 
             // Clause WHERE
-<span class="nc" id="L409">            pstmt.setInt(index, user.getId());</span>
+<span class="fc" id="L430">            pstmt.setInt(index, user.getId());</span>
 
-<span class="nc" id="L411">            int rowsUpdated = pstmt.executeUpdate();</span>
-<span class="nc bnc" id="L412" title="All 2 branches missed.">            if (rowsUpdated &gt; 0) {</span>
-<span class="nc" id="L413">                System.out.println(&quot;✅ Utilisateur mis à jour avec succès ! ID: &quot; + user.getId());</span>
+<span class="fc" id="L432">            int rowsUpdated = pstmt.executeUpdate();</span>
+<span class="pc bpc" id="L433" title="1 of 2 branches missed.">            if (rowsUpdated &gt; 0) {</span>
+<span class="fc" id="L434">                System.out.println(&quot;✅ Utilisateur mis à jour avec succès ! ID: &quot; + user.getId());</span>
             } else {
-<span class="nc" id="L415">                throw new SQLException(&quot;Aucun utilisateur trouvé avec l'ID: &quot; + user.getId());</span>
+<span class="nc" id="L436">                throw new SQLException(&quot;Aucun utilisateur trouvé avec l'ID: &quot; + user.getId());</span>
             }
-<span class="nc" id="L417">        } catch (SQLException e) {</span>
-<span class="nc" id="L418">            System.err.println(&quot;❌ Erreur lors de la mise à jour : &quot; + e.getMessage());</span>
-<span class="nc" id="L419">            throw e;</span>
-<span class="nc" id="L420">        }</span>
-<span class="nc" id="L421">    }</span>
+<span class="nc" id="L438">        } catch (SQLException e) {</span>
+<span class="nc" id="L439">            System.err.println(&quot;❌ Erreur lors de la mise à jour : &quot; + e.getMessage());</span>
+<span class="nc" id="L440">            throw e;</span>
+<span class="fc" id="L441">        }</span>
+<span class="fc" id="L442">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

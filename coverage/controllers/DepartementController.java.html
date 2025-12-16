@@ -70,210 +70,248 @@ import java.util.stream.Collectors;
 
     @FXML private TextField searchField;
 
-<span class="fc" id="L73">    private final DepartemntService departementService = new DepartemntService();</span>
-<span class="fc" id="L74">    private final EtageService etageService = new EtageService();</span>
-<span class="fc" id="L75">    private final SalleService salleService = new SalleService();</span>
-<span class="fc" id="L76">    private final ObservableList&lt;departement&gt; departementData = FXCollections.observableArrayList();</span>
-<span class="fc" id="L77">    private final ObservableList&lt;departement&gt; filteredDepartementData = FXCollections.observableArrayList();</span>
-<span class="fc" id="L78">    private String imagePath = &quot;&quot;;</span>
+  
+    private DepartemntService departementService;
+    private EtageService etageService;
+    private SalleService salleService;
+
+<span class="fc" id="L78">    private final ObservableList&lt;departement&gt; departementData = FXCollections.observableArrayList();</span>
+<span class="fc" id="L79">    private final ObservableList&lt;departement&gt; filteredDepartementData = FXCollections.observableArrayList();</span>
+<span class="fc" id="L80">    private String imagePath = &quot;&quot;;</span>
     public static final String IMAGE_DIR = &quot;src/main/resources/images/&quot;;
+
+
+    public void setDepartementService(DepartemntService departementService) {
+<span class="nc" id="L85">        this.departementService = departementService;</span>
+<span class="nc" id="L86">    }</span>
+
+    private DepartemntService getDepartementService() {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if (this.departementService == null) {</span>
+<span class="nc" id="L90">            this.departementService = new DepartemntService();</span>
+        }
+<span class="nc" id="L92">        return this.departementService;</span>
+    }
+
+    public void setEtageService(EtageService etageService) {
+<span class="nc" id="L96">        this.etageService = etageService;</span>
+<span class="nc" id="L97">    }</span>
+
+    private EtageService getEtageService() {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (this.etageService == null) {</span>
+<span class="nc" id="L101">            this.etageService = new EtageService();</span>
+        }
+<span class="nc" id="L103">        return this.etageService;</span>
+    }
+
+    public void setSalleService(SalleService salleService) {
+<span class="nc" id="L107">        this.salleService = salleService;</span>
+<span class="nc" id="L108">    }</span>
+
+    private SalleService getSalleService() {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (this.salleService == null) {</span>
+<span class="nc" id="L112">            this.salleService = new SalleService();</span>
+        }
+<span class="nc" id="L114">        return this.salleService;</span>
+    }
+
+    // --------------------------------------------------
 
     @FXML
     public void initialize() {
-<span class="nc" id="L83">        createImageDirectory();</span>
-<span class="nc" id="L84">        setupTable();</span>
-<span class="nc" id="L85">        loadDepartements();</span>
-<span class="nc" id="L86">        setupSearch();</span>
-<span class="nc" id="L87">    }</span>
+<span class="nc" id="L121">        createImageDirectory();</span>
+<span class="nc" id="L122">        setupTable();</span>
+<span class="nc" id="L123">        loadDepartements();</span>
+<span class="nc" id="L124">        setupSearch();</span>
+<span class="nc" id="L125">    }</span>
 
     private void createImageDirectory() {
-<span class="fc" id="L90">        File imageDir = new File(IMAGE_DIR);</span>
-<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        if (!imageDir.exists()) {</span>
-<span class="nc" id="L92">            imageDir.mkdirs();</span>
+<span class="fc" id="L128">        File imageDir = new File(IMAGE_DIR);</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (!imageDir.exists()) {</span>
+<span class="nc" id="L130">            imageDir.mkdirs();</span>
         }
-<span class="fc" id="L94">    }</span>
+<span class="fc" id="L132">    }</span>
 
     private void setupTable() {
-<span class="nc" id="L97">        nomColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom&quot;));</span>
-<span class="nc" id="L98">        adresseColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;adresse&quot;));</span>
-<span class="nc" id="L99">        nbrEtageColumn.setCellValueFactory(cellData -&gt; {</span>
-<span class="nc" id="L100">            departement d = cellData.getValue();</span>
-<span class="nc" id="L101">            return new SimpleIntegerProperty(d.getNbr_etage()).asObject();</span>
+<span class="nc" id="L135">        nomColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;nom&quot;));</span>
+<span class="nc" id="L136">        adresseColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;adresse&quot;));</span>
+<span class="nc" id="L137">        nbrEtageColumn.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L138">            departement d = cellData.getValue();</span>
+<span class="nc" id="L139">            return new SimpleIntegerProperty(d.getNbr_etage()).asObject();</span>
         });
-<span class="nc" id="L103">        imageColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;image&quot;));</span>
+<span class="nc" id="L141">        imageColumn.setCellValueFactory(new PropertyValueFactory&lt;&gt;(&quot;image&quot;));</span>
 
-<span class="nc" id="L105">        imageColumn.setCellFactory(column -&gt; new TableCell&lt;departement, String&gt;() {</span>
-<span class="nc" id="L106">            private final ImageView imageView = new ImageView();</span>
-<span class="nc" id="L107">            private final Label label = new Label();</span>
+<span class="nc" id="L143">        imageColumn.setCellFactory(column -&gt; new TableCell&lt;departement, String&gt;() {</span>
+<span class="nc" id="L144">            private final ImageView imageView = new ImageView();</span>
+<span class="nc" id="L145">            private final Label label = new Label();</span>
 
             {
-<span class="nc" id="L110">                imageView.setFitHeight(40);</span>
-<span class="nc" id="L111">                imageView.setFitWidth(40);</span>
-<span class="nc" id="L112">                imageView.setPreserveRatio(true);</span>
-<span class="nc" id="L113">                label.setStyle(&quot;-fx-text-fill: #666666;&quot;);</span>
-<span class="nc" id="L114">            }</span>
+<span class="nc" id="L148">                imageView.setFitHeight(40);</span>
+<span class="nc" id="L149">                imageView.setFitWidth(40);</span>
+<span class="nc" id="L150">                imageView.setPreserveRatio(true);</span>
+<span class="nc" id="L151">                label.setStyle(&quot;-fx-text-fill: #666666;&quot;);</span>
+<span class="nc" id="L152">            }</span>
 
             @Override
             protected void updateItem(String imageName, boolean empty) {
-<span class="nc" id="L118">                super.updateItem(imageName, empty);</span>
+<span class="nc" id="L156">                super.updateItem(imageName, empty);</span>
 
-<span class="nc" id="L120">                setGraphic(null);</span>
-<span class="nc" id="L121">                setText(null);</span>
+<span class="nc" id="L158">                setGraphic(null);</span>
+<span class="nc" id="L159">                setText(null);</span>
 
-<span class="nc bnc" id="L123" title="All 6 branches missed.">                if (!empty &amp;&amp; imageName != null &amp;&amp; !imageName.isEmpty()) {</span>
+<span class="nc bnc" id="L161" title="All 6 branches missed.">                if (!empty &amp;&amp; imageName != null &amp;&amp; !imageName.isEmpty()) {</span>
                     try {
-<span class="nc" id="L125">                        File imageFile = new File(IMAGE_DIR + imageName);</span>
-<span class="nc bnc" id="L126" title="All 2 branches missed.">                        if (imageFile.exists()) {</span>
-<span class="nc" id="L127">                            imageView.setImage(new Image(imageFile.toURI().toString()));</span>
-<span class="nc" id="L128">                            setGraphic(imageView);</span>
+<span class="nc" id="L163">                        File imageFile = new File(IMAGE_DIR + imageName);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">                        if (imageFile.exists()) {</span>
+<span class="nc" id="L165">                            imageView.setImage(new Image(imageFile.toURI().toString()));</span>
+<span class="nc" id="L166">                            setGraphic(imageView);</span>
                         } else {
-<span class="nc" id="L130">                            label.setText(&quot;Image manquante&quot;);</span>
-<span class="nc" id="L131">                            setGraphic(label);</span>
+<span class="nc" id="L168">                            label.setText(&quot;Image manquante&quot;);</span>
+<span class="nc" id="L169">                            setGraphic(label);</span>
                         }
-<span class="nc" id="L133">                    } catch (Exception e) {</span>
-<span class="nc" id="L134">                        label.setText(&quot;Erreur&quot;);</span>
-<span class="nc" id="L135">                        setGraphic(label);</span>
-<span class="nc" id="L136">                    }</span>
+<span class="nc" id="L171">                    } catch (Exception e) {</span>
+<span class="nc" id="L172">                        label.setText(&quot;Erreur&quot;);</span>
+<span class="nc" id="L173">                        setGraphic(label);</span>
+<span class="nc" id="L174">                    }</span>
                 }
-<span class="nc" id="L138">            }</span>
+<span class="nc" id="L176">            }</span>
         });
 
-<span class="nc" id="L141">        actionsColumn.setCellFactory(column -&gt; new TableCell&lt;departement, Void&gt;() {</span>
-<span class="nc" id="L142">            private final HBox buttons = new HBox(5);</span>
-<span class="nc" id="L143">            private final Button editBtn = new Button(&quot;✏️&quot;);</span>
-<span class="nc" id="L144">            private final Button deleteBtn = new Button(&quot;🗑️&quot;);</span>
+<span class="nc" id="L179">        actionsColumn.setCellFactory(column -&gt; new TableCell&lt;departement, Void&gt;() {</span>
+<span class="nc" id="L180">            private final HBox buttons = new HBox(5);</span>
+<span class="nc" id="L181">            private final Button editBtn = new Button(&quot;✏️&quot;);</span>
+<span class="nc" id="L182">            private final Button deleteBtn = new Button(&quot;🗑️&quot;);</span>
 
             {
-<span class="nc" id="L147">                buttons.setStyle(&quot;-fx-alignment: CENTER;&quot;);</span>
-<span class="nc" id="L148">                editBtn.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
-<span class="nc" id="L149">                deleteBtn.setStyle(&quot;-fx-background-color: #EF5350; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
+<span class="nc" id="L185">                buttons.setStyle(&quot;-fx-alignment: CENTER;&quot;);</span>
+<span class="nc" id="L186">                editBtn.setStyle(&quot;-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
+<span class="nc" id="L187">                deleteBtn.setStyle(&quot;-fx-background-color: #EF5350; -fx-text-fill: white; -fx-font-size: 12px; -fx-background-radius: 5px;&quot;);</span>
 
-<span class="nc" id="L151">                editBtn.setOnAction(event -&gt; {</span>
-<span class="nc" id="L152">                    departement departement = getTableView().getItems().get(getIndex());</span>
-<span class="nc" id="L153">                    showEditDialog(departement);</span>
-<span class="nc" id="L154">                });</span>
+<span class="nc" id="L189">                editBtn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L190">                    departement departement = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L191">                    showEditDialog(departement);</span>
+<span class="nc" id="L192">                });</span>
 
-<span class="nc" id="L156">                deleteBtn.setOnAction(event -&gt; {</span>
-<span class="nc" id="L157">                    departement departement = getTableView().getItems().get(getIndex());</span>
-<span class="nc" id="L158">                    confirmAndDelete(departement);</span>
-<span class="nc" id="L159">                });</span>
+<span class="nc" id="L194">                deleteBtn.setOnAction(event -&gt; {</span>
+<span class="nc" id="L195">                    departement departement = getTableView().getItems().get(getIndex());</span>
+<span class="nc" id="L196">                    confirmAndDelete(departement);</span>
+<span class="nc" id="L197">                });</span>
 
-<span class="nc" id="L161">                buttons.getChildren().addAll(editBtn, deleteBtn);</span>
-<span class="nc" id="L162">            }</span>
+<span class="nc" id="L199">                buttons.getChildren().addAll(editBtn, deleteBtn);</span>
+<span class="nc" id="L200">            }</span>
 
             @Override
             protected void updateItem(Void item, boolean empty) {
-<span class="nc" id="L166">                super.updateItem(item, empty);</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">                setGraphic(empty ? null : buttons);</span>
-<span class="nc" id="L168">            }</span>
+<span class="nc" id="L204">                super.updateItem(item, empty);</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                setGraphic(empty ? null : buttons);</span>
+<span class="nc" id="L206">            }</span>
         });
-<span class="nc" id="L170">    }</span>
+<span class="nc" id="L208">    }</span>
 
     private void loadDepartements() {
-<span class="nc" id="L173">        departementData.clear();</span>
-<span class="nc" id="L174">        departementData.addAll(departementService.getAllDepartements());</span>
-<span class="nc" id="L175">        filteredDepartementData.setAll(departementData);</span>
-<span class="nc" id="L176">        departementTable.setItems(filteredDepartementData);</span>
-<span class="nc" id="L177">    }</span>
+<span class="nc" id="L211">        departementData.clear();</span>
+<span class="nc" id="L212">        departementData.addAll(getDepartementService().getAllDepartements());</span>
+<span class="nc" id="L213">        filteredDepartementData.setAll(departementData);</span>
+<span class="nc" id="L214">        departementTable.setItems(filteredDepartementData);</span>
+<span class="nc" id="L215">    }</span>
 
     private void setupSearch() {
-<span class="nc" id="L180">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
-<span class="nc" id="L181">            filterDepartements(newValue);</span>
-<span class="nc" id="L182">        });</span>
-<span class="nc" id="L183">    }</span>
+<span class="nc" id="L218">        searchField.textProperty().addListener((observable, oldValue, newValue) -&gt; {</span>
+<span class="nc" id="L219">            filterDepartements(newValue);</span>
+<span class="nc" id="L220">        });</span>
+<span class="nc" id="L221">    }</span>
 
     private void filterDepartements(String searchText) {
-<span class="pc bpc" id="L186" title="1 of 4 branches missed.">        if (searchText == null || searchText.isEmpty()) {</span>
-<span class="fc" id="L187">            filteredDepartementData.setAll(departementData);</span>
+<span class="pc bpc" id="L224" title="1 of 4 branches missed.">        if (searchText == null || searchText.isEmpty()) {</span>
+<span class="fc" id="L225">            filteredDepartementData.setAll(departementData);</span>
         } else {
-<span class="fc" id="L189">            String lowerCaseFilter = searchText.toLowerCase();</span>
-<span class="fc" id="L190">            List&lt;departement&gt; filteredList = departementData.stream()</span>
-<span class="fc" id="L191">                    .filter(departement -&gt; {</span>
-<span class="pc bpc" id="L192" title="1 of 2 branches missed.">                        boolean matchesNom = departement.getNom() != null &amp;&amp;</span>
-<span class="fc bfc" id="L193" title="All 2 branches covered.">                                departement.getNom().toLowerCase().contains(lowerCaseFilter);</span>
-<span class="pc bpc" id="L194" title="1 of 2 branches missed.">                        boolean matchesAdresse = departement.getAdresse() != null &amp;&amp;</span>
-<span class="fc bfc" id="L195" title="All 2 branches covered.">                                departement.getAdresse().toLowerCase().contains(lowerCaseFilter);</span>
-<span class="fc bfc" id="L196" title="All 4 branches covered.">                        return matchesNom || matchesAdresse;</span>
+<span class="fc" id="L227">            String lowerCaseFilter = searchText.toLowerCase();</span>
+<span class="fc" id="L228">            List&lt;departement&gt; filteredList = departementData.stream()</span>
+<span class="fc" id="L229">                    .filter(departement -&gt; {</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">                        boolean matchesNom = departement.getNom() != null &amp;&amp;</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">                                departement.getNom().toLowerCase().contains(lowerCaseFilter);</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">                        boolean matchesAdresse = departement.getAdresse() != null &amp;&amp;</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">                                departement.getAdresse().toLowerCase().contains(lowerCaseFilter);</span>
+<span class="fc bfc" id="L234" title="All 4 branches covered.">                        return matchesNom || matchesAdresse;</span>
                     })
-<span class="fc" id="L198">                    .collect(Collectors.toList());</span>
-<span class="fc" id="L199">            filteredDepartementData.setAll(filteredList);</span>
+<span class="fc" id="L236">                    .collect(Collectors.toList());</span>
+<span class="fc" id="L237">            filteredDepartementData.setAll(filteredList);</span>
         }
-<span class="fc" id="L201">    }</span>
+<span class="fc" id="L239">    }</span>
 
     @FXML
     private void showStatisticsDialog(ActionEvent event) {
         try {
-<span class="nc" id="L206">            URL fxmlResource = getClass().getResource(&quot;/eya.fxml&quot;);</span>
-<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (fxmlResource == null) {</span>
-<span class="nc" id="L208">                throw new IOException(&quot;Le fichier stat.fxml n'a pas été trouvé dans le classpath&quot;);</span>
+<span class="nc" id="L244">            URL fxmlResource = getClass().getResource(&quot;/eya.fxml&quot;);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (fxmlResource == null) {</span>
+<span class="nc" id="L246">                throw new IOException(&quot;Le fichier stat.fxml n'a pas été trouvé dans le classpath&quot;);</span>
             }
 
-<span class="nc" id="L211">            FXMLLoader loader = new FXMLLoader(fxmlResource);</span>
-<span class="nc" id="L212">            Parent root = loader.load();</span>
+<span class="nc" id="L249">            FXMLLoader loader = new FXMLLoader(fxmlResource);</span>
+<span class="nc" id="L250">            Parent root = loader.load();</span>
 
-<span class="nc" id="L214">            Stage dialogStage = new Stage();</span>
-<span class="nc" id="L215">            dialogStage.setTitle(&quot;Statistiques des Départements&quot;);</span>
-<span class="nc" id="L216">            dialogStage.initModality(Modality.APPLICATION_MODAL);</span>
-<span class="nc" id="L217">            dialogStage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
-<span class="nc" id="L218">            dialogStage.setScene(new Scene(root,600,800));</span>
-<span class="nc" id="L219">            dialogStage.showAndWait();</span>
+<span class="nc" id="L252">            Stage dialogStage = new Stage();</span>
+<span class="nc" id="L253">            dialogStage.setTitle(&quot;Statistiques des Départements&quot;);</span>
+<span class="nc" id="L254">            dialogStage.initModality(Modality.APPLICATION_MODAL);</span>
+<span class="nc" id="L255">            dialogStage.initOwner(((Node) event.getSource()).getScene().getWindow());</span>
+<span class="nc" id="L256">            dialogStage.setScene(new Scene(root,600,800));</span>
+<span class="nc" id="L257">            dialogStage.showAndWait();</span>
 
-<span class="nc" id="L221">        } catch (Exception e) {</span>
-<span class="nc" id="L222">            String errorMsg = &quot;Erreur lors du chargement de l'interface:\n&quot;</span>
-<span class="nc" id="L223">                    + e.getMessage() + &quot;\n\n&quot;</span>
+<span class="nc" id="L259">        } catch (Exception e) {</span>
+<span class="nc" id="L260">            String errorMsg = &quot;Erreur lors du chargement de l'interface:\n&quot;</span>
+<span class="nc" id="L261">                    + e.getMessage() + &quot;\n\n&quot;</span>
                     + &quot;Vérifiez que:\n&quot;
                     + &quot;1. Le fichier stat.fxml existe dans src/main/resources/\n&quot;
                     + &quot;2. Le nom du fichier est exact (sensible à la casse)\n&quot;
                     + &quot;3. Vous avez fait un clean/rebuild du projet&quot;;
 
-<span class="nc" id="L229">            System.err.println(errorMsg);</span>
-<span class="nc" id="L230">            e.printStackTrace();</span>
+<span class="nc" id="L267">            System.err.println(errorMsg);</span>
+<span class="nc" id="L268">            e.printStackTrace();</span>
 
-<span class="nc" id="L232">            showAlert(&quot;Erreur Critique&quot;, errorMsg, Alert.AlertType.ERROR);</span>
-<span class="nc" id="L233">        }</span>
-<span class="nc" id="L234">    }</span>
+<span class="nc" id="L270">            showAlert(&quot;Erreur Critique&quot;, errorMsg, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L271">        }</span>
+<span class="nc" id="L272">    }</span>
 
     @FXML
     private void handleBrowseImage(ActionEvent event) {
-<span class="nc" id="L238">        FileChooser fileChooser = new FileChooser();</span>
-<span class="nc" id="L239">        fileChooser.setTitle(&quot;Choisir une image&quot;);</span>
-<span class="nc" id="L240">        fileChooser.getExtensionFilters().addAll(</span>
+<span class="nc" id="L276">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L277">        fileChooser.setTitle(&quot;Choisir une image&quot;);</span>
+<span class="nc" id="L278">        fileChooser.getExtensionFilters().addAll(</span>
                 new FileChooser.ExtensionFilter(&quot;Images&quot;, &quot;*.png&quot;, &quot;*.jpg&quot;, &quot;*.jpeg&quot;, &quot;*.gif&quot;)
         );
 
-<span class="nc" id="L244">        File selectedFile = fileChooser.showOpenDialog(null);</span>
-<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (selectedFile != null) {</span>
+<span class="nc" id="L282">        File selectedFile = fileChooser.showOpenDialog(null);</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        if (selectedFile != null) {</span>
             try {
-<span class="nc" id="L247">                String fileName = System.currentTimeMillis() + &quot;_&quot; + selectedFile.getName();</span>
-<span class="nc" id="L248">                File destFile = new File(IMAGE_DIR + fileName);</span>
-<span class="nc" id="L249">                Files.copy(selectedFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
+<span class="nc" id="L285">                String fileName = System.currentTimeMillis() + &quot;_&quot; + selectedFile.getName();</span>
+<span class="nc" id="L286">                File destFile = new File(IMAGE_DIR + fileName);</span>
+<span class="nc" id="L287">                Files.copy(selectedFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);</span>
 
-<span class="nc" id="L251">                imagePath = fileName;</span>
-<span class="nc" id="L252">                imageField.setText(fileName);</span>
-<span class="nc" id="L253">                imagePreview.setImage(new Image(destFile.toURI().toString()));</span>
-<span class="nc" id="L254">                imageError.setText(&quot;&quot;);</span>
-<span class="nc" id="L255">            } catch (IOException e) {</span>
-<span class="nc" id="L256">                showAlert(&quot;Erreur&quot;, &quot;Impossible de charger l'image: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
-<span class="nc" id="L257">            }</span>
+<span class="nc" id="L289">                imagePath = fileName;</span>
+<span class="nc" id="L290">                imageField.setText(fileName);</span>
+<span class="nc" id="L291">                imagePreview.setImage(new Image(destFile.toURI().toString()));</span>
+<span class="nc" id="L292">                imageError.setText(&quot;&quot;);</span>
+<span class="nc" id="L293">            } catch (IOException e) {</span>
+<span class="nc" id="L294">                showAlert(&quot;Erreur&quot;, &quot;Impossible de charger l'image: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L295">            }</span>
         }
-<span class="nc" id="L259">    }</span>
+<span class="nc" id="L297">    }</span>
 
     @FXML
     private void handleSave(ActionEvent event) {
-<span class="nc bnc" id="L263" title="All 2 branches missed.">        if (!validateForm()) return;</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (!validateForm()) return;</span>
 
-<span class="nc" id="L265">        departement departement = new departement();</span>
-<span class="nc" id="L266">        departement.setNom(nomField.getText());</span>
-<span class="nc" id="L267">        departement.setAdresse(adresseField.getText());</span>
-<span class="nc" id="L268">        departement.setImage(imagePath);</span>
+<span class="nc" id="L303">        departement departement = new departement();</span>
+<span class="nc" id="L304">        departement.setNom(nomField.getText());</span>
+<span class="nc" id="L305">        departement.setAdresse(adresseField.getText());</span>
+<span class="nc" id="L306">        departement.setImage(imagePath);</span>
 
-<span class="nc" id="L270">        departementService.addDepartement(departement);</span>
-<span class="nc" id="L271">        showAlert(&quot;Succès&quot;, &quot;Département ajouté avec succès&quot;, Alert.AlertType.INFORMATION);</span>
-<span class="nc" id="L272">        resetForm();</span>
-<span class="nc" id="L273">        loadDepartements();</span>
-<span class="nc" id="L274">    }</span>
+<span class="nc" id="L308">        getDepartementService().addDepartement(departement);</span>
+<span class="nc" id="L309">        showAlert(&quot;Succès&quot;, &quot;Département ajouté avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L310">        resetForm();</span>
+<span class="nc" id="L311">        loadDepartements();</span>
+<span class="nc" id="L312">    }</span>
 
-   /* @FXML
+    /* @FXML
     private void handleExportToPDF(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(&quot;Enregistrer le PDF&quot;);
@@ -334,187 +372,187 @@ import java.util.stream.Collectors;
             }
         }
     }*/
-   @FXML
-   private void handleExportToPDF(ActionEvent event) {
-<span class="nc" id="L339">       FileChooser fileChooser = new FileChooser();</span>
-<span class="nc" id="L340">       fileChooser.setTitle(&quot;Enregistrer le PDF&quot;);</span>
-<span class="nc" id="L341">       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(&quot;Fichiers PDF&quot;, &quot;*.pdf&quot;));</span>
-<span class="nc" id="L342">       fileChooser.setInitialFileName(&quot;departements.pdf&quot;);</span>
+    @FXML
+    private void handleExportToPDF(ActionEvent event) {
+<span class="nc" id="L377">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L378">        fileChooser.setTitle(&quot;Enregistrer le PDF&quot;);</span>
+<span class="nc" id="L379">        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(&quot;Fichiers PDF&quot;, &quot;*.pdf&quot;));</span>
+<span class="nc" id="L380">        fileChooser.setInitialFileName(&quot;departements.pdf&quot;);</span>
 
-<span class="nc" id="L344">       File file = fileChooser.showSaveDialog(departementTable.getScene().getWindow());</span>
+<span class="nc" id="L382">        File file = fileChooser.showSaveDialog(departementTable.getScene().getWindow());</span>
 
-<span class="nc bnc" id="L346" title="All 2 branches missed.">       if (file != null) {</span>
-           try {
-               // 1. Use the fully qualified iText Document class
-<span class="nc" id="L349">               com.itextpdf.text.Document document = new com.itextpdf.text.Document();</span>
-<span class="nc" id="L350">               PdfWriter.getInstance(document, new FileOutputStream(file));</span>
-<span class="nc" id="L351">               document.open();</span>
+<span class="nc bnc" id="L384" title="All 2 branches missed.">        if (file != null) {</span>
+            try {
+                // 1. Use the fully qualified iText Document class
+<span class="nc" id="L387">                com.itextpdf.text.Document document = new com.itextpdf.text.Document();</span>
+<span class="nc" id="L388">                PdfWriter.getInstance(document, new FileOutputStream(file));</span>
+<span class="nc" id="L389">                document.open();</span>
 
-               // 2. Use iText-specific classes for styling
-<span class="nc" id="L354">               com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);</span>
-<span class="nc" id="L355">               com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph(&quot;Liste des Départements&quot;, titleFont);</span>
-<span class="nc" id="L356">               title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);</span>
-<span class="nc" id="L357">               document.add(title);</span>
+                // 2. Use iText-specific classes for styling
+<span class="nc" id="L392">                com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);</span>
+<span class="nc" id="L393">                com.itextpdf.text.Paragraph title = new com.itextpdf.text.Paragraph(&quot;Liste des Départements&quot;, titleFont);</span>
+<span class="nc" id="L394">                title.setAlignment(com.itextpdf.text.Element.ALIGN_CENTER);</span>
+<span class="nc" id="L395">                document.add(title);</span>
 
-               // Date paragraph
-<span class="nc" id="L360">               com.itextpdf.text.Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);</span>
-<span class="nc" id="L361">               com.itextpdf.text.Paragraph date = new com.itextpdf.text.Paragraph(&quot;Généré le: &quot; + new java.util.Date(), dateFont);</span>
-<span class="nc" id="L362">               date.setAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);</span>
-<span class="nc" id="L363">               document.add(date);</span>
+                // Date paragraph
+<span class="nc" id="L398">                com.itextpdf.text.Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);</span>
+<span class="nc" id="L399">                com.itextpdf.text.Paragraph date = new com.itextpdf.text.Paragraph(&quot;Généré le: &quot; + new java.util.Date(), dateFont);</span>
+<span class="nc" id="L400">                date.setAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);</span>
+<span class="nc" id="L401">                document.add(date);</span>
 
-               // Create table
-<span class="nc" id="L366">               PdfPTable table = new PdfPTable(4);</span>
-<span class="nc" id="L367">               table.setWidthPercentage(100);</span>
+                // Create table
+<span class="nc" id="L404">                PdfPTable table = new PdfPTable(4);</span>
+<span class="nc" id="L405">                table.setWidthPercentage(100);</span>
 
-               // Table headers
-<span class="nc" id="L370">               String[] headers = {&quot;Nom&quot;, &quot;Adresse&quot;, &quot;Nombre d'étages&quot;, &quot;Image&quot;};</span>
-<span class="nc" id="L371">               com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);</span>
+                // Table headers
+<span class="nc" id="L408">                String[] headers = {&quot;Nom&quot;, &quot;Adresse&quot;, &quot;Nombre d'étages&quot;, &quot;Image&quot;};</span>
+<span class="nc" id="L409">                com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);</span>
 
-<span class="nc bnc" id="L373" title="All 2 branches missed.">               for (String header : headers) {</span>
-<span class="nc" id="L374">                   PdfPCell cell = new PdfPCell(new com.itextpdf.text.Phrase(header, headerFont));</span>
-<span class="nc" id="L375">                   cell.setBackgroundColor(new BaseColor(51, 122, 183));</span>
-<span class="nc" id="L376">                   cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);</span>
-<span class="nc" id="L377">                   table.addCell(cell);</span>
-               }
+<span class="nc bnc" id="L411" title="All 2 branches missed.">                for (String header : headers) {</span>
+<span class="nc" id="L412">                    PdfPCell cell = new PdfPCell(new com.itextpdf.text.Phrase(header, headerFont));</span>
+<span class="nc" id="L413">                    cell.setBackgroundColor(new BaseColor(51, 122, 183));</span>
+<span class="nc" id="L414">                    cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);</span>
+<span class="nc" id="L415">                    table.addCell(cell);</span>
+                }
 
-               // Table data
-<span class="nc" id="L381">               com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 10);</span>
-<span class="nc bnc" id="L382" title="All 2 branches missed.">               for (departement d : departementTable.getItems()) {</span>
-<span class="nc" id="L383">                   table.addCell(new com.itextpdf.text.Phrase(d.getNom(), dataFont));</span>
-<span class="nc" id="L384">                   table.addCell(new com.itextpdf.text.Phrase(d.getAdresse(), dataFont));</span>
-<span class="nc" id="L385">                   table.addCell(new com.itextpdf.text.Phrase(String.valueOf(d.getNbr_etage()), dataFont));</span>
-<span class="nc bnc" id="L386" title="All 2 branches missed.">                   table.addCell(new com.itextpdf.text.Phrase(d.getImage() != null ? d.getImage() : &quot;N/A&quot;, dataFont));</span>
-<span class="nc" id="L387">               }</span>
+                // Table data
+<span class="nc" id="L419">                com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 10);</span>
+<span class="nc bnc" id="L420" title="All 2 branches missed.">                for (departement d : departementTable.getItems()) {</span>
+<span class="nc" id="L421">                    table.addCell(new com.itextpdf.text.Phrase(d.getNom(), dataFont));</span>
+<span class="nc" id="L422">                    table.addCell(new com.itextpdf.text.Phrase(d.getAdresse(), dataFont));</span>
+<span class="nc" id="L423">                    table.addCell(new com.itextpdf.text.Phrase(String.valueOf(d.getNbr_etage()), dataFont));</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">                    table.addCell(new com.itextpdf.text.Phrase(d.getImage() != null ? d.getImage() : &quot;N/A&quot;, dataFont));</span>
+<span class="nc" id="L425">                }</span>
 
-<span class="nc" id="L389">               document.add(table);</span>
-<span class="nc" id="L390">               document.close();</span>
+<span class="nc" id="L427">                document.add(table);</span>
+<span class="nc" id="L428">                document.close();</span>
 
-<span class="nc" id="L392">               showAlert(&quot;Succès&quot;, &quot;Export PDF réalisé avec succès&quot;, Alert.AlertType.INFORMATION);</span>
-<span class="nc" id="L393">           } catch (Exception e) {</span>
-<span class="nc" id="L394">               showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'export PDF: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
-<span class="nc" id="L395">               e.printStackTrace();</span>
-<span class="nc" id="L396">           }</span>
-       }
-<span class="nc" id="L398">   }</span>
+<span class="nc" id="L430">                showAlert(&quot;Succès&quot;, &quot;Export PDF réalisé avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L431">            } catch (Exception e) {</span>
+<span class="nc" id="L432">                showAlert(&quot;Erreur&quot;, &quot;Erreur lors de l'export PDF: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L433">                e.printStackTrace();</span>
+<span class="nc" id="L434">            }</span>
+        }
+<span class="nc" id="L436">    }</span>
 
     private void showEditDialog(departement departement) {
         try {
-<span class="nc" id="L402">            Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
-<span class="nc" id="L403">            dialog.setTitle(&quot;Modifier Département&quot;);</span>
-<span class="nc" id="L404">            dialog.setHeaderText(&quot;Modification du département &quot; + departement.getNom());</span>
+<span class="nc" id="L440">            Dialog&lt;ButtonType&gt; dialog = new Dialog&lt;&gt;();</span>
+<span class="nc" id="L441">            dialog.setTitle(&quot;Modifier Département&quot;);</span>
+<span class="nc" id="L442">            dialog.setHeaderText(&quot;Modification du département &quot; + departement.getNom());</span>
 
-<span class="nc" id="L406">            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);</span>
+<span class="nc" id="L444">            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);</span>
 
-<span class="nc" id="L408">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/editDepartement.fxml&quot;));</span>
-<span class="nc" id="L409">            Parent root = loader.load();</span>
+<span class="nc" id="L446">            FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;/editDepartement.fxml&quot;));</span>
+<span class="nc" id="L447">            Parent root = loader.load();</span>
 
-<span class="nc" id="L411">            EditDepartementController controller = loader.getController();</span>
-<span class="nc" id="L412">            controller.setDepartementData(departement);</span>
+<span class="nc" id="L449">            EditDepartementController controller = loader.getController();</span>
+<span class="nc" id="L450">            controller.setDepartementData(departement);</span>
 
-<span class="nc" id="L414">            dialog.getDialogPane().setContent(root);</span>
-<span class="nc" id="L415">            dialog.getDialogPane().setPrefSize(600, 500);</span>
+<span class="nc" id="L452">            dialog.getDialogPane().setContent(root);</span>
+<span class="nc" id="L453">            dialog.getDialogPane().setPrefSize(600, 500);</span>
 
-<span class="nc" id="L417">            Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
+<span class="nc" id="L455">            Optional&lt;ButtonType&gt; result = dialog.showAndWait();</span>
 
-<span class="nc bnc" id="L419" title="All 4 branches missed.">            if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
-<span class="nc" id="L420">                departement updatedDepartement = controller.getUpdatedDepartement();</span>
-<span class="nc" id="L421">                departementService.updateDepartement(updatedDepartement);</span>
-<span class="nc" id="L422">                loadDepartements();</span>
-<span class="nc" id="L423">                showAlert(&quot;Succès&quot;, &quot;Département mis à jour avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc bnc" id="L457" title="All 4 branches missed.">            if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L458">                departement updatedDepartement = controller.getUpdatedDepartement();</span>
+<span class="nc" id="L459">                getDepartementService().updateDepartement(updatedDepartement);</span>
+<span class="nc" id="L460">                loadDepartements();</span>
+<span class="nc" id="L461">                showAlert(&quot;Succès&quot;, &quot;Département mis à jour avec succès&quot;, Alert.AlertType.INFORMATION);</span>
             }
-<span class="nc" id="L425">        } catch (IOException e) {</span>
-<span class="nc" id="L426">            showAlert(&quot;Erreur&quot;, &quot;Impossible d'ouvrir l'éditeur: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
-<span class="nc" id="L427">        }</span>
-<span class="nc" id="L428">    }</span>
+<span class="nc" id="L463">        } catch (IOException e) {</span>
+<span class="nc" id="L464">            showAlert(&quot;Erreur&quot;, &quot;Impossible d'ouvrir l'éditeur: &quot; + e.getMessage(), Alert.AlertType.ERROR);</span>
+<span class="nc" id="L465">        }</span>
+<span class="nc" id="L466">    }</span>
 
     private void confirmAndDelete(departement departement) {
-<span class="nc" id="L431">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
-<span class="nc" id="L432">        alert.setTitle(&quot;Confirmation&quot;);</span>
-<span class="nc" id="L433">        alert.setHeaderText(&quot;Supprimer le département &quot; + departement.getNom());</span>
-<span class="nc" id="L434">        alert.setContentText(&quot;Êtes-vous sûr de vouloir supprimer ce département ?&quot;);</span>
+<span class="nc" id="L469">        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);</span>
+<span class="nc" id="L470">        alert.setTitle(&quot;Confirmation&quot;);</span>
+<span class="nc" id="L471">        alert.setHeaderText(&quot;Supprimer le département &quot; + departement.getNom());</span>
+<span class="nc" id="L472">        alert.setContentText(&quot;Êtes-vous sûr de vouloir supprimer ce département ?&quot;);</span>
 
-<span class="nc" id="L436">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
-<span class="nc bnc" id="L437" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
-<span class="nc" id="L438">            departementService.deleteDepartement(departement.getId());</span>
-<span class="nc" id="L439">            loadDepartements();</span>
-<span class="nc" id="L440">            showAlert(&quot;Succès&quot;, &quot;Département supprimé avec succès&quot;, Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L474">        Optional&lt;ButtonType&gt; result = alert.showAndWait();</span>
+<span class="nc bnc" id="L475" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.OK) {</span>
+<span class="nc" id="L476">            getDepartementService().deleteDepartement(departement.getId());</span>
+<span class="nc" id="L477">            loadDepartements();</span>
+<span class="nc" id="L478">            showAlert(&quot;Succès&quot;, &quot;Département supprimé avec succès&quot;, Alert.AlertType.INFORMATION);</span>
         }
-<span class="nc" id="L442">    }</span>
+<span class="nc" id="L480">    }</span>
 
     private boolean validateForm() {
-<span class="nc" id="L445">        boolean isValid = true;</span>
-<span class="nc" id="L446">        clearErrors();</span>
+<span class="nc" id="L483">        boolean isValid = true;</span>
+<span class="nc" id="L484">        clearErrors();</span>
 
-<span class="nc bnc" id="L448" title="All 2 branches missed.">        if (nomField.getText().isEmpty()) {</span>
-<span class="nc" id="L449">            nomError.setText(&quot;Le nom est obligatoire&quot;);</span>
-<span class="nc" id="L450">            isValid = false;</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">        if (nomField.getText().isEmpty()) {</span>
+<span class="nc" id="L487">            nomError.setText(&quot;Le nom est obligatoire&quot;);</span>
+<span class="nc" id="L488">            isValid = false;</span>
         }
 
-<span class="nc bnc" id="L453" title="All 2 branches missed.">        if (adresseField.getText().isEmpty()) {</span>
-<span class="nc" id="L454">            adresseError.setText(&quot;L'adresse est obligatoire&quot;);</span>
-<span class="nc" id="L455">            isValid = false;</span>
+<span class="nc bnc" id="L491" title="All 2 branches missed.">        if (adresseField.getText().isEmpty()) {</span>
+<span class="nc" id="L492">            adresseError.setText(&quot;L'adresse est obligatoire&quot;);</span>
+<span class="nc" id="L493">            isValid = false;</span>
         }
 
-<span class="nc" id="L458">        return isValid;</span>
+<span class="nc" id="L496">        return isValid;</span>
     }
 
     private void clearErrors() {
-<span class="nc" id="L462">        nomError.setText(&quot;&quot;);</span>
-<span class="nc" id="L463">        adresseError.setText(&quot;&quot;);</span>
-<span class="nc" id="L464">        imageError.setText(&quot;&quot;);</span>
-<span class="nc" id="L465">    }</span>
+<span class="nc" id="L500">        nomError.setText(&quot;&quot;);</span>
+<span class="nc" id="L501">        adresseError.setText(&quot;&quot;);</span>
+<span class="nc" id="L502">        imageError.setText(&quot;&quot;);</span>
+<span class="nc" id="L503">    }</span>
 
     @FXML
     private void handleClear(ActionEvent event) {
-<span class="nc" id="L469">        resetForm();</span>
-<span class="nc" id="L470">    }</span>
+<span class="nc" id="L507">        resetForm();</span>
+<span class="nc" id="L508">    }</span>
 
     private void resetForm() {
-<span class="nc" id="L473">        nomField.clear();</span>
-<span class="nc" id="L474">        adresseField.clear();</span>
-<span class="nc" id="L475">        imageField.clear();</span>
-<span class="nc" id="L476">        imagePreview.setImage(null);</span>
-<span class="nc" id="L477">        imagePath = &quot;&quot;;</span>
-<span class="nc" id="L478">        clearErrors();</span>
-<span class="nc" id="L479">    }</span>
+<span class="nc" id="L511">        nomField.clear();</span>
+<span class="nc" id="L512">        adresseField.clear();</span>
+<span class="nc" id="L513">        imageField.clear();</span>
+<span class="nc" id="L514">        imagePreview.setImage(null);</span>
+<span class="nc" id="L515">        imagePath = &quot;&quot;;</span>
+<span class="nc" id="L516">        clearErrors();</span>
+<span class="nc" id="L517">    }</span>
 
     private void showAlert(String title, String message, Alert.AlertType alertType) {
-<span class="nc" id="L482">        Alert alert = new Alert(alertType);</span>
-<span class="nc" id="L483">        alert.setTitle(title);</span>
-<span class="nc" id="L484">        alert.setHeaderText(null);</span>
-<span class="nc" id="L485">        alert.setContentText(message);</span>
-<span class="nc" id="L486">        alert.showAndWait();</span>
-<span class="nc" id="L487">    }</span>
+<span class="nc" id="L520">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L521">        alert.setTitle(title);</span>
+<span class="nc" id="L522">        alert.setHeaderText(null);</span>
+<span class="nc" id="L523">        alert.setContentText(message);</span>
+<span class="nc" id="L524">        alert.showAndWait();</span>
+<span class="nc" id="L525">    }</span>
 
     @FXML
     private void showDepartements(ActionEvent event) {
-<span class="nc" id="L491">        loadView(&quot;/departement.fxml&quot;, event);</span>
-<span class="nc" id="L492">    }</span>
+<span class="nc" id="L529">        loadView(&quot;/departement.fxml&quot;, event);</span>
+<span class="nc" id="L530">    }</span>
 
     @FXML
     private void showEtages(ActionEvent event) {
-<span class="nc" id="L496">        loadView(&quot;/etage.fxml&quot;, event);</span>
-<span class="nc" id="L497">    }</span>
+<span class="nc" id="L534">        loadView(&quot;/etage.fxml&quot;, event);</span>
+<span class="nc" id="L535">    }</span>
 
     @FXML
     private void showSalles(ActionEvent event) {
-<span class="nc" id="L501">        loadView(&quot;/salle.fxml&quot;, event);</span>
-<span class="nc" id="L502">    }</span>
+<span class="nc" id="L539">        loadView(&quot;/salle.fxml&quot;, event);</span>
+<span class="nc" id="L540">    }</span>
 
     @FXML
     private void Acceuil(ActionEvent event) {
-<span class="nc" id="L506">        loadView(&quot;/interface.fxml&quot;, event);</span>
-<span class="nc" id="L507">    }</span>
+<span class="nc" id="L544">        loadView(&quot;/interface.fxml&quot;, event);</span>
+<span class="nc" id="L545">    }</span>
 
     private void loadView(String fxmlPath, ActionEvent event) {
         try {
-<span class="nc" id="L511">            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));</span>
-<span class="nc" id="L512">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
-<span class="nc" id="L513">            stage.setScene(new Scene(root));</span>
-<span class="nc" id="L514">            stage.show();</span>
-<span class="nc" id="L515">        } catch (IOException e) {</span>
-<span class="nc" id="L516">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger la vue: &quot; + fxmlPath, Alert.AlertType.ERROR);</span>
-<span class="nc" id="L517">        }</span>
-<span class="nc" id="L518">    }</span>
+<span class="nc" id="L549">            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));</span>
+<span class="nc" id="L550">            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();</span>
+<span class="nc" id="L551">            stage.setScene(new Scene(root));</span>
+<span class="nc" id="L552">            stage.show();</span>
+<span class="nc" id="L553">        } catch (IOException e) {</span>
+<span class="nc" id="L554">            showAlert(&quot;Erreur&quot;, &quot;Impossible de charger la vue: &quot; + fxmlPath, Alert.AlertType.ERROR);</span>
+<span class="nc" id="L555">        }</span>
+<span class="nc" id="L556">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
